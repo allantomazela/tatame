@@ -2,41 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Taekwondo Academy Design System - Korean Traditional Colors */
 
 @layer base {
   :root {
+    /* Core Brand Colors - Korean Traditional */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Taekwondo Primary - Traditional Black */
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Traditional Korean Red - Secondary Action */
+    --secondary: 355 70% 50%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Korean Blue - Accent Color */
+    --accent: 216 100% 31%;
+    --accent-foreground: 0 0% 100%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Muted tones for backgrounds */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Success state - Korean Blue variation */
+    --success: 216 85% 45%;
+    --success-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Warning - Golden Yellow */
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 0%;
+
+    --destructive: 355 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Neutral borders and inputs */
+    --border: 0 0% 90%;
+    --input: 0 0% 95%;
+    --ring: 0 0% 0%;
 
     --radius: 0.5rem;
+
+    /* Gradients for Taekwondo Design */
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 15%));
+    --gradient-secondary: linear-gradient(135deg, hsl(355 70% 50%), hsl(355 80% 45%));
+    --gradient-accent: linear-gradient(135deg, hsl(216 100% 31%), hsl(216 85% 35%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%) 0%, hsl(216 100% 31%) 100%);
+
+    /* Shadows with Korean colors */
+    --shadow-primary: 0 4px 14px 0 hsl(0 0% 0% / 0.1);
+    --shadow-secondary: 0 4px 14px 0 hsl(355 70% 50% / 0.15);
+    --shadow-accent: 0 4px 14px 0 hsl(216 100% 31% / 0.15);
 
     --sidebar-background: 0 0% 98%;
 
