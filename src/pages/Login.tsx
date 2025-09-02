@@ -33,38 +33,38 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-accent/10">
-      <div className="w-full max-w-7xl mx-4 grid lg:grid-cols-2 gap-12 items-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-accent/5 p-4">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center justify-items-center">
         {/* Hero Section */}
-        <div className="hidden lg:block">
-          <div className="relative overflow-hidden rounded-2xl shadow-accent">
-            <img 
+        <div className="hidden lg:block w-full max-w-lg">
+          <div className="relative overflow-hidden rounded-2xl shadow-accent h-[600px]">
+            <img
               src={heroImage} 
               alt="Dojang de Taekwondo - Tatame" 
-              className="w-full h-[700px] object-cover"
+              className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-hero opacity-70"></div>
-            <div className="absolute inset-0 flex items-center justify-center text-center p-12">
-              <div className="text-white max-w-md">
-                <div className="mb-8 flex items-center justify-center space-x-6">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
-                    <span className="text-white text-3xl font-bold">跆</span>
+            <div className="absolute inset-0 flex items-center justify-center text-center p-8">
+              <div className="text-white max-w-xs">
+                <div className="mb-6 flex items-center justify-center space-x-4">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                    <span className="text-white text-2xl font-bold">跆</span>
                   </div>
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
-                    <span className="text-white text-3xl font-bold">拳</span>
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                    <span className="text-white text-2xl font-bold">拳</span>
                   </div>
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
-                    <span className="text-white text-3xl font-bold">道</span>
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                    <span className="text-white text-2xl font-bold">道</span>
                   </div>
                 </div>
-                <h1 className="text-5xl font-bold mb-6 tracking-wide">Tatame</h1>
-                <p className="text-xl opacity-95 leading-relaxed">Sistema completo de gestão para artes marciais com tecnologia moderna</p>
-                <div className="mt-8 flex items-center justify-center space-x-4 text-sm opacity-90">
-                  <span>✓ Gestão de atletas</span>
+                <h1 className="text-4xl font-bold mb-4 tracking-wide">Tatame</h1>
+                <p className="text-lg opacity-95 leading-relaxed">Sistema completo de gestão para artes marciais</p>
+                <div className="mt-6 flex items-center justify-center space-x-2 text-xs opacity-90">
+                  <span>✓ Gestão</span>
                   <span>•</span>
-                  <span>✓ Controle de graduações</span>
+                  <span>✓ Graduações</span>
                   <span>•</span>
-                  <span>✓ Comunicação integrada</span>
+                  <span>✓ Comunicação</span>
                 </div>
               </div>
             </div>
@@ -72,18 +72,18 @@ export default function Login() {
         </div>
 
         {/* Login Form */}
-        <div className="w-full max-w-lg mx-auto">
-          <Card className="shadow-primary border-0 bg-card/95 backdrop-blur-sm">
-            <CardHeader className="text-center pb-8">
-              <div className="mx-auto w-20 h-20 bg-gradient-primary rounded-2xl flex items-center justify-center mb-6 shadow-primary">
-                <span className="text-white text-3xl font-bold">畳</span>
+        <div className="w-full max-w-lg">
+          <Card className="shadow-primary border-0 bg-card/95 backdrop-blur-sm h-[600px] flex flex-col">
+            <CardHeader className="text-center pb-6">
+              <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mb-4 shadow-primary">
+                <span className="text-white text-2xl font-bold">畳</span>
               </div>
-              <CardTitle className="text-3xl font-bold mb-2">Bem-vindo ao Tatame</CardTitle>
-              <CardDescription className="text-base text-muted-foreground">
+              <CardTitle className="text-2xl font-bold mb-2">Bem-vindo ao Tatame</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground">
                 Acesse sua conta para gerenciar seu tatame
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 flex flex-col justify-center">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="userType">Tipo de Usuário</Label>
