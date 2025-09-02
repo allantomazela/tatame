@@ -33,38 +33,38 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-accent/5 p-4 animate-fade-in">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center justify-items-center">
         {/* Hero Section */}
-        <div className="hidden lg:block w-full max-w-lg">
-          <div className="relative overflow-hidden rounded-2xl shadow-accent h-[600px]">
+        <div className="hidden lg:block w-full max-w-lg animate-scale-in">
+          <div className="relative overflow-hidden rounded-2xl shadow-accent h-[600px] group hover:shadow-2xl transition-all duration-500">
             <img
               src={heroImage} 
               alt="Dojang de Taekwondo - Tatame" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-hero opacity-70"></div>
+            <div className="absolute inset-0 bg-gradient-hero opacity-70 transition-opacity duration-300 group-hover:opacity-60"></div>
             <div className="absolute inset-0 flex items-center justify-center text-center p-8">
               <div className="text-white max-w-xs">
                 <div className="mb-6 flex items-center justify-center space-x-4">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 animate-float hover:bg-white/30 transition-all duration-300 hover:scale-110">
                     <span className="text-white text-2xl font-bold">跆</span>
                   </div>
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 animate-float hover:bg-white/30 transition-all duration-300 hover:scale-110" style={{ animationDelay: '0.5s' }}>
                     <span className="text-white text-2xl font-bold">拳</span>
                   </div>
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 animate-float hover:bg-white/30 transition-all duration-300 hover:scale-110" style={{ animationDelay: '1s' }}>
                     <span className="text-white text-2xl font-bold">道</span>
                   </div>
                 </div>
-                <h1 className="text-4xl font-bold mb-4 tracking-wide">Tatame</h1>
+                <h1 className="text-4xl font-bold mb-4 tracking-wide animate-pulse-glow">Tatame</h1>
                 <p className="text-lg opacity-95 leading-relaxed">Sistema completo de gestão para artes marciais</p>
                 <div className="mt-6 flex items-center justify-center space-x-2 text-xs opacity-90">
-                  <span>✓ Gestão</span>
+                  <span className="hover:text-accent transition-colors">✓ Gestão</span>
                   <span>•</span>
-                  <span>✓ Graduações</span>
+                  <span className="hover:text-accent transition-colors">✓ Graduações</span>
                   <span>•</span>
-                  <span>✓ Comunicação</span>
+                  <span className="hover:text-accent transition-colors">✓ Comunicação</span>
                 </div>
               </div>
             </div>
@@ -72,66 +72,74 @@ export default function Login() {
         </div>
 
         {/* Login Form */}
-        <div className="w-full max-w-lg">
-          <Card className="shadow-primary border-0 bg-card/95 backdrop-blur-sm h-[600px] flex flex-col">
+        <div className="w-full max-w-lg animate-slide-in-right">
+          <Card className="shadow-primary border-0 bg-card/95 backdrop-blur-sm h-[600px] flex flex-col hover:shadow-2xl transition-all duration-500 group">
             <CardHeader className="text-center pb-6">
-              <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mb-4 shadow-primary">
+              <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mb-4 shadow-primary animate-pulse-glow group-hover:scale-110 transition-transform duration-300">
                 <span className="text-white text-2xl font-bold">畳</span>
               </div>
-              <CardTitle className="text-2xl font-bold mb-2">Bem-vindo ao Tatame</CardTitle>
-              <CardDescription className="text-sm text-muted-foreground">
+              <CardTitle className="text-2xl font-bold mb-2 animate-fade-in">Bem-vindo ao Tatame</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '0.1s' }}>
                 Acesse sua conta para gerenciar seu tatame
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col justify-center">
               <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="userType">Tipo de Usuário</Label>
+                <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  <Label htmlFor="userType" className="text-sm font-medium text-foreground">Tipo de Usuário</Label>
                   <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50">
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mestre">Mestre</SelectItem>
-                      <SelectItem value="aluno">Aluno</SelectItem>
-                      <SelectItem value="responsavel">Responsável</SelectItem>
+                      <SelectItem value="mestre" className="hover:bg-primary/10">Mestre</SelectItem>
+                      <SelectItem value="aluno" className="hover:bg-primary/10">Aluno</SelectItem>
+                      <SelectItem value="responsavel" className="hover:bg-primary/10">Responsável</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                  <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
+                <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                  <Label htmlFor="password" className="text-sm font-medium text-foreground">Senha</Label>
                   <Input
                     id="password"
                     type="password"
                     placeholder="Sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50"
                     required
                   />
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-gradient-primary hover:opacity-90 transition-all text-lg font-medium"
+                  className="w-full h-12 bg-gradient-primary hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-lg font-medium shadow-primary animate-fade-in"
+                  style={{ animationDelay: '0.5s' }}
                   disabled={isLoading}
                 >
-                  {isLoading ? "Entrando..." : "Entrar"}
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Entrando...</span>
+                    </div>
+                  ) : "Entrar"}
                 </Button>
 
-                <div className="relative">
+                <div className="relative animate-fade-in" style={{ animationDelay: '0.6s' }}>
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-border" />
                   </div>
@@ -143,10 +151,11 @@ export default function Login() {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  className="w-full h-12 border-2 hover:bg-muted/50 transition-all"
+                  className="w-full h-12 border-2 hover:bg-muted/50 hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group animate-fade-in"
+                  style={{ animationDelay: '0.7s' }}
                   disabled={isLoading}
                 >
-                  <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
+                  <svg className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-200" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                     <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -155,10 +164,10 @@ export default function Login() {
                   Continuar com Google
                 </Button>
 
-                <div className="text-center text-sm text-muted-foreground space-y-2">
-                  <a href="#" className="hover:text-primary transition-colors">Esqueceu sua senha?</a>
+                <div className="text-center text-sm text-muted-foreground space-y-2 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+                  <a href="#" className="hover:text-primary transition-all duration-200 hover:scale-105 inline-block">Esqueceu sua senha?</a>
                   <div>
-                    Não tem uma conta? <a href="#" className="text-primary hover:underline">Cadastre-se</a>
+                    Não tem uma conta? <a href="#" className="text-primary hover:underline hover:text-primary/80 transition-all duration-200">Cadastre-se</a>
                   </div>
                 </div>
               </form>
