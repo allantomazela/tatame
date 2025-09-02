@@ -39,9 +39,9 @@ export function Header({ userType = "mestre", userName = "Mestre Kim", onToggleS
 
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <span className="text-white text-sm font-bold">TKD</span>
+            <span className="text-white text-sm font-bold">畳</span>
           </div>
-          <h1 className="text-xl font-bold text-foreground">Academia de Taekwondo</h1>
+          <h1 className="text-xl font-bold text-foreground">Tatame</h1>
         </div>
 
         <div className="flex-1" />

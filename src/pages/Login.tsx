@@ -46,8 +46,8 @@ export default function Login() {
             <div className="absolute inset-0 bg-gradient-hero opacity-60 rounded-lg"></div>
             <div className="absolute inset-0 flex items-center justify-center text-center p-8">
               <div className="text-white">
-                <h1 className="text-4xl font-bold mb-4">Academia de Taekwondo</h1>
-                <p className="text-lg opacity-90">Sistema completo de gestão para academias de taekwondo</p>
+                <h1 className="text-4xl font-bold mb-4">Tatame</h1>
+                <p className="text-lg opacity-90">Sistema completo de gestão para artes marciais</p>
                 <div className="mt-6 flex items-center justify-center space-x-4">
                   <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center">
                     <span className="text-white text-xl font-bold">跆</span>
@@ -69,11 +69,11 @@ export default function Login() {
           <Card className="shadow-accent">
             <CardHeader className="text-center">
               <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-lg flex items-center justify-center mb-4">
-                <span className="text-white text-2xl font-bold">TKD</span>
+                <span className="text-white text-xl font-bold">畳</span>
               </div>
               <CardTitle className="text-2xl">Entrar no Sistema</CardTitle>
               <CardDescription>
-                Acesse sua conta para gerenciar a academia
+                Acesse sua conta para gerenciar seu tatame
               </CardDescription>
             </CardHeader>
             <CardContent>
