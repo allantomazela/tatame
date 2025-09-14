@@ -44,9 +44,13 @@ export function useSupabaseAuth() {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         setAuthState(prev => ({ 
           ...prev, 
           session, 
@@ -54,10 +58,14 @@ export function useSupabaseAuth() {
           loading: false 
         }));
         
-        if (session?.user) {
-          // Fetch profile directly without setTimeout to prevent loops
-          fetchProfile(session.user.id);
-        } else {
+        if (session?.user && mounted) {
+          // Usar setTimeout para evitar loops
+          setTimeout(() => {
+            if (mounted) {
+              fetchProfile(session.user.id);
+            }
+          }, 0);
+        } else if (mounted) {
           setAuthState(prev => ({ ...prev, profile: null }));
         }
       }
@@ -65,7 +73,12 @@ export function useSupabaseAuth() {
 
     // Check for existing session
     const initializeAuth = async () => {
+      if (!mounted) return;
+      
       const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!mounted) return;
+      
       setAuthState(prev => ({ 
         ...prev, 
         session, 
@@ -73,14 +86,21 @@ export function useSupabaseAuth() {
         loading: false 
       }));
       
-      if (session?.user) {
-        fetchProfile(session.user.id);
+      if (session?.user && mounted) {
+        setTimeout(() => {
+          if (mounted) {
+            fetchProfile(session.user.id);
+          }
+        }, 0);
       }
     };
 
     initializeAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
 
@@ -122,8 +142,6 @@ export function useSupabaseAuth() {
     phone?: string;
   }): Promise<{ error?: string }> => {
     try {
-      console.log('Attempting signup with:', { email, userData });
-      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -136,11 +154,7 @@ export function useSupabaseAuth() {
         }
       });
 
-      console.log('Signup response:', { data, error });
-
       if (error) {
-        console.error('Signup error details:', error);
-        
         // Melhor tratamento de erros específicos
         let errorMessage = error.message;
         if (error.message.includes('User already registered')) {
@@ -174,7 +188,6 @@ export function useSupabaseAuth() {
       return {};
     } catch (error) {
       const errorMessage = 'Erro inesperado no cadastro';
-      console.error('Unexpected signup error:', error);
       toast({
         title: "Erro no cadastro",
         description: errorMessage,

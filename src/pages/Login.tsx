@@ -31,7 +31,7 @@ export default function Login() {
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, loading, navigate, location]);
+  }, [isAuthenticated, loading, navigate, location.state?.from?.pathname]);
 
   // Show loading while auth state is being determined
   if (loading) {
@@ -56,20 +56,19 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Prevenir múltiplas chamadas
+    
     setIsLoading(true);
 
     try {
       const { error } = await signIn(email, password);
       
       if (!error) {
-        // Aguardar um pouco para o estado de autenticação ser atualizado
-        setTimeout(() => {
-          const from = location.state?.from?.pathname || '/dashboard';
-          navigate(from, { replace: true });
-        }, 100);
+        // O redirecionamento será feito pelo useEffect
+        return;
       }
     } catch (error) {
-      console.error('Login error:', error);
+      // Erro já tratado pelo hook
     } finally {
       setIsLoading(false);
     }
@@ -77,6 +76,8 @@ export default function Login() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Prevenir múltiplas chamadas
+    
     setIsLoading(true);
 
     try {
@@ -94,7 +95,7 @@ export default function Login() {
         setPhone("");
       }
     } catch (error) {
-      console.error('Signup error:', error);
+      // Erro já tratado pelo hook
     } finally {
       setIsLoading(false);
     }
