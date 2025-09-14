@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
-import { UserType } from '@/lib/supabase'
+import { UserType } from '@/hooks/useSupabaseAuth'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface ProtectedRouteProps {

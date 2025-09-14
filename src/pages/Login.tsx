@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Shield, Users, User } from "lucide-react";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { UserType } from "@/lib/supabase";
+import { useSupabaseAuth, UserType } from "@/hooks/useSupabaseAuth";
 import heroImage from "@/assets/taekwondo-hero.jpg";
 
 export default function Login() {

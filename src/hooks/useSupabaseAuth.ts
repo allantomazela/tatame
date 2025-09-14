@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
-import { User, Session, AuthError } from '@supabase/supabase-js'
-import { supabase, Profile, UserType } from '@/lib/supabase'
-import { useToast } from '@/hooks/use-toast'
+import { useState, useEffect } from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+export type UserType = 'mestre' | 'aluno' | 'responsavel';
 
 interface AuthState {
-  user: User | null
-  profile: Profile | null
-  session: Session | null
-  loading: boolean
+  user: User | null;
+  profile: any | null;
+  session: Session | null;
+  loading: boolean;
 }
 
 export function useSupabaseAuth() {
@@ -15,34 +17,43 @@ export function useSupabaseAuth() {
     user: null,
     profile: null,
     session: null,
-    loading: true
-  })
-  const { toast } = useToast()
+    loading: true,
+  });
+
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthState(prev => ({ ...prev, session, user: session?.user ?? null }))
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      } else {
-        setAuthState(prev => ({ ...prev, loading: false }))
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setAuthState(prev => ({ ...prev, session, user: session?.user ?? null }));
+        
+        if (session?.user) {
+          // Defer profile fetching with setTimeout to prevent deadlock
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+          }, 0);
+        } else {
+          setAuthState(prev => ({ ...prev, profile: null, loading: false }));
+        }
       }
-    })
+    );
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setAuthState(prev => ({ ...prev, session, user: session?.user ?? null }))
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthState(prev => ({ ...prev, session, user: session?.user ?? null }));
       
       if (session?.user) {
-        await fetchProfile(session.user.id)
+        setTimeout(() => {
+          fetchProfile(session.user.id);
+        }, 0);
       } else {
-        setAuthState(prev => ({ ...prev, profile: null, loading: false }))
+        setAuthState(prev => ({ ...prev, loading: false }));
       }
-    })
+    });
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => subscription.unsubscribe();
+  }, []);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -50,48 +61,52 @@ export function useSupabaseAuth() {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle();
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching profile:', error);
+        setAuthState(prev => ({ ...prev, profile: null, loading: false }));
+        return;
+      }
 
-      setAuthState(prev => ({ ...prev, profile: data, loading: false }))
+      setAuthState(prev => ({ ...prev, profile: data, loading: false }));
     } catch (error) {
-      console.error('Error fetching profile:', error)
-      setAuthState(prev => ({ ...prev, loading: false }))
+      console.error('Error fetching profile:', error);
+      setAuthState(prev => ({ ...prev, profile: null, loading: false }));
     }
-  }
+  };
 
   const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
-      })
+      });
 
       if (error) {
         toast({
           title: "Erro no login",
           description: error.message,
           variant: "destructive"
-        })
-        return { error: error.message }
+        });
+        return { error: error.message };
       }
 
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta!"
-      })
-      return {}
+      });
+      return {};
     } catch (error) {
-      const errorMessage = 'Erro inesperado no login'
+      const errorMessage = 'Erro inesperado no login';
       toast({
         title: "Erro no login",
         description: errorMessage,
         variant: "destructive"
-      })
-      return { error: errorMessage }
+      });
+      return { error: errorMessage };
     }
-  }
+  };
 
   const signUp = async (email: string, password: string, userData: {
     fullName: string;
@@ -112,88 +127,99 @@ export function useSupabaseAuth() {
             phone: userData.phone
           }
         }
-      })
+      });
 
       if (error) {
         toast({
           title: "Erro no cadastro",
           description: error.message,
           variant: "destructive"
-        })
-        return { error: error.message }
+        });
+        return { error: error.message };
       }
 
       if (data.user && !data.session) {
         toast({
           title: "Cadastro realizado!",
           description: "Verifique seu email para confirmar a conta e faça login."
-        })
+        });
       } else {
         toast({
           title: "Cadastro realizado com sucesso!",
           description: "Bem-vindo ao Tatame!"
-        })
+        });
       }
 
-      return {}
+      return {};
     } catch (error) {
-      const errorMessage = 'Erro inesperado no cadastro'
+      const errorMessage = 'Erro inesperado no cadastro';
       toast({
         title: "Erro no cadastro",
         description: errorMessage,
         variant: "destructive"
-      })
-      return { error: errorMessage }
+      });
+      return { error: errorMessage };
     }
-  }
+  };
 
-  const signOut = async (): Promise<void> => {
+  const signOut = async (): Promise<{ error?: string }> => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast({
+          title: "Erro ao sair",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error: error.message };
+      }
+      
       toast({
         title: "Logout realizado",
         description: "Até logo!"
-      })
+      });
+      return {};
     } catch (error) {
+      const errorMessage = 'Erro inesperado ao sair';
       toast({
-        title: "Erro no logout",
-        description: "Ocorreu um erro ao sair",
+        title: "Erro ao sair",
+        description: errorMessage,
         variant: "destructive"
-      })
+      });
+      return { error: errorMessage };
     }
-  }
+  };
 
-  const signInWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+  const signInWithGoogle = async (): Promise<{ error?: string }> => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/`
         }
-      })
+      });
 
       if (error) {
         toast({
           title: "Erro no login com Google",
           description: error.message,
           variant: "destructive"
-        })
-        return { success: false, error: error.message }
+        });
+        return { error: error.message };
       }
 
-      return { success: true }
+      return {};
     } catch (error) {
-      const errorMessage = 'Erro inesperado no login com Google'
+      const errorMessage = 'Erro inesperado no login com Google';
       toast({
-        title: "Erro no login",
+        title: "Erro no login com Google",
         description: errorMessage,
         variant: "destructive"
-      })
-      return { success: false, error: errorMessage }
+      });
+      return { error: errorMessage };
     }
-  }
+  };
 
   return {
     user: authState.user,
@@ -205,6 +231,6 @@ export function useSupabaseAuth() {
     signOut,
     signInWithGoogle,
     isAuthenticated: !!authState.user,
-    userType: authState.profile?.user_type
-  }
+    userType: authState.profile?.user_type as UserType | undefined,
+  };
 }
