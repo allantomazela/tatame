@@ -1,13 +1,31 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Try different possible environment variable names
+const supabaseUrl = 
+  import.meta.env.VITE_SUPABASE_URL || 
+  import.meta.env.SUPABASE_URL ||
+  import.meta.env.VITE_SUPABASE_PROJECT_URL
+
+const supabaseAnonKey = 
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 
+  import.meta.env.SUPABASE_ANON_KEY ||
+  import.meta.env.VITE_SUPABASE_API_KEY
+
+// Temporary fallback - replace with your actual Supabase credentials
+const fallbackUrl = 'https://YOUR_PROJECT_ID.supabase.co'
+const fallbackKey = 'YOUR_ANON_KEY_HERE'
+
+const finalUrl = supabaseUrl || fallbackUrl
+const finalKey = supabaseAnonKey || fallbackKey
+
+console.log('Supabase URL:', finalUrl)
+console.log('Has Supabase Key:', !!finalKey)
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.warn('⚠️ Using fallback Supabase credentials. Please configure your environment variables.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(finalUrl, finalKey)
 
 export type UserType = 'mestre' | 'aluno' | 'responsavel'
 
