@@ -23,9 +23,26 @@ export function useSupabaseAuth() {
   const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
-    // Prevenir múltiplas chamadas simultâneas
-    if (authState.profile?.id === userId) {
-      return; // Já temos o perfil deste usuário
+    // Cache key para evitar requisições desnecessárias
+    const cacheKey = `profile_${userId}`;
+    const cached = localStorage.getItem(cacheKey);
+    
+    // Se já temos o perfil em cache e no state, não buscar novamente
+    if (authState.profile?.id === userId && cached) {
+      return;
+    }
+
+    // Se temos cache válido, usar ele primeiro
+    if (cached) {
+      try {
+        const cachedProfile = JSON.parse(cached);
+        if (cachedProfile.id === userId) {
+          setAuthState(prev => ({ ...prev, profile: cachedProfile }));
+          return; // Retorna sem fazer nova requisição
+        }
+      } catch (error) {
+        localStorage.removeItem(cacheKey);
+      }
     }
 
     try {
@@ -40,7 +57,11 @@ export function useSupabaseAuth() {
         return;
       }
 
-      setAuthState(prev => ({ ...prev, profile: data }));
+      if (data) {
+        // Salvar no cache
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        setAuthState(prev => ({ ...prev, profile: data }));
+      }
     } catch (error) {
       setAuthState(prev => ({ ...prev, profile: null }));
     }
@@ -51,7 +72,11 @@ export function useSupabaseAuth() {
     let profileLoading = false;
 
     const handleProfileFetch = async (userId: string) => {
-      if (!mounted || profileLoading || authState.profile?.id === userId) {
+      // Verificações múltiplas para evitar loop
+      if (!mounted || 
+          profileLoading || 
+          authState.profile?.id === userId ||
+          authState.user?.id !== userId) {
         return;
       }
       
