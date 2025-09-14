@@ -61,7 +61,7 @@ export function useSupabaseAuth() {
     }
   }
 
-  const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -74,14 +74,14 @@ export function useSupabaseAuth() {
           description: error.message,
           variant: "destructive"
         })
-        return { success: false, error: error.message }
+        return { error: error.message }
       }
 
       toast({
         title: "Login realizado com sucesso!",
         description: "Bem-vindo de volta!"
       })
-      return { success: true }
+      return {}
     } catch (error) {
       const errorMessage = 'Erro inesperado no login'
       toast({
@@ -89,7 +89,7 @@ export function useSupabaseAuth() {
         description: errorMessage,
         variant: "destructive"
       })
-      return { success: false, error: errorMessage }
+      return { error: errorMessage }
     }
   }
 
@@ -97,12 +97,15 @@ export function useSupabaseAuth() {
     fullName: string;
     userType: UserType;
     phone?: string;
-  }): Promise<{ success: boolean; error?: string }> => {
+  }): Promise<{ error?: string }> => {
     try {
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: userData.fullName,
             user_type: userData.userType,
@@ -117,17 +120,22 @@ export function useSupabaseAuth() {
           description: error.message,
           variant: "destructive"
         })
-        return { success: false, error: error.message }
+        return { error: error.message }
       }
 
       if (data.user && !data.session) {
         toast({
           title: "Cadastro realizado!",
-          description: "Verifique seu email para confirmar a conta."
+          description: "Verifique seu email para confirmar a conta e faça login."
+        })
+      } else {
+        toast({
+          title: "Cadastro realizado com sucesso!",
+          description: "Bem-vindo ao Tatame!"
         })
       }
 
-      return { success: true }
+      return {}
     } catch (error) {
       const errorMessage = 'Erro inesperado no cadastro'
       toast({
@@ -135,7 +143,7 @@ export function useSupabaseAuth() {
         description: errorMessage,
         variant: "destructive"
       })
-      return { success: false, error: errorMessage }
+      return { error: errorMessage }
     }
   }
 

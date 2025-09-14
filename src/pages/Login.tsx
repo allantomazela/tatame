@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Shield, Users, User } from "lucide-react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -13,14 +14,17 @@ import heroImage from "@/assets/taekwondo-hero.jpg";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState<UserType>("mestre");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [userType, setUserType] = useState<UserType>("aluno");
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signInWithGoogle, isAuthenticated } = useSupabaseAuth();
+  const { signIn, signUp, signInWithGoogle, isAuthenticated } = useSupabaseAuth();
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -42,11 +46,32 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    const result = await signIn(email, password);
+    const { error } = await signIn(email, password);
     
-    if (result.success) {
+    if (!error) {
       const from = location.state?.from?.pathname || '/dashboard';
       navigate(from, { replace: true });
+    }
+    
+    setIsLoading(false);
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const { error } = await signUp(email, password, {
+      fullName,
+      userType,
+      phone
+    });
+    
+    if (!error) {
+      setActiveTab("login");
+      setEmail("");
+      setPassword("");
+      setFullName("");
+      setPhone("");
     }
     
     setIsLoading(false);
@@ -110,38 +135,14 @@ export default function Login() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col justify-center">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                  <Label htmlFor="userType" className="text-sm font-medium text-foreground">Tipo de Usuário</Label>
-                  <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
-                    <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50 group">
-                      <div className="flex items-center gap-2">
-                        {getUserTypeIcon(userType)}
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mestre" className="hover:bg-primary/10">
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-4 h-4" />
-                          Mestre
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="aluno" className="hover:bg-primary/10">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4" />
-                          Aluno
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="responsavel" className="hover:bg-primary/10">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          Responsável
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Entrar</TabsTrigger>
+                  <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="login" className="space-y-4 mt-6">
+                  <form onSubmit={handleLogin} className="space-y-4">
 
                 <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
                   <Label htmlFor="email" className={`text-sm font-medium transition-colors duration-200 ${
@@ -249,13 +250,126 @@ export default function Login() {
                   Continuar com Google
                 </Button>
 
-                <div className="text-center text-sm text-muted-foreground space-y-2 animate-fade-in" style={{ animationDelay: '0.8s' }}>
-                  <a href="#" className="hover:text-primary transition-all duration-200 hover:scale-105 inline-block">Esqueceu sua senha?</a>
-                  <div>
-                    Não tem uma conta? <a href="#" className="text-primary hover:underline hover:text-primary/80 transition-all duration-200">Cadastre-se</a>
-                  </div>
-                </div>
-              </form>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="signup" className="space-y-4 mt-6">
+                  <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Nome Completo</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Seu nome completo"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-phone">Telefone (opcional)</Label>
+                      <Input
+                        id="signup-phone"
+                        type="tel"
+                        placeholder="(11) 99999-9999"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-userType">Tipo de Usuário</Label>
+                      <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
+                        <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50">
+                          <div className="flex items-center gap-2">
+                            {getUserTypeIcon(userType)}
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="aluno">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4" />
+                              Aluno
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="responsavel">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              Responsável
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="mestre">
+                            <div className="flex items-center gap-2">
+                              <Shield className="w-4 h-4" />
+                              Mestre
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Senha</Label>
+                      <div className="relative">
+                        <Input
+                          id="signup-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Sua senha"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50 pr-10"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-primary/10"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? 
+                            <EyeOff className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /> : 
+                            <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                          }
+                        </Button>
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full h-12 bg-gradient-primary hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-lg font-medium shadow-primary group relative overflow-hidden"
+                      disabled={isLoading}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                      {isLoading ? (
+                        <div className="flex items-center space-x-2 relative z-10">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          <span>Cadastrando...</span>
+                        </div>
+                      ) : (
+                        <span className="relative z-10">Cadastrar</span>
+                      )}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
