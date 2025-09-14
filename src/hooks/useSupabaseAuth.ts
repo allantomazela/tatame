@@ -22,39 +22,6 @@ export function useSupabaseAuth() {
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setAuthState(prev => ({ ...prev, session, user: session?.user ?? null }));
-        
-        if (session?.user) {
-          // Defer profile fetching with setTimeout to prevent deadlock
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-          }, 0);
-        } else {
-          setAuthState(prev => ({ ...prev, profile: null, loading: false }));
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthState(prev => ({ ...prev, session, user: session?.user ?? null }));
-      
-      if (session?.user) {
-        setTimeout(() => {
-          fetchProfile(session.user.id);
-        }, 0);
-      } else {
-        setAuthState(prev => ({ ...prev, loading: false }));
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -65,16 +32,57 @@ export function useSupabaseAuth() {
 
       if (error) {
         console.error('Error fetching profile:', error);
-        setAuthState(prev => ({ ...prev, profile: null, loading: false }));
+        setAuthState(prev => ({ ...prev, profile: null }));
         return;
       }
 
-      setAuthState(prev => ({ ...prev, profile: data, loading: false }));
+      setAuthState(prev => ({ ...prev, profile: data }));
     } catch (error) {
       console.error('Error fetching profile:', error);
-      setAuthState(prev => ({ ...prev, profile: null, loading: false }));
+      setAuthState(prev => ({ ...prev, profile: null }));
     }
   };
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setAuthState(prev => ({ 
+          ...prev, 
+          session, 
+          user: session?.user ?? null,
+          loading: false 
+        }));
+        
+        if (session?.user) {
+          // Fetch profile directly without setTimeout to prevent loops
+          fetchProfile(session.user.id);
+        } else {
+          setAuthState(prev => ({ ...prev, profile: null }));
+        }
+      }
+    );
+
+    // Check for existing session
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setAuthState(prev => ({ 
+        ...prev, 
+        session, 
+        user: session?.user ?? null,
+        loading: false 
+      }));
+      
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      }
+    };
+
+    initializeAuth();
+
+    return () => subscription.unsubscribe();
+  }, []);
+
 
   const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
