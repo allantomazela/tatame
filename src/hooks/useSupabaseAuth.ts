@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,29 +21,17 @@ export function useSupabaseAuth() {
   });
 
   const { toast } = useToast();
+  
+  // Ref para prevenir loops
+  const profileFetched = useRef<string | null>(null);
 
   const fetchProfile = async (userId: string) => {
-    // Cache key para evitar requisições desnecessárias
-    const cacheKey = `profile_${userId}`;
-    const cached = localStorage.getItem(cacheKey);
-    
-    // Se já temos o perfil em cache e no state, não buscar novamente
-    if (authState.profile?.id === userId && cached) {
+    // Prevenir loop absoluto
+    if (profileFetched.current === userId) {
       return;
     }
 
-    // Se temos cache válido, usar ele primeiro
-    if (cached) {
-      try {
-        const cachedProfile = JSON.parse(cached);
-        if (cachedProfile.id === userId) {
-          setAuthState(prev => ({ ...prev, profile: cachedProfile }));
-          return; // Retorna sem fazer nova requisição
-        }
-      } catch (error) {
-        localStorage.removeItem(cacheKey);
-      }
-    }
+    profileFetched.current = userId;
 
     try {
       const { data, error } = await supabase
@@ -58,8 +46,6 @@ export function useSupabaseAuth() {
       }
 
       if (data) {
-        // Salvar no cache
-        localStorage.setItem(cacheKey, JSON.stringify(data));
         setAuthState(prev => ({ ...prev, profile: data }));
       }
     } catch (error) {
@@ -69,25 +55,10 @@ export function useSupabaseAuth() {
 
   useEffect(() => {
     let mounted = true;
-    let profileLoading = false;
-
-    const handleProfileFetch = async (userId: string) => {
-      // Verificações múltiplas para evitar loop
-      if (!mounted || 
-          profileLoading || 
-          authState.profile?.id === userId ||
-          authState.user?.id !== userId) {
-        return;
-      }
-      
-      profileLoading = true;
-      await fetchProfile(userId);
-      profileLoading = false;
-    };
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (!mounted) return;
         
         setAuthState(prev => ({ 
@@ -97,10 +68,11 @@ export function useSupabaseAuth() {
           loading: false 
         }));
         
-        if (session?.user && mounted) {
-          handleProfileFetch(session.user.id);
-        } else if (mounted) {
+        if (session?.user && mounted && profileFetched.current !== session.user.id) {
+          fetchProfile(session.user.id);
+        } else if (!session?.user && mounted) {
           setAuthState(prev => ({ ...prev, profile: null }));
+          profileFetched.current = null;
         }
       }
     );
@@ -120,8 +92,8 @@ export function useSupabaseAuth() {
         loading: false 
       }));
       
-      if (session?.user && mounted) {
-        handleProfileFetch(session.user.id);
+      if (session?.user && mounted && profileFetched.current !== session.user.id) {
+        fetchProfile(session.user.id);
       }
     };
 
@@ -170,7 +142,7 @@ export function useSupabaseAuth() {
     fullName: string;
     userType: UserType;
     phone?: string;
-  }): Promise<{ error?: string }> => {
+  }): Promise<{ error?: string; switchToLogin?: boolean }> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -185,10 +157,12 @@ export function useSupabaseAuth() {
       });
 
       if (error) {
-        // Melhor tratamento de erros específicos
+        // Tratamento específico para usuário já existente
         let errorMessage = error.message;
-        if (error.message.includes('User already registered')) {
-          errorMessage = 'Este email já está cadastrado. Tente fazer login ou use outro email.';
+        if (error.message.includes('User already registered') || error.message.includes('user_already_exists')) {
+          errorMessage = 'Este email já está cadastrado. Use o formulário de login abaixo.';
+          // Automaticamente trocar para aba de login
+          return { error: errorMessage, switchToLogin: true };
         } else if (error.message.includes('Invalid email')) {
           errorMessage = 'Email inválido. Verifique o formato do email.';
         } else if (error.message.includes('Password')) {

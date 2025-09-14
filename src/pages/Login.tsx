@@ -76,23 +76,26 @@ export default function Login() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return; // Prevenir múltiplas chamadas
+    if (isLoading) return;
     
     setIsLoading(true);
 
     try {
-      const { error } = await signUp(email, password, {
+      const result = await signUp(email, password, {
         fullName,
         userType,
         phone
       });
       
-      if (!error) {
+      if (!result.error) {
         setActiveTab("login");
         setEmail("");
         setPassword("");
         setFullName("");
         setPhone("");
+      } else if (result.switchToLogin) {
+        // Automaticamente trocar para aba de login se usuário já existe
+        setActiveTab("login");
       }
     } catch (error) {
       // Erro já tratado pelo hook
