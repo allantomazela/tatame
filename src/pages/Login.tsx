@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff, Shield, Users, User } from "lucide-react";
 import heroImage from "@/assets/taekwondo-hero.jpg";
 
 export default function Login() {
@@ -13,8 +14,19 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState<"mestre" | "aluno" | "responsavel">("mestre");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const getUserTypeIcon = (type: string) => {
+    switch (type) {
+      case "mestre": return <Shield className="w-4 h-4" />;
+      case "aluno": return <User className="w-4 h-4" />;
+      case "responsavel": return <Users className="w-4 h-4" />;
+      default: return <User className="w-4 h-4" />;
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,55 +100,113 @@ export default function Login() {
                 <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
                   <Label htmlFor="userType" className="text-sm font-medium text-foreground">Tipo de Usuário</Label>
                   <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
-                    <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50">
-                      <SelectValue placeholder="Selecione o tipo" />
+                    <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50 group">
+                      <div className="flex items-center gap-2">
+                        {getUserTypeIcon(userType)}
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </div>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mestre" className="hover:bg-primary/10">Mestre</SelectItem>
-                      <SelectItem value="aluno" className="hover:bg-primary/10">Aluno</SelectItem>
-                      <SelectItem value="responsavel" className="hover:bg-primary/10">Responsável</SelectItem>
+                      <SelectItem value="mestre" className="hover:bg-primary/10">
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Mestre
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="aluno" className="hover:bg-primary/10">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4" />
+                          Aluno
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="responsavel" className="hover:bg-primary/10">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          Responsável
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                  <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50"
-                    required
-                  />
+                  <Label htmlFor="email" className={`text-sm font-medium transition-colors duration-200 ${
+                    focusedField === 'email' ? 'text-primary' : 'text-foreground'
+                  }`}>Email</Label>
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      className={`h-12 border-2 transition-all duration-300 bg-background/50 pr-10 ${
+                        focusedField === 'email' 
+                          ? 'border-primary shadow-lg shadow-primary/20 scale-[1.02]' 
+                          : 'hover:border-primary/50'
+                      }`}
+                      required
+                    />
+                    {email && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                  <Label htmlFor="password" className="text-sm font-medium text-foreground">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Sua senha"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50"
-                    required
-                  />
+                  <Label htmlFor="password" className={`text-sm font-medium transition-colors duration-200 ${
+                    focusedField === 'password' ? 'text-primary' : 'text-foreground'
+                  }`}>Senha</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Sua senha"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setFocusedField('password')}
+                      onBlur={() => setFocusedField(null)}
+                      className={`h-12 border-2 transition-all duration-300 bg-background/50 pr-10 ${
+                        focusedField === 'password' 
+                          ? 'border-primary shadow-lg shadow-primary/20 scale-[1.02]' 
+                          : 'hover:border-primary/50'
+                      }`}
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-primary/10"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? 
+                        <EyeOff className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /> : 
+                        <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                      }
+                    </Button>
+                  </div>
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-gradient-primary hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-lg font-medium shadow-primary animate-fade-in"
+                  className="w-full h-12 bg-gradient-primary hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-lg font-medium shadow-primary animate-fade-in group relative overflow-hidden"
                   style={{ animationDelay: '0.5s' }}
                   disabled={isLoading}
                 >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                   {isLoading ? (
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 relative z-10">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       <span>Entrando...</span>
                     </div>
-                  ) : "Entrar"}
+                  ) : (
+                    <span className="relative z-10">Entrar</span>
+                  )}
                 </Button>
 
                 <div className="relative animate-fade-in" style={{ animationDelay: '0.6s' }}>
