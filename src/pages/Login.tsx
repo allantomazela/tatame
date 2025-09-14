@@ -58,35 +58,46 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = await signIn(email, password);
-    
-    if (!error) {
-      const from = location.state?.from?.pathname || '/dashboard';
-      navigate(from, { replace: true });
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (!error) {
+        // Aguardar um pouco para o estado de autenticação ser atualizado
+        setTimeout(() => {
+          const from = location.state?.from?.pathname || '/dashboard';
+          navigate(from, { replace: true });
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = await signUp(email, password, {
-      fullName,
-      userType,
-      phone
-    });
-    
-    if (!error) {
-      setActiveTab("login");
-      setEmail("");
-      setPassword("");
-      setFullName("");
-      setPhone("");
+    try {
+      const { error } = await signUp(email, password, {
+        fullName,
+        userType,
+        phone
+      });
+      
+      if (!error) {
+        setActiveTab("login");
+        setEmail("");
+        setPassword("");
+        setFullName("");
+        setPhone("");
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleGoogleLogin = async () => {

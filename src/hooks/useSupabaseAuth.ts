@@ -124,7 +124,6 @@ export function useSupabaseAuth() {
     try {
       console.log('Attempting signup with:', { email, userData });
       
-      // Simplify the signup - remove emailRedirectTo temporarily
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -141,12 +140,23 @@ export function useSupabaseAuth() {
 
       if (error) {
         console.error('Signup error details:', error);
+        
+        // Melhor tratamento de erros específicos
+        let errorMessage = error.message;
+        if (error.message.includes('User already registered')) {
+          errorMessage = 'Este email já está cadastrado. Tente fazer login ou use outro email.';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'Email inválido. Verifique o formato do email.';
+        } else if (error.message.includes('Password')) {
+          errorMessage = 'Senha muito fraca. Use pelo menos 6 caracteres.';
+        }
+        
         toast({
           title: "Erro no cadastro",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive"
         });
-        return { error: error.message };
+        return { error: errorMessage };
       }
 
       if (data.user && !data.session) {
@@ -164,6 +174,7 @@ export function useSupabaseAuth() {
       return {};
     } catch (error) {
       const errorMessage = 'Erro inesperado no cadastro';
+      console.error('Unexpected signup error:', error);
       toast({
         title: "Erro no cadastro",
         description: errorMessage,
