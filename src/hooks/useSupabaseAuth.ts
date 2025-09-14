@@ -122,22 +122,25 @@ export function useSupabaseAuth() {
     phone?: string;
   }): Promise<{ error?: string }> => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      console.log('Attempting signup with:', { email, userData });
       
+      // Simplify the signup - remove emailRedirectTo temporarily
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: {
             full_name: userData.fullName,
             user_type: userData.userType,
-            phone: userData.phone
+            phone: userData.phone || ''
           }
         }
       });
 
+      console.log('Signup response:', { data, error });
+
       if (error) {
+        console.error('Signup error details:', error);
         toast({
           title: "Erro no cadastro",
           description: error.message,
