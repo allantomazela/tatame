@@ -4,20 +4,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Shield, Users, User } from "lucide-react";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { UserType } from "@/lib/supabase";
 import heroImage from "@/assets/taekwondo-hero.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState<"mestre" | "aluno" | "responsavel">("mestre");
-  const [isLoading, setIsLoading] = useState(false);
+  const [userType, setUserType] = useState<UserType>("mestre");
   const [showPassword, setShowPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const location = useLocation();
+  const { signIn, signInWithGoogle, isAuthenticated } = useSupabaseAuth();
+
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    const from = location.state?.from?.pathname || '/dashboard';
+    navigate(from, { replace: true });
+    return null;
+  }
 
   const getUserTypeIcon = (type: string) => {
     switch (type) {
@@ -32,15 +42,19 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulação de login
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const result = await signIn(email, password);
     
-    toast({
-      title: "Login realizado com sucesso!",
-      description: `Bem-vindo ao sistema, ${userType}!`,
-    });
+    if (result.success) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+    
+    setIsLoading(false);
+  };
 
-    navigate("/dashboard", { state: { userType } });
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    await signInWithGoogle();
     setIsLoading(false);
   };
 
@@ -224,6 +238,7 @@ export default function Login() {
                   className="w-full h-12 border-2 hover:bg-muted/50 hover:border-primary/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group animate-fade-in"
                   style={{ animationDelay: '0.7s' }}
                   disabled={isLoading}
+                  onClick={handleGoogleLogin}
                 >
                   <svg className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform duration-200" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
