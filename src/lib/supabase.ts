@@ -18,8 +18,10 @@ const fallbackKey = 'YOUR_ANON_KEY_HERE'
 const finalUrl = supabaseUrl || fallbackUrl
 const finalKey = supabaseAnonKey || fallbackKey
 
-console.log('Supabase URL:', finalUrl)
-console.log('Has Supabase Key:', !!finalKey)
+console.log('🔧 Supabase Configuration:')
+console.log('URL:', finalUrl)
+console.log('Has Key:', !!finalKey)
+console.log('Using fallback?', !supabaseUrl || !supabaseAnonKey)
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('⚠️ Using fallback Supabase credentials. Please configure your environment variables.')
