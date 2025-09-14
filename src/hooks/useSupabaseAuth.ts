@@ -23,6 +23,11 @@ export function useSupabaseAuth() {
   const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
+    // Temporariamente desabilitado para resolver recursão infinita
+    console.log('Profile fetch disabled temporarily due to RLS recursion');
+    setAuthState(prev => ({ ...prev, profile: null }));
+    return;
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
