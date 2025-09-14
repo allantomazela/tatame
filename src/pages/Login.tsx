@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,13 +23,26 @@ export default function Login() {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, signInWithGoogle, isAuthenticated } = useSupabaseAuth();
+  const { signIn, signUp, signInWithGoogle, isAuthenticated, loading } = useSupabaseAuth();
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    const from = location.state?.from?.pathname || '/dashboard';
-    navigate(from, { replace: true });
-    return null;
+  // Redirect if already authenticated using useEffect
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate, location]);
+
+  // Show loading while auth state is being determined
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-accent/5">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+          <span className="text-muted-foreground">Carregando...</span>
+        </div>
+      </div>
+    );
   }
 
   const getUserTypeIcon = (type: string) => {
