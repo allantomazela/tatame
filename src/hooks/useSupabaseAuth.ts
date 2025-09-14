@@ -23,6 +23,11 @@ export function useSupabaseAuth() {
   const { toast } = useToast();
 
   const fetchProfile = async (userId: string) => {
+    // Prevenir múltiplas chamadas simultâneas
+    if (authState.profile?.id === userId) {
+      return; // Já temos o perfil deste usuário
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -31,20 +36,29 @@ export function useSupabaseAuth() {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
         setAuthState(prev => ({ ...prev, profile: null }));
         return;
       }
 
       setAuthState(prev => ({ ...prev, profile: data }));
     } catch (error) {
-      console.error('Error fetching profile:', error);
       setAuthState(prev => ({ ...prev, profile: null }));
     }
   };
 
   useEffect(() => {
     let mounted = true;
+    let profileLoading = false;
+
+    const handleProfileFetch = async (userId: string) => {
+      if (!mounted || profileLoading || authState.profile?.id === userId) {
+        return;
+      }
+      
+      profileLoading = true;
+      await fetchProfile(userId);
+      profileLoading = false;
+    };
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -59,12 +73,7 @@ export function useSupabaseAuth() {
         }));
         
         if (session?.user && mounted) {
-          // Usar setTimeout para evitar loops
-          setTimeout(() => {
-            if (mounted) {
-              fetchProfile(session.user.id);
-            }
-          }, 0);
+          handleProfileFetch(session.user.id);
         } else if (mounted) {
           setAuthState(prev => ({ ...prev, profile: null }));
         }
@@ -87,11 +96,7 @@ export function useSupabaseAuth() {
       }));
       
       if (session?.user && mounted) {
-        setTimeout(() => {
-          if (mounted) {
-            fetchProfile(session.user.id);
-          }
-        }, 0);
+        handleProfileFetch(session.user.id);
       }
     };
 
