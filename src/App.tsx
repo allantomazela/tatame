@@ -7,7 +7,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Alunos from "./pages/Alunos";
+import AlunosGestao from "./pages/AlunosGestao";
 import Mensagens from "./pages/Mensagens";
 import Evolucao from "./pages/Evolucao";
 import NotFound from "./pages/NotFound";
@@ -30,7 +30,7 @@ const App = () => (
           } />
           <Route path="/alunos" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <Alunos />
+              <AlunosGestao />
             </ProtectedRoute>
           } />
           <Route path="/mensagens" element={
@@ -55,7 +55,7 @@ const App = () => (
           } />
           <Route path="/graduacoes" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <Alunos />
+              <AlunosGestao />
             </ProtectedRoute>
           } />
           <Route path="/agenda" element={

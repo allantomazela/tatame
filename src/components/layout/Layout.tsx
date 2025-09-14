@@ -1,52 +1,28 @@
-import { useState } from "react";
-import { Header } from "./Header";
-import { Sidebar } from "./Sidebar";
-import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 interface LayoutProps {
-  children: React.ReactNode;
-  userType?: "mestre" | "aluno" | "responsavel";
-  userName?: string;
+  children: ReactNode;
 }
 
-export function Layout({ children, userType = "mestre", userName = "Mestre Kim" }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
+export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
-      <Header 
-        userType={userType} 
-        userName={userName}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-      />
-      
-      <div className="flex">
-        <aside className="hidden lg:block">
-          <Sidebar userType={userType} isOpen={sidebarOpen} />
-        </aside>
-        
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div 
-              className="fixed inset-0 bg-black/50" 
-              onClick={() => setSidebarOpen(false)}
-            />
-            <div className="fixed left-0 top-16 h-full w-64 bg-white border-r shadow-lg">
-              <Sidebar userType={userType} isOpen={true} />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <main className="flex-1 flex flex-col">
+          <header className="h-14 flex items-center border-b bg-background px-4">
+            <SidebarTrigger />
+            <div className="ml-4">
+              <h1 className="text-lg font-semibold">Sistema Tatame</h1>
             </div>
-          </div>
-        )}
-        
-        <main className={cn(
-          "flex-1 transition-all duration-300 ease-in-out",
-          sidebarOpen ? "lg:ml-0" : "lg:ml-0"
-        )}>
-          <div className="container mx-auto p-6">
+          </header>
+          <div className="flex-1 p-6">
             {children}
           </div>
         </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
