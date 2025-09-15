@@ -643,7 +643,7 @@ export default function AlunosGestao() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                R$ {students.length > 0 ? (students.reduce((sum, s) => sum + (s.monthly_fee || 0), 0) / students.length).toFixed(0) : 0}
+                R$ {students.length > 0 ? (students.reduce((sum, s) => sum + (Number(s.monthly_fee) || 0), 0) / students.length).toFixed(0) : 0}
               </div>
             </CardContent>
           </Card>
@@ -775,8 +775,8 @@ export default function AlunosGestao() {
                   </div>
                   
                   <div className="pt-2">
-                    <Badge variant={student.monthly_fee === 0 ? "outline" : "secondary"}>
-                      {student.monthly_fee === 0 ? "Projeto Social" : `R$ ${student.monthly_fee.toFixed(2)}/mês`}
+                    <Badge variant={!student.monthly_fee || student.monthly_fee === 0 ? "outline" : "secondary"}>
+                      {!student.monthly_fee || student.monthly_fee === 0 ? "Projeto Social" : `R$ ${Number(student.monthly_fee).toFixed(2)}/mês`}
                     </Badge>
                   </div>
                 </CardContent>
