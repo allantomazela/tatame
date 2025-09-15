@@ -11,6 +11,11 @@ import AlunosGestao from "./pages/AlunosGestao";
 import Mensagens from "./pages/Mensagens";
 import Evolucao from "./pages/Evolucao";
 import Graduacoes from "./pages/Graduacoes";
+import Agenda from "./pages/Agenda";
+import Configuracoes from "./pages/Configuracoes";
+import Progresso from "./pages/Progresso";
+import Conquistas from "./pages/Conquistas";
+import Relatorios from "./pages/Relatorios";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,12 +51,12 @@ const App = () => (
           } />
           <Route path="/progresso" element={
             <ProtectedRoute>
-              <Evolucao />
+              <Progresso />
             </ProtectedRoute>
           } />
           <Route path="/conquistas" element={
             <ProtectedRoute>
-              <Evolucao />
+              <Conquistas />
             </ProtectedRoute>
           } />
           <Route path="/graduacoes" element={
@@ -61,17 +66,17 @@ const App = () => (
           } />
           <Route path="/agenda" element={
             <ProtectedRoute>
-              <Dashboard />
+              <Agenda />
             </ProtectedRoute>
           } />
           <Route path="/relatorios" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <Evolucao />
+              <Relatorios />
             </ProtectedRoute>
           } />
           <Route path="/configuracoes" element={
             <ProtectedRoute>
-              <Dashboard />
+              <Configuracoes />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
