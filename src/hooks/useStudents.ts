@@ -110,7 +110,7 @@ export function useStudents() {
       ].filter(Boolean).join(' | ');
 
       // Criar o perfil - vamos usar um ID gerado que não existe no auth.users
-      const profileId = `student_${crypto.randomUUID()}`;
+      const profileId = crypto.randomUUID();
       
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
