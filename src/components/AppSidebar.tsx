@@ -8,7 +8,8 @@ import {
   DollarSign, 
   BarChart3,
   Settings,
-  LogOut 
+  LogOut,
+  TrendingUp 
 } from "lucide-react"
 
 import {
@@ -29,6 +30,7 @@ const mainItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Alunos", url: "/alunos", icon: Users, requiredRole: "mestre" },
   { title: "Graduações", url: "/graduacoes", icon: Award, requiredRole: "mestre" },
+  { title: "Evolução", url: "/evolucao", icon: TrendingUp },
   { title: "Agenda", url: "/agenda", icon: Calendar },
   { title: "Mensagens", url: "/mensagens", icon: MessageSquare },
 ]

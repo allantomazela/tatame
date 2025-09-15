@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   LineChart,
   Line,
@@ -27,7 +28,8 @@ import {
   BarChart,
   Bar,
   Area,
-  AreaChart
+  AreaChart,
+  ComposedChart
 } from "recharts";
 import { 
   TrendingUp, 
@@ -47,7 +49,12 @@ import {
   Swords,
   Heart,
   Star,
-  TrendingDown
+  TrendingDown,
+  CheckCircle,
+  XCircle,
+  ArrowUp,
+  ArrowDown,
+  Minus
 } from "lucide-react";
 import { useStudents } from "@/hooks/useStudents";
 import { useStudentEvolution } from "@/hooks/useStudentEvolution";
@@ -67,18 +74,41 @@ const categoryColors = {
   competition: "hsl(var(--warning))"
 };
 
+// Poomsae por faixa
+const poomsaeByBelt = {
+  'branca': ['Taegeuk Il Jang'],
+  'amarela': ['Taegeuk Il Jang', 'Taegeuk I Jang'],
+  'laranja': ['Taegeuk I Jang', 'Taegeuk Sam Jang'],
+  'verde': ['Taegeuk Sam Jang', 'Taegeuk Sa Jang'],
+  'azul': ['Taegeuk Sa Jang', 'Taegeuk Oh Jang'],
+  'vermelha': ['Taegeuk Oh Jang', 'Taegeuk Yuk Jang'],
+  'preta': ['Taegeuk Yuk Jang', 'Taegeuk Chil Jang', 'Taegeuk Pal Jang', 'Koryo', 'Keumgang', 'Taebaek']
+};
+
+// Movimentos básicos por categoria
+const movementsByCategory = {
+  'Técnicas Básicas': ['Ap Chagi (Chute Frontal)', 'Dollyo Chagi (Chute Circular)', 'Yop Chagi (Chute Lateral)', 'Dwi Chagi (Chute de Costas)', 'Naeryo Chagi (Chute Descendente)'],
+  'Defesas': ['Arae Makki (Defesa Baixa)', 'Momtong Makki (Defesa Média)', 'Olgul Makki (Defesa Alta)', 'Sonnal Makki (Defesa com Lado da Mão)'],
+  'Socos': ['Jireugi (Soco Direto)', 'Sewo Jireugi (Soco Vertical)', 'Yeop Jireugi (Soco Lateral)'],
+  'Posições': ['Chunbi Seogi (Posição de Preparação)', 'Ap Seogi (Posição Frontal)', 'Dwi Seogi (Posição de Costas)', 'Juchum Seogi (Posição de Cavaleiro)']
+};
+
 export default function Evolucao() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
   const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isAchievementDialogOpen, setIsAchievementDialogOpen] = useState(false);
   const [isCompetitionDialogOpen, setIsCompetitionDialogOpen] = useState(false);
+  const [isPoomsaeDialogOpen, setIsPoomsaeDialogOpen] = useState(false);
   
   // Form states
   const [evaluationForm, setEvaluationForm] = useState<any>({});
   const [goalForm, setGoalForm] = useState<any>({});
   const [achievementForm, setAchievementForm] = useState<any>({});
   const [competitionForm, setCompetitionForm] = useState<any>({});
+  const [poomsaeForm, setPoomsaeForm] = useState<any>({
+    movements: {}
+  });
 
   const { students, loading: studentsLoading } = useStudents();
   const { profile } = useSupabaseAuth();
@@ -96,6 +126,7 @@ export default function Evolucao() {
   } = useStudentEvolution(selectedStudentId);
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const currentPoomsae = selectedStudent ? poomsaeByBelt[selectedStudent.belt_color as keyof typeof poomsaeByBelt] || [] : [];
 
   // Calcular dados para gráficos
   const evolutionChartData = useMemo(() => {
@@ -110,6 +141,37 @@ export default function Evolucao() {
         combate: ((evaluation.sparring_technique || 0) + (evaluation.sparring_strategy || 0) + (evaluation.sparring_defense || 0)) / 3,
         fisico: ((evaluation.balance_score || 0) + (evaluation.flexibility_score || 0) + (evaluation.strength_score || 0) + (evaluation.speed_score || 0)) / 4,
         mental: ((evaluation.discipline_score || 0) + (evaluation.respect_score || 0) + (evaluation.focus_score || 0) + (evaluation.self_confidence || 0)) / 4
+      }));
+  }, [evaluations]);
+
+  // Dados específicos para Poomsae
+  const poomsaeProgressData = useMemo(() => {
+    if (!evaluations.length) return [];
+    
+    return evaluations
+      .slice(0, 8)
+      .reverse()
+      .map(evaluation => ({
+        date: new Date(evaluation.evaluation_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        poomsae: evaluation.poomsae_score || 0,
+        precisao: evaluation.precision_score || 0,
+        posicoes: evaluation.stances_score || 0
+      }));
+  }, [evaluations]);
+
+  // Dados específicos para Combate
+  const combatProgressData = useMemo(() => {
+    if (!evaluations.length) return [];
+    
+    return evaluations
+      .slice(0, 8)
+      .reverse()
+      .map(evaluation => ({
+        date: new Date(evaluation.evaluation_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        tecnica: evaluation.sparring_technique || 0,
+        estrategia: evaluation.sparring_strategy || 0,
+        defesa: evaluation.sparring_defense || 0,
+        controle: evaluation.sparring_control || 0
       }));
   }, [evaluations]);
 
@@ -564,90 +626,253 @@ export default function Evolucao() {
             </div>
 
             {evolutionChartData.length > 0 && (
-              <div className="grid gap-6 lg:grid-cols-2">
-                {/* Evolução por Categoria */}
+              <>
+                <div className="grid gap-6 lg:grid-cols-2">
+                  {/* Evolução por Categoria */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Evolução por Categoria</CardTitle>
+                      <CardDescription>
+                        Progresso nas diferentes áreas ao longo do tempo
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <AreaChart data={evolutionChartData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis domain={[0, 10]} />
+                          <Tooltip />
+                          <Area 
+                            type="monotone" 
+                            dataKey="tecnicas" 
+                            stackId="1"
+                            stroke="hsl(var(--primary))" 
+                            fill="hsl(var(--primary))"
+                            fillOpacity={0.3}
+                            name="Técnicas"
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="combate" 
+                            stackId="2"
+                            stroke="hsl(var(--secondary))" 
+                            fill="hsl(var(--secondary))"
+                            fillOpacity={0.3}
+                            name="Combate"
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="fisico" 
+                            stackId="3"
+                            stroke="hsl(var(--accent))" 
+                            fill="hsl(var(--accent))"
+                            fillOpacity={0.3}
+                            name="Físico"
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="mental" 
+                            stackId="4"
+                            stroke="hsl(var(--warning))" 
+                            fill="hsl(var(--warning))"
+                            fillOpacity={0.3}
+                            name="Mental"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  {/* Radar de Habilidades */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Perfil Atual de Habilidades</CardTitle>
+                      <CardDescription>
+                        Avaliação detalhada por área técnica
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <RadarChart data={radarData}>
+                          <PolarGrid />
+                          <PolarAngleAxis dataKey="categoria" />
+                          <PolarRadiusAxis domain={[0, 10]} />
+                          <Radar
+                            name="Habilidades"
+                            dataKey="valor"
+                            stroke="hsl(var(--primary))"
+                            fill="hsl(var(--primary))"
+                            fillOpacity={0.2}
+                            strokeWidth={2}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Seção Específica de Poomsae */}
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center">
+                          <BookOpen className="h-5 w-5 mr-2" />
+                          Evolução em Poomsae
+                        </CardTitle>
+                        <CardDescription>
+                          Progressão específica em Poomsae e precisão
+                        </CardDescription>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setIsPoomsaeDialogOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Avaliar Movimentos
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <ComposedChart data={poomsaeProgressData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis domain={[0, 10]} />
+                          <Tooltip />
+                          <Area
+                            type="monotone"
+                            dataKey="poomsae"
+                            fill="hsl(var(--primary))"
+                            fillOpacity={0.3}
+                            stroke="hsl(var(--primary))"
+                            strokeWidth={2}
+                            name="Poomsae Geral"
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="precisao"
+                            stroke="hsl(var(--secondary))"
+                            strokeWidth={2}
+                            name="Precisão"
+                            dot={{ fill: "hsl(var(--secondary))" }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="posicoes"
+                            stroke="hsl(var(--accent))"
+                            strokeWidth={2}
+                            name="Posições"
+                            dot={{ fill: "hsl(var(--accent))" }}
+                          />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Swords className="h-5 w-5 mr-2" />
+                        Evolução em Combate
+                      </CardTitle>
+                      <CardDescription>
+                        Progressão específica em técnicas de combate
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={combatProgressData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis domain={[0, 10]} />
+                          <Tooltip />
+                          <Bar dataKey="tecnica" fill="hsl(var(--primary))" name="Técnica" />
+                          <Bar dataKey="estrategia" fill="hsl(var(--secondary))" name="Estratégia" />
+                          <Bar dataKey="defesa" fill="hsl(var(--accent))" name="Defesa" />
+                          <Bar dataKey="controle" fill="hsl(var(--warning))" name="Controle" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Poomsae da Faixa Atual */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Evolução por Categoria</CardTitle>
+                    <CardTitle>Poomsae da Faixa {selectedStudent?.belt_color}</CardTitle>
                     <CardDescription>
-                      Progresso nas diferentes áreas ao longo do tempo
+                      Movimentos e técnicas específicas para a faixa atual
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <AreaChart data={evolutionChartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis domain={[0, 10]} />
-                        <Tooltip />
-                        <Area 
-                          type="monotone" 
-                          dataKey="tecnicas" 
-                          stackId="1"
-                          stroke="hsl(var(--primary))" 
-                          fill="hsl(var(--primary))"
-                          fillOpacity={0.3}
-                          name="Técnicas"
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="combate" 
-                          stackId="2"
-                          stroke="hsl(var(--secondary))" 
-                          fill="hsl(var(--secondary))"
-                          fillOpacity={0.3}
-                          name="Combate"
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="fisico" 
-                          stackId="3"
-                          stroke="hsl(var(--accent))" 
-                          fill="hsl(var(--accent))"
-                          fillOpacity={0.3}
-                          name="Físico"
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="mental" 
-                          stackId="4"
-                          stroke="hsl(var(--warning))" 
-                          fill="hsl(var(--warning))"
-                          fillOpacity={0.3}
-                          name="Mental"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <CardContent className="space-y-4">
+                    {currentPoomsae.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {currentPoomsae.map((poomsae, index) => (
+                          <div key={index} className="p-4 border rounded-lg">
+                            <h4 className="font-medium mb-2">{poomsae}</h4>
+                            <div className="space-y-2">
+                              {Object.entries(movementsByCategory).map(([category, movements]) => (
+                                <div key={category}>
+                                  <p className="text-sm font-medium text-muted-foreground mb-1">{category}:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {movements.slice(0, 3).map((movement, idx) => (
+                                      <Badge key={idx} variant="outline" className="text-xs">
+                                        {movement}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-4">
+                        Nenhum Poomsae específico encontrado para esta faixa.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
 
-                {/* Radar de Habilidades */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Perfil Atual de Habilidades</CardTitle>
-                    <CardDescription>
-                      Avaliação detalhada por área técnica
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <RadarChart data={radarData}>
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="categoria" />
-                        <PolarRadiusAxis domain={[0, 10]} />
-                        <Radar
-                          name="Habilidades"
-                          dataKey="valor"
-                          stroke="hsl(var(--primary))"
-                          fill="hsl(var(--primary))"
-                          fillOpacity={0.2}
-                          strokeWidth={2}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
+                {/* Indicadores de Progresso */}
+                <div className="grid gap-6 md:grid-cols-4">
+                  {[
+                    { label: 'Técnicas', value: getAverageScore('technical'), icon: BookOpen },
+                    { label: 'Combate', value: getAverageScore('combat'), icon: Swords },
+                    { label: 'Físico', value: getAverageScore('physical'), icon: Zap },
+                    { label: 'Mental', value: getAverageScore('mental'), icon: Brain }
+                  ].map(({ label, value, icon: Icon }) => (
+                    <Card key={label}>
+                      <CardContent className="flex items-center p-6">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 bg-primary/10 rounded-full">
+                            <Icon className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                            <p className="text-2xl font-bold">{value.toFixed(1)}</p>
+                            <div className="flex items-center mt-1">
+                              {value >= 8 ? (
+                                <ArrowUp className="h-4 w-4 text-green-500" />
+                              ) : value >= 6 ? (
+                                <Minus className="h-4 w-4 text-yellow-500" />
+                              ) : (
+                                <ArrowDown className="h-4 w-4 text-red-500" />
+                              )}
+                              <span className="text-xs text-muted-foreground ml-1">
+                                {value >= 8 ? 'Excelente' : value >= 6 ? 'Bom' : 'Precisa melhorar'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
 
             <div className="grid gap-6 lg:grid-cols-2">
@@ -1028,6 +1253,125 @@ export default function Evolucao() {
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog para Avaliar Movimentos de Poomsae */}
+        <Dialog open={isPoomsaeDialogOpen} onOpenChange={setIsPoomsaeDialogOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Avaliação de Poomsae - {selectedStudent?.profile?.full_name}</DialogTitle>
+              <DialogDescription>
+                Avalie os movimentos específicos do Poomsae para a faixa {selectedStudent?.belt_color}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Poomsae da Faixa */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Poomsae da Faixa Atual:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {currentPoomsae.map((poomsae, index) => (
+                    <Badge key={index} variant="secondary" className="text-sm">
+                      {poomsae}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Avaliação por Categoria de Movimento */}
+              <div className="space-y-6">
+                {Object.entries(movementsByCategory).map(([category, movements]) => (
+                  <div key={category} className="space-y-3">
+                    <h4 className="font-medium text-lg">{category}</h4>
+                    <div className="grid gap-4">
+                      {movements.map((movement, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <Checkbox
+                              checked={poomsaeForm.movements[movement]?.mastered || false}
+                              onCheckedChange={(checked) => 
+                                setPoomsaeForm(prev => ({
+                                  ...prev,
+                                  movements: {
+                                    ...prev.movements,
+                                    [movement]: {
+                                      ...prev.movements[movement],
+                                      mastered: checked
+                                    }
+                                  }
+                                }))
+                              }
+                            />
+                            <span className="text-sm font-medium">{movement}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Label className="text-xs">Nível (1-10):</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="10"
+                              className="w-16 h-8"
+                              value={poomsaeForm.movements[movement]?.score || ''}
+                              onChange={(e) => 
+                                setPoomsaeForm(prev => ({
+                                  ...prev,
+                                  movements: {
+                                    ...prev.movements,
+                                    [movement]: {
+                                      ...prev.movements[movement],
+                                      score: parseInt(e.target.value) || 1
+                                    }
+                                  }
+                                }))
+                              }
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Observações Específicas */}
+              <div className="space-y-2">
+                <Label>Observações sobre Poomsae</Label>
+                <Textarea
+                  placeholder="Observações específicas sobre a execução dos Poomsae..."
+                  value={poomsaeForm.observations || ''}
+                  onChange={(e) => setPoomsaeForm(prev => ({
+                    ...prev,
+                    observations: e.target.value
+                  }))}
+                />
+              </div>
+
+              {/* Pontos para Focar */}
+              <div className="space-y-2">
+                <Label>Pontos para Focar na Próxima Aula</Label>
+                <Textarea
+                  placeholder="Movimentos específicos que precisam de mais prática..."
+                  value={poomsaeForm.focus_points || ''}
+                  onChange={(e) => setPoomsaeForm(prev => ({
+                    ...prev,
+                    focus_points: e.target.value
+                  }))}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsPoomsaeDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button className="bg-gradient-primary" onClick={() => {
+                  // Aqui você poderia salvar a avaliação específica de Poomsae
+                  console.log('Avaliação de Poomsae:', poomsaeForm);
+                  setIsPoomsaeDialogOpen(false);
+                }}>
+                  Salvar Avaliação
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
