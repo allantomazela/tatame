@@ -327,10 +327,9 @@ export default function Login() {
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent 
-                          className="z-[9999] !bg-card !border !border-border !shadow-lg min-w-full"
-                          align="start"
-                          side="bottom"
-                          avoidCollisions={false}
+                          className="bg-card border-border shadow-lg max-h-48 overflow-auto"
+                          position="popper"
+                          sideOffset={4}
                         >
                           <SelectItem value="aluno">
                             <div className="flex items-center gap-2">
