@@ -165,13 +165,22 @@ export default function Graduacoes() {
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o aluno" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-48 overflow-auto">
                         {studentsLoading ? (
                           <SelectItem value="" disabled>Carregando...</SelectItem>
+                        ) : students.length === 0 ? (
+                          <SelectItem value="" disabled>Nenhum aluno encontrado</SelectItem>
                         ) : (
                           students.map((student) => (
                             <SelectItem key={student.id} value={student.id}>
-                              {(student.profile as any)?.full_name} - {student.belt_color}
+                              <div className="flex items-center justify-between w-full">
+                                <span className="font-medium">
+                                  {(student.profile as any)?.full_name || 'Nome não disponível'}
+                                </span>
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  {getBeltLabel(student.belt_color)} - {student.belt_degree}º Grau
+                                </span>
+                              </div>
                             </SelectItem>
                           ))
                         )}
