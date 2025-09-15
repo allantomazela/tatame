@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import AlunosGestao from "./pages/AlunosGestao";
 import Mensagens from "./pages/Mensagens";
 import Evolucao from "./pages/Evolucao";
+import Graduacoes from "./pages/Graduacoes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,7 +56,7 @@ const App = () => (
           } />
           <Route path="/graduacoes" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <AlunosGestao />
+              <Graduacoes />
             </ProtectedRoute>
           } />
           <Route path="/agenda" element={
