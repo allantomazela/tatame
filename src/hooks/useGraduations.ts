@@ -37,7 +37,7 @@ export function useGraduations() {
           *,
           student:students!inner(
             *,
-            profile:profiles(*)
+            profile:profiles!students_profile_id_fkey(*)
           ),
           instructor:profiles!graduations_instructor_id_fkey(*)
         `)
