@@ -320,16 +320,17 @@ export default function Login() {
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 relative">
                       <Label htmlFor="signup-userType">Tipo de Usuário</Label>
                       <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
                         <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50">
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent 
-                          className="z-[100] bg-background border border-border shadow-lg max-h-60 overflow-auto"
-                          position="popper"
-                          sideOffset={4}
+                          className="z-[9999] !bg-card !border !border-border !shadow-lg min-w-full"
+                          align="start"
+                          side="bottom"
+                          avoidCollisions={false}
                         >
                           <SelectItem value="aluno">
                             <div className="flex items-center gap-2">
