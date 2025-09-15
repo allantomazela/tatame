@@ -499,11 +499,10 @@ export default function AlunosGestao() {
                         <Select 
                           value={formData.belt_color} 
                           onValueChange={(value) => {
-                            const selectedBelt = beltColors.find(belt => belt.value === value);
                             setFormData(prev => ({ 
                               ...prev, 
                               belt_color: value,
-                              belt_degree: selectedBelt?.degree || 1
+                              belt_degree: 1
                             }));
                           }}
                         >
