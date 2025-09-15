@@ -37,11 +37,12 @@ export function ProtectedRoute({
     )
   }
 
-  if (!user || !profile) {
+  if (!user) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />
   }
 
-  if (allowedUserTypes && !allowedUserTypes.includes(profile.user_type)) {
+  // Se não tem perfil mas tem usuário, permitir acesso (perfil pode ser opcional)
+  if (allowedUserTypes && profile && !allowedUserTypes.includes(profile.user_type)) {
     return <Navigate to="/unauthorized" replace />
   }
 

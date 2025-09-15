@@ -41,15 +41,20 @@ export function useSupabaseAuth() {
         .maybeSingle();
 
       if (error) {
-        setAuthState(prev => ({ ...prev, profile: null }));
+        console.error('Profile fetch error:', error);
+        setAuthState(prev => ({ ...prev, profile: null, loading: false }));
         return;
       }
 
       if (data) {
-        setAuthState(prev => ({ ...prev, profile: data }));
+        setAuthState(prev => ({ ...prev, profile: data, loading: false }));
+      } else {
+        // Usuário sem perfil
+        setAuthState(prev => ({ ...prev, profile: null, loading: false }));
       }
     } catch (error) {
-      setAuthState(prev => ({ ...prev, profile: null }));
+      console.error('Profile fetch catch:', error);
+      setAuthState(prev => ({ ...prev, profile: null, loading: false }));
     }
   };
 
