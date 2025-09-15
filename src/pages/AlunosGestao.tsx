@@ -57,12 +57,15 @@ export default function AlunosGestao() {
     phone: "",
     birth_date: "",
     street: "",
+    street_number: "",
     neighborhood: "",
     postal_code: "",
     city: "",
     state: "",
     address_complement: "",
-    emergency_contact: "",
+    emergency_contact_name: "",
+    emergency_contact_phone: "",
+    emergency_contact_relationship: "",
     belt_color: "branca",
     belt_degree: 1,
     monthly_fee: 150,
@@ -127,12 +130,15 @@ export default function AlunosGestao() {
       phone: "",
       birth_date: "",
       street: "",
+      street_number: "",
       neighborhood: "",
       postal_code: "",
       city: "",
       state: "",
       address_complement: "",
-      emergency_contact: "",
+      emergency_contact_name: "",
+      emergency_contact_phone: "",
+      emergency_contact_relationship: "",
       belt_color: "branca",
       belt_degree: 1,
       monthly_fee: 150,
@@ -146,18 +152,23 @@ export default function AlunosGestao() {
     setEditingStudent(student.id);
     // Parse existing address back into components if it exists
     const addressParts = student.profile?.address?.split(', ') || [];
+    const emergencyParts = student.profile?.emergency_contact?.split(' | ') || [];
+    
     setFormData({
       full_name: student.profile?.full_name || "",
       email: student.profile?.email || "",
       phone: student.profile?.phone || "",
       birth_date: student.profile?.birth_date || "",
-      street: addressParts[0] || "",
-      neighborhood: addressParts[1] || "",
-      postal_code: addressParts[2] || "",
+      street: addressParts[0]?.split(', ')[0] || "",
+      street_number: addressParts[0]?.split(', ')[1] || "",
+      neighborhood: addressParts[2] || "",
+      postal_code: addressParts[5] || "",
       city: addressParts[3] || "",
       state: addressParts[4] || "",
-      address_complement: addressParts[5] || "",
-      emergency_contact: student.profile?.emergency_contact || "",
+      address_complement: addressParts[1] || "",
+      emergency_contact_name: emergencyParts[0] || "",
+      emergency_contact_phone: emergencyParts[1] || "",
+      emergency_contact_relationship: emergencyParts[2] || "",
       belt_color: student.belt_color,
       belt_degree: student.belt_degree,
       monthly_fee: student.monthly_fee || 150,
@@ -325,14 +336,24 @@ export default function AlunosGestao() {
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Endereço Completo</Label>
                   <div className="grid gap-3 p-4 border rounded-lg bg-muted/10">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="street">Rua/Avenida *</Label>
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="street">Nome da Rua *</Label>
                         <Input
                           id="street"
                           value={formData.street || ""}
                           onChange={(e) => setFormData(prev => ({ ...prev, street: e.target.value }))}
-                          placeholder="Nome da rua e número"
+                          placeholder="Nome completo da rua ou avenida"
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="street_number">Número *</Label>
+                        <Input
+                          id="street_number"
+                          value={formData.street_number || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, street_number: e.target.value }))}
+                          placeholder="123"
                         />
                       </div>
                       <div className="space-y-2">
@@ -342,6 +363,7 @@ export default function AlunosGestao() {
                           value={formData.neighborhood || ""}
                           onChange={(e) => setFormData(prev => ({ ...prev, neighborhood: e.target.value }))}
                           placeholder="Nome do bairro"
+                          className="w-full"
                         />
                       </div>
                     </div>
@@ -366,12 +388,43 @@ export default function AlunosGestao() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="state">Estado *</Label>
-                        <Input
-                          id="state"
-                          value={formData.state || ""}
-                          onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                          placeholder="SP"
-                        />
+                        <Select 
+                          value={formData.state || ""} 
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, state: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="UF" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="AC">AC - Acre</SelectItem>
+                            <SelectItem value="AL">AL - Alagoas</SelectItem>
+                            <SelectItem value="AP">AP - Amapá</SelectItem>
+                            <SelectItem value="AM">AM - Amazonas</SelectItem>
+                            <SelectItem value="BA">BA - Bahia</SelectItem>
+                            <SelectItem value="CE">CE - Ceará</SelectItem>
+                            <SelectItem value="DF">DF - Distrito Federal</SelectItem>
+                            <SelectItem value="ES">ES - Espírito Santo</SelectItem>
+                            <SelectItem value="GO">GO - Goiás</SelectItem>
+                            <SelectItem value="MA">MA - Maranhão</SelectItem>
+                            <SelectItem value="MT">MT - Mato Grosso</SelectItem>
+                            <SelectItem value="MS">MS - Mato Grosso do Sul</SelectItem>
+                            <SelectItem value="MG">MG - Minas Gerais</SelectItem>
+                            <SelectItem value="PA">PA - Pará</SelectItem>
+                            <SelectItem value="PB">PB - Paraíba</SelectItem>
+                            <SelectItem value="PR">PR - Paraná</SelectItem>
+                            <SelectItem value="PE">PE - Pernambuco</SelectItem>
+                            <SelectItem value="PI">PI - Piauí</SelectItem>
+                            <SelectItem value="RJ">RJ - Rio de Janeiro</SelectItem>
+                            <SelectItem value="RN">RN - Rio Grande do Norte</SelectItem>
+                            <SelectItem value="RS">RS - Rio Grande do Sul</SelectItem>
+                            <SelectItem value="RO">RO - Rondônia</SelectItem>
+                            <SelectItem value="RR">RR - Roraima</SelectItem>
+                            <SelectItem value="SC">SC - Santa Catarina</SelectItem>
+                            <SelectItem value="SP">SP - São Paulo</SelectItem>
+                            <SelectItem value="SE">SE - Sergipe</SelectItem>
+                            <SelectItem value="TO">TO - Tocantins</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -380,7 +433,7 @@ export default function AlunosGestao() {
                         id="address_complement"
                         value={formData.address_complement || ""}
                         onChange={(e) => setFormData(prev => ({ ...prev, address_complement: e.target.value }))}
-                        placeholder="Apartamento, casa, sala, etc."
+                        placeholder="Apartamento, casa, sala, bloco, etc."
                       />
                     </div>
                   </div>
@@ -388,15 +441,37 @@ export default function AlunosGestao() {
 
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Contato de Emergência</Label>
-                  <div className="grid grid-cols-1 gap-3 p-4 border rounded-lg bg-muted/10">
-                    <Textarea
-                      id="emergency_contact"
-                      value={formData.emergency_contact || ""}
-                      onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact: e.target.value }))}
-                      placeholder="Informações completas para emergência:&#10;Nome: &#10;Parentesco: &#10;Telefone: &#10;Telefone alternativo: &#10;Endereço se diferente:"
-                      rows={5}
-                      className="min-h-[120px]"
-                    />
+                  <div className="grid gap-3 p-4 border rounded-lg bg-muted/10">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="emergency_contact_name">Nome Completo *</Label>
+                        <Input
+                          id="emergency_contact_name"
+                          value={formData.emergency_contact_name || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact_name: e.target.value }))}
+                          placeholder="Nome da pessoa para contato"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="emergency_contact_phone">Telefone *</Label>
+                        <Input
+                          id="emergency_contact_phone"
+                          value={formData.emergency_contact_phone || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact_phone: e.target.value }))}
+                          placeholder="(11) 99999-9999"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="emergency_contact_relationship">Parentesco e informações adicionais</Label>
+                      <Textarea
+                        id="emergency_contact_relationship"
+                        value={formData.emergency_contact_relationship || ""}
+                        onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact_relationship: e.target.value }))}
+                        placeholder="Ex: Mãe, telefone alternativo, endereço se diferente..."
+                        rows={3}
+                      />
+                    </div>
                   </div>
                 </div>
                 

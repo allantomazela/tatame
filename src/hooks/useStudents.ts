@@ -11,23 +11,32 @@ export interface Student extends StudentRow {
 }
 
 export interface CreateStudentData {
+  // Personal information  
   full_name: string;
   email: string;
   phone?: string;
   birth_date?: string;
-  // Individual address fields
+  
+  // Address information
   street?: string;
+  street_number?: string;
   neighborhood?: string;
   postal_code?: string;
   city?: string;
   state?: string;
   address_complement?: string;
-  emergency_contact?: string;
+  
+  // Emergency contact
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  
+  // Academic information
   belt_color: string;
   belt_degree: number;
-  medical_info?: string;
   monthly_fee?: number;
   payment_due_date?: number;
+  medical_info?: string;
   date_joined: string;
 }
 
@@ -85,13 +94,20 @@ export function useStudents() {
 
       // Combine address fields into a single address string
       const fullAddress = [
-        studentData.street,
+        studentData.street && studentData.street_number ? `${studentData.street}, ${studentData.street_number}` : studentData.street,
+        studentData.address_complement,
         studentData.neighborhood,
-        studentData.postal_code,
         studentData.city,
         studentData.state,
-        studentData.address_complement
+        studentData.postal_code
       ].filter(Boolean).join(', ');
+      
+      // Combine emergency contact fields
+      const emergencyContact = [
+        studentData.emergency_contact_name,
+        studentData.emergency_contact_phone,
+        studentData.emergency_contact_relationship
+      ].filter(Boolean).join(' | ');
 
       // Criar o perfil com o ID especificado
       const { data: profileData, error: profileError } = await supabase
@@ -103,7 +119,7 @@ export function useStudents() {
           phone: studentData.phone || null,
           birth_date: studentData.birth_date || null,
           address: fullAddress || null,
-          emergency_contact: studentData.emergency_contact || null,
+          emergency_contact: emergencyContact || null,
           user_type: 'aluno'
         })
         .select()
@@ -178,11 +194,25 @@ export function useStudents() {
       }
 
       // Combine address fields if any are provided
-      const addressFields = [updates.street, updates.neighborhood, updates.postal_code, updates.city, updates.state, updates.address_complement].filter(Boolean);
+      const addressFields = [
+        updates.street && updates.street_number ? `${updates.street}, ${updates.street_number}` : updates.street,
+        updates.address_complement,
+        updates.neighborhood,
+        updates.city,
+        updates.state,
+        updates.postal_code
+      ].filter(Boolean);
       const fullAddress = addressFields.length > 0 ? addressFields.join(', ') : undefined;
+      
+      // Combine emergency contact fields for updates
+      const emergencyContact = [
+        updates.emergency_contact_name,
+        updates.emergency_contact_phone,
+        updates.emergency_contact_relationship
+      ].filter(Boolean).join(' | ');
 
       // Atualizar perfil se houver dados do perfil
-      if (updates.full_name || updates.email || updates.phone || updates.birth_date || fullAddress || updates.emergency_contact) {
+      if (updates.full_name || updates.email || updates.phone || updates.birth_date || fullAddress || updates.emergency_contact_name || updates.emergency_contact_phone || updates.emergency_contact_relationship) {
         const profileUpdates: Partial<Database['public']['Tables']['profiles']['Update']> = {};
         
         if (updates.full_name) profileUpdates.full_name = updates.full_name;
@@ -190,7 +220,7 @@ export function useStudents() {
         if (updates.phone !== undefined) profileUpdates.phone = updates.phone;
         if (updates.birth_date !== undefined) profileUpdates.birth_date = updates.birth_date;
         if (fullAddress !== undefined) profileUpdates.address = fullAddress;
-        if (updates.emergency_contact !== undefined) profileUpdates.emergency_contact = updates.emergency_contact;
+        if (emergencyContact !== undefined && emergencyContact !== '') profileUpdates.emergency_contact = emergencyContact;
 
         const { error: profileError } = await supabase
           .from('profiles')
