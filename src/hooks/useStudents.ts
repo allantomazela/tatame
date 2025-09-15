@@ -89,8 +89,8 @@ export function useStudents() {
 
   const createStudent = async (studentData: CreateStudentData) => {
     try {
-      // Primeiro gerar um UUID para o perfil
-      const profileId = crypto.randomUUID();
+      // Como não temos usuário real no auth, vamos criar o perfil sem especificar o ID
+      // O Supabase irá gerar automaticamente um UUID
 
       // Combine address fields into a single address string
       const fullAddress = [
@@ -109,7 +109,9 @@ export function useStudents() {
         studentData.emergency_contact_relationship
       ].filter(Boolean).join(' | ');
 
-      // Criar o perfil com o ID especificado
+      // Criar o perfil - vamos usar um ID gerado que não existe no auth.users
+      const profileId = `student_${crypto.randomUUID()}`;
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert({
