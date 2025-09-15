@@ -326,7 +326,7 @@ export default function Login() {
                         <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50">
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-50 bg-background border border-border shadow-lg max-h-60 overflow-auto">
                           <SelectItem value="aluno">
                             <div className="flex items-center gap-2">
                               <User className="w-4 h-4" />
