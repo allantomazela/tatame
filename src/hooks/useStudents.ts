@@ -22,6 +22,7 @@ export interface CreateStudentData {
   medical_info?: string;
   monthly_fee?: number;
   payment_due_date?: number;
+  date_joined: string;
 }
 
 export function useStudents() {
@@ -36,7 +37,14 @@ export function useStudents() {
         .from('students')
         .select(`
           *,
-          profile:profiles(*)
+          profiles!students_profile_id_fkey (
+            full_name,
+            email,
+            phone,
+            birth_date,
+            address,
+            emergency_contact
+          )
         `)
         .eq('active', true)
         .order('created_at', { ascending: false });
@@ -104,7 +112,8 @@ export function useStudents() {
           belt_degree: studentData.belt_degree,
           medical_info: studentData.medical_info || null,
           monthly_fee: studentData.monthly_fee || null,
-          payment_due_date: studentData.payment_due_date || 5
+          payment_due_date: studentData.payment_due_date || 5,
+          date_joined: studentData.date_joined
         })
         .select()
         .single();

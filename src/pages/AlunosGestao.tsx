@@ -62,16 +62,22 @@ export default function AlunosGestao() {
     belt_degree: 1,
     monthly_fee: 150,
     medical_info: "",
-    payment_due_date: 5
+    payment_due_date: 5,
+    date_joined: new Date().toISOString().split('T')[0]
   });
 
   const beltColors = [
     { value: "branca", label: "Branca", color: "bg-gray-100" },
+    { value: "branca_ponta_amarela", label: "Branca Ponta Amarela", color: "bg-gradient-to-r from-gray-100 to-yellow-200" },
     { value: "amarela", label: "Amarela", color: "bg-yellow-200" },
-    { value: "laranja", label: "Laranja", color: "bg-orange-200" },
+    { value: "amarela_ponta_verde", label: "Amarela Ponta Verde", color: "bg-gradient-to-r from-yellow-200 to-green-200" },
     { value: "verde", label: "Verde", color: "bg-green-200" },
+    { value: "verde_ponta_azul", label: "Verde Ponta Azul", color: "bg-gradient-to-r from-green-200 to-blue-200" },
     { value: "azul", label: "Azul", color: "bg-blue-200" },
-    { value: "marrom", label: "Marrom", color: "bg-amber-600" },
+    { value: "azul_ponta_vermelha", label: "Azul Ponta Vermelha", color: "bg-gradient-to-r from-blue-200 to-red-200" },
+    { value: "vermelha", label: "Vermelha", color: "bg-red-200" },
+    { value: "vermelha_ponta_preta", label: "Vermelha Ponta Preta", color: "bg-gradient-to-r from-red-200 to-black" },
+    { value: "prata_ponta_branca", label: "Prata Ponta Branca", color: "bg-gradient-to-r from-gray-400 to-gray-100" },
     { value: "preta", label: "Preta", color: "bg-black text-white" },
   ];
 
@@ -121,7 +127,8 @@ export default function AlunosGestao() {
       belt_degree: 1,
       monthly_fee: 150,
       medical_info: "",
-      payment_due_date: 5
+      payment_due_date: 5,
+      date_joined: new Date().toISOString().split('T')[0]
     });
   };
 
@@ -138,7 +145,8 @@ export default function AlunosGestao() {
       belt_degree: student.belt_degree,
       monthly_fee: student.monthly_fee || 150,
       medical_info: student.medical_info || "",
-      payment_due_date: student.payment_due_date || 5
+      payment_due_date: student.payment_due_date || 5,
+      date_joined: student.date_joined || new Date().toISOString().split('T')[0]
     });
     setIsDialogOpen(true);
   };
@@ -297,24 +305,32 @@ export default function AlunosGestao() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="address">Endereço</Label>
-                  <Input
-                    id="address"
-                    value={formData.address || ""}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    placeholder="Rua, número, bairro, cidade"
-                  />
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Endereço Completo</Label>
+                  <div className="grid grid-cols-1 gap-3 p-4 border rounded-lg bg-muted/10">
+                    <Textarea
+                      id="address"
+                      value={formData.address || ""}
+                      onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                      placeholder="Digite o endereço completo:&#10;Rua/Avenida, número&#10;Bairro, CEP&#10;Cidade - Estado"
+                      rows={4}
+                      className="min-h-[100px]"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_contact">Contato de Emergência</Label>
-                  <Input
-                    id="emergency_contact"
-                    value={formData.emergency_contact || ""}
-                    onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact: e.target.value }))}
-                    placeholder="Nome e telefone para emergências"
-                  />
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Contato de Emergência</Label>
+                  <div className="grid grid-cols-1 gap-3 p-4 border rounded-lg bg-muted/10">
+                    <Textarea
+                      id="emergency_contact"
+                      value={formData.emergency_contact || ""}
+                      onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact: e.target.value }))}
+                      placeholder="Informações completas para emergência:&#10;Nome: &#10;Parentesco: &#10;Telefone: &#10;Telefone alternativo: &#10;Endereço se diferente:"
+                      rows={5}
+                      className="min-h-[120px]"
+                    />
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-4 gap-4">
