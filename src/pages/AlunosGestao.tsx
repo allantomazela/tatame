@@ -75,18 +75,18 @@ export default function AlunosGestao() {
   });
 
   const beltColors = [
-    { value: "branca", label: "Branca", color: "bg-gray-100", visualColor: "linear-gradient(90deg, #ffffff 100%)" },
-    { value: "branca_ponta_amarela", label: "Branca Ponta Amarela", color: "bg-gradient-to-r from-white to-yellow-400", visualColor: "linear-gradient(90deg, #ffffff 80%, #fbbf24 100%)" },
-    { value: "amarela", label: "Amarela", color: "bg-yellow-400", visualColor: "linear-gradient(90deg, #fbbf24 100%)" },
-    { value: "amarela_ponta_verde", label: "Amarela Ponta Verde", color: "bg-gradient-to-r from-yellow-400 to-green-500", visualColor: "linear-gradient(90deg, #fbbf24 80%, #10b981 100%)" },
-    { value: "verde", label: "Verde", color: "bg-green-500", visualColor: "linear-gradient(90deg, #10b981 100%)" },
-    { value: "verde_ponta_azul", label: "Verde Ponta Azul", color: "bg-gradient-to-r from-green-500 to-blue-600", visualColor: "linear-gradient(90deg, #10b981 80%, #2563eb 100%)" },
-    { value: "azul", label: "Azul", color: "bg-blue-600", visualColor: "linear-gradient(90deg, #2563eb 100%)" },
-    { value: "azul_ponta_vermelha", label: "Azul Ponta Vermelha", color: "bg-gradient-to-r from-blue-600 to-red-600", visualColor: "linear-gradient(90deg, #2563eb 80%, #dc2626 100%)" },
-    { value: "vermelha", label: "Vermelha", color: "bg-red-600", visualColor: "linear-gradient(90deg, #dc2626 100%)" },
-    { value: "vermelha_ponta_preta", label: "Vermelha Ponta Preta", color: "bg-gradient-to-r from-red-600 to-black", visualColor: "linear-gradient(90deg, #dc2626 80%, #000000 100%)" },
-    { value: "prata_ponta_branca", label: "Prata Ponta Branca", color: "bg-gradient-to-r from-gray-400 to-white", visualColor: "linear-gradient(90deg, #9ca3af 80%, #ffffff 100%)" },
-    { value: "preta", label: "Preta", color: "bg-black", visualColor: "linear-gradient(90deg, #000000 100%)" }
+    { value: "branca", label: "Branca", color: "bg-gray-100", visualColor: "linear-gradient(90deg, #ffffff 100%)", degree: 1 },
+    { value: "branca_ponta_amarela", label: "Branca Ponta Amarela", color: "bg-gradient-to-r from-white to-yellow-400", visualColor: "linear-gradient(90deg, #ffffff 80%, #fbbf24 100%)", degree: 1 },
+    { value: "amarela", label: "Amarela", color: "bg-yellow-400", visualColor: "linear-gradient(90deg, #fbbf24 100%)", degree: 1 },
+    { value: "amarela_ponta_verde", label: "Amarela Ponta Verde", color: "bg-gradient-to-r from-yellow-400 to-green-500", visualColor: "linear-gradient(90deg, #fbbf24 80%, #10b981 100%)", degree: 1 },
+    { value: "verde", label: "Verde", color: "bg-green-500", visualColor: "linear-gradient(90deg, #10b981 100%)", degree: 1 },
+    { value: "verde_ponta_azul", label: "Verde Ponta Azul", color: "bg-gradient-to-r from-green-500 to-blue-600", visualColor: "linear-gradient(90deg, #10b981 80%, #2563eb 100%)", degree: 1 },
+    { value: "azul", label: "Azul", color: "bg-blue-600", visualColor: "linear-gradient(90deg, #2563eb 100%)", degree: 1 },
+    { value: "azul_ponta_vermelha", label: "Azul Ponta Vermelha", color: "bg-gradient-to-r from-blue-600 to-red-600", visualColor: "linear-gradient(90deg, #2563eb 80%, #dc2626 100%)", degree: 1 },
+    { value: "vermelha", label: "Vermelha", color: "bg-red-600", visualColor: "linear-gradient(90deg, #dc2626 100%)", degree: 1 },
+    { value: "vermelha_ponta_preta", label: "Vermelha Ponta Preta", color: "bg-gradient-to-r from-red-600 to-black", visualColor: "linear-gradient(90deg, #dc2626 80%, #000000 100%)", degree: 1 },
+    { value: "prata_ponta_branca", label: "Prata Ponta Branca", color: "bg-gradient-to-r from-gray-400 to-white", visualColor: "linear-gradient(90deg, #9ca3af 80%, #ffffff 100%)", degree: 1 },
+    { value: "preta", label: "Preta", color: "bg-black", visualColor: "linear-gradient(90deg, #000000 100%)", degree: 1 }
   ];
 
   const BeltColorDisplay = ({ belt, size = "default" }: { belt: typeof beltColors[0], size?: "small" | "default" | "large" }) => {
@@ -490,59 +490,85 @@ export default function AlunosGestao() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="belt_color">Graduação</Label>
-                    <Select 
-                      value={formData.belt_color} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, belt_color: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {beltColors.map((belt) => (
-                          <SelectItem key={belt.value} value={belt.value}>
-                            <div className="flex items-center space-x-3">
-                              <BeltColorDisplay belt={belt} size="small" />
-                              <span>{belt.label}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="belt_degree">Grau</Label>
-                    <Input
-                      id="belt_degree"
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={formData.belt_degree}
-                      onChange={(e) => setFormData(prev => ({ ...prev, belt_degree: parseInt(e.target.value) || 1 }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="monthly_fee">Mensalidade (R$)</Label>
-                    <Input
-                      id="monthly_fee"
-                      type="number"
-                      step="0.01"
-                      value={formData.monthly_fee || 0}
-                      onChange={(e) => setFormData(prev => ({ ...prev, monthly_fee: parseFloat(e.target.value) || 0 }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="payment_due_date">Vencimento</Label>
-                    <Input
-                      id="payment_due_date"
-                      type="number"
-                      min="1"
-                      max="31"
-                      value={formData.payment_due_date || 5}
-                      onChange={(e) => setFormData(prev => ({ ...prev, payment_due_date: parseInt(e.target.value) || 5 }))}
-                    />
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Graduação</Label>
+                  <div className="grid gap-3 p-4 border rounded-lg bg-muted/10">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="belt_color">Cor da Faixa</Label>
+                        <Select 
+                          value={formData.belt_color} 
+                          onValueChange={(value) => {
+                            const selectedBelt = beltColors.find(belt => belt.value === value);
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              belt_color: value,
+                              belt_degree: selectedBelt?.degree || 1
+                            }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {beltColors.map((belt) => (
+                              <SelectItem key={belt.value} value={belt.value}>
+                                <div className="flex items-center space-x-3">
+                                  <BeltColorDisplay belt={belt} size="small" />
+                                  <span>{belt.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="belt_degree">Grau</Label>
+                        <Input
+                          id="belt_degree"
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={formData.belt_degree}
+                          onChange={(e) => setFormData(prev => ({ ...prev, belt_degree: parseInt(e.target.value) || 1 }))}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="is_scholarship">Modalidade</Label>
+                        <Select 
+                          value={formData.monthly_fee === 0 ? "scholarship" : "regular"} 
+                          onValueChange={(value) => {
+                            if (value === "scholarship") {
+                              setFormData(prev => ({ ...prev, monthly_fee: 0, payment_due_date: undefined }));
+                            } else {
+                              setFormData(prev => ({ ...prev, monthly_fee: 150, payment_due_date: 5 }));
+                            }
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="regular">Aluno Regular</SelectItem>
+                            <SelectItem value="scholarship">Projeto Social (Isento)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {formData.monthly_fee !== 0 && (
+                        <div className="space-y-2">
+                          <Label htmlFor="monthly_fee">Mensalidade (R$)</Label>
+                          <Input
+                            id="monthly_fee"
+                            type="number"
+                            step="0.01"
+                            value={formData.monthly_fee || 0}
+                            onChange={(e) => setFormData(prev => ({ ...prev, monthly_fee: parseFloat(e.target.value) || 0 }))}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -697,7 +723,7 @@ export default function AlunosGestao() {
                             size="small" 
                           />
                           <span className="text-sm text-muted-foreground">
-                            {getBeltLabel(student.belt_color)} {student.belt_degree}º Grau
+                            {getBeltLabel(student.belt_color)} - {student.belt_degree}º Grau
                           </span>
                         </div>
                       </div>
@@ -749,13 +775,11 @@ export default function AlunosGestao() {
                     <span>Desde: {new Date(student.date_joined).toLocaleDateString('pt-BR')}</span>
                   </div>
                   
-                  {student.monthly_fee && (
-                    <div className="pt-2">
-                      <Badge variant="secondary">
-                        R$ {student.monthly_fee.toFixed(2)}/mês
-                      </Badge>
-                    </div>
-                  )}
+                  <div className="pt-2">
+                    <Badge variant={student.monthly_fee === 0 ? "outline" : "secondary"}>
+                      {student.monthly_fee === 0 ? "Projeto Social" : `R$ ${student.monthly_fee.toFixed(2)}/mês`}
+                    </Badge>
+                  </div>
                 </CardContent>
               </Card>
             ))}
