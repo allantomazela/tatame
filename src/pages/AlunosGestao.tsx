@@ -56,7 +56,12 @@ export default function AlunosGestao() {
     email: "",
     phone: "",
     birth_date: "",
-    address: "",
+    street: "",
+    neighborhood: "",
+    postal_code: "",
+    city: "",
+    state: "",
+    address_complement: "",
     emergency_contact: "",
     belt_color: "branca",
     belt_degree: 1,
@@ -121,7 +126,12 @@ export default function AlunosGestao() {
       email: "",
       phone: "",
       birth_date: "",
-      address: "",
+      street: "",
+      neighborhood: "",
+      postal_code: "",
+      city: "",
+      state: "",
+      address_complement: "",
       emergency_contact: "",
       belt_color: "branca",
       belt_degree: 1,
@@ -134,12 +144,19 @@ export default function AlunosGestao() {
 
   const openEditDialog = (student: any) => {
     setEditingStudent(student.id);
+    // Parse existing address back into components if it exists
+    const addressParts = student.profile?.address?.split(', ') || [];
     setFormData({
       full_name: student.profile?.full_name || "",
       email: student.profile?.email || "",
       phone: student.profile?.phone || "",
       birth_date: student.profile?.birth_date || "",
-      address: student.profile?.address || "",
+      street: addressParts[0] || "",
+      neighborhood: addressParts[1] || "",
+      postal_code: addressParts[2] || "",
+      city: addressParts[3] || "",
+      state: addressParts[4] || "",
+      address_complement: addressParts[5] || "",
       emergency_contact: student.profile?.emergency_contact || "",
       belt_color: student.belt_color,
       belt_degree: student.belt_degree,
@@ -307,15 +324,65 @@ export default function AlunosGestao() {
 
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Endereço Completo</Label>
-                  <div className="grid grid-cols-1 gap-3 p-4 border rounded-lg bg-muted/10">
-                    <Textarea
-                      id="address"
-                      value={formData.address || ""}
-                      onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                      placeholder="Digite o endereço completo:&#10;Rua/Avenida, número&#10;Bairro, CEP&#10;Cidade - Estado"
-                      rows={4}
-                      className="min-h-[100px]"
-                    />
+                  <div className="grid gap-3 p-4 border rounded-lg bg-muted/10">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="street">Rua/Avenida *</Label>
+                        <Input
+                          id="street"
+                          value={formData.street || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, street: e.target.value }))}
+                          placeholder="Nome da rua e número"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="neighborhood">Bairro *</Label>
+                        <Input
+                          id="neighborhood"
+                          value={formData.neighborhood || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, neighborhood: e.target.value }))}
+                          placeholder="Nome do bairro"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="postal_code">CEP *</Label>
+                        <Input
+                          id="postal_code"
+                          value={formData.postal_code || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                          placeholder="00000-000"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">Cidade *</Label>
+                        <Input
+                          id="city"
+                          value={formData.city || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                          placeholder="Nome da cidade"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="state">Estado *</Label>
+                        <Input
+                          id="state"
+                          value={formData.state || ""}
+                          onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                          placeholder="SP"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address_complement">Complemento</Label>
+                      <Input
+                        id="address_complement"
+                        value={formData.address_complement || ""}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address_complement: e.target.value }))}
+                        placeholder="Apartamento, casa, sala, etc."
+                      />
+                    </div>
                   </div>
                 </div>
 

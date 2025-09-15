@@ -15,7 +15,13 @@ export interface CreateStudentData {
   email: string;
   phone?: string;
   birth_date?: string;
-  address?: string;
+  // Individual address fields
+  street?: string;
+  neighborhood?: string;
+  postal_code?: string;
+  city?: string;
+  state?: string;
+  address_complement?: string;
   emergency_contact?: string;
   belt_color: string;
   belt_degree: number;
@@ -77,6 +83,16 @@ export function useStudents() {
       // Primeiro gerar um UUID para o perfil
       const profileId = crypto.randomUUID();
 
+      // Combine address fields into a single address string
+      const fullAddress = [
+        studentData.street,
+        studentData.neighborhood,
+        studentData.postal_code,
+        studentData.city,
+        studentData.state,
+        studentData.address_complement
+      ].filter(Boolean).join(', ');
+
       // Criar o perfil com o ID especificado
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -86,7 +102,7 @@ export function useStudents() {
           email: studentData.email,
           phone: studentData.phone || null,
           birth_date: studentData.birth_date || null,
-          address: studentData.address || null,
+          address: fullAddress || null,
           emergency_contact: studentData.emergency_contact || null,
           user_type: 'aluno'
         })
@@ -161,15 +177,19 @@ export function useStudents() {
         return { error: 'Aluno não encontrado' };
       }
 
+      // Combine address fields if any are provided
+      const addressFields = [updates.street, updates.neighborhood, updates.postal_code, updates.city, updates.state, updates.address_complement].filter(Boolean);
+      const fullAddress = addressFields.length > 0 ? addressFields.join(', ') : undefined;
+
       // Atualizar perfil se houver dados do perfil
-      if (updates.full_name || updates.email || updates.phone || updates.birth_date || updates.address || updates.emergency_contact) {
+      if (updates.full_name || updates.email || updates.phone || updates.birth_date || fullAddress || updates.emergency_contact) {
         const profileUpdates: Partial<Database['public']['Tables']['profiles']['Update']> = {};
         
         if (updates.full_name) profileUpdates.full_name = updates.full_name;
         if (updates.email) profileUpdates.email = updates.email;
         if (updates.phone !== undefined) profileUpdates.phone = updates.phone;
         if (updates.birth_date !== undefined) profileUpdates.birth_date = updates.birth_date;
-        if (updates.address !== undefined) profileUpdates.address = updates.address;
+        if (fullAddress !== undefined) profileUpdates.address = fullAddress;
         if (updates.emergency_contact !== undefined) profileUpdates.emergency_contact = updates.emergency_contact;
 
         const { error: profileError } = await supabase
