@@ -75,19 +75,34 @@ export default function AlunosGestao() {
   });
 
   const beltColors = [
-    { value: "branca", label: "Branca", color: "bg-gray-100" },
-    { value: "branca_ponta_amarela", label: "Branca Ponta Amarela", color: "bg-gradient-to-r from-gray-100 to-yellow-200" },
-    { value: "amarela", label: "Amarela", color: "bg-yellow-200" },
-    { value: "amarela_ponta_verde", label: "Amarela Ponta Verde", color: "bg-gradient-to-r from-yellow-200 to-green-200" },
-    { value: "verde", label: "Verde", color: "bg-green-200" },
-    { value: "verde_ponta_azul", label: "Verde Ponta Azul", color: "bg-gradient-to-r from-green-200 to-blue-200" },
-    { value: "azul", label: "Azul", color: "bg-blue-200" },
-    { value: "azul_ponta_vermelha", label: "Azul Ponta Vermelha", color: "bg-gradient-to-r from-blue-200 to-red-200" },
-    { value: "vermelha", label: "Vermelha", color: "bg-red-200" },
-    { value: "vermelha_ponta_preta", label: "Vermelha Ponta Preta", color: "bg-gradient-to-r from-red-200 to-black" },
-    { value: "prata_ponta_branca", label: "Prata Ponta Branca", color: "bg-gradient-to-r from-gray-400 to-gray-100" },
-    { value: "preta", label: "Preta", color: "bg-black text-white" },
+    { value: "branca", label: "Branca", color: "bg-gray-100", visualColor: "linear-gradient(90deg, #ffffff 100%)" },
+    { value: "branca_ponta_amarela", label: "Branca Ponta Amarela", color: "bg-gradient-to-r from-white to-yellow-400", visualColor: "linear-gradient(90deg, #ffffff 80%, #fbbf24 100%)" },
+    { value: "amarela", label: "Amarela", color: "bg-yellow-400", visualColor: "linear-gradient(90deg, #fbbf24 100%)" },
+    { value: "amarela_ponta_verde", label: "Amarela Ponta Verde", color: "bg-gradient-to-r from-yellow-400 to-green-500", visualColor: "linear-gradient(90deg, #fbbf24 80%, #10b981 100%)" },
+    { value: "verde", label: "Verde", color: "bg-green-500", visualColor: "linear-gradient(90deg, #10b981 100%)" },
+    { value: "verde_ponta_azul", label: "Verde Ponta Azul", color: "bg-gradient-to-r from-green-500 to-blue-600", visualColor: "linear-gradient(90deg, #10b981 80%, #2563eb 100%)" },
+    { value: "azul", label: "Azul", color: "bg-blue-600", visualColor: "linear-gradient(90deg, #2563eb 100%)" },
+    { value: "azul_ponta_vermelha", label: "Azul Ponta Vermelha", color: "bg-gradient-to-r from-blue-600 to-red-600", visualColor: "linear-gradient(90deg, #2563eb 80%, #dc2626 100%)" },
+    { value: "vermelha", label: "Vermelha", color: "bg-red-600", visualColor: "linear-gradient(90deg, #dc2626 100%)" },
+    { value: "vermelha_ponta_preta", label: "Vermelha Ponta Preta", color: "bg-gradient-to-r from-red-600 to-black", visualColor: "linear-gradient(90deg, #dc2626 80%, #000000 100%)" },
+    { value: "prata_ponta_branca", label: "Prata Ponta Branca", color: "bg-gradient-to-r from-gray-400 to-white", visualColor: "linear-gradient(90deg, #9ca3af 80%, #ffffff 100%)" },
+    { value: "preta", label: "Preta", color: "bg-black", visualColor: "linear-gradient(90deg, #000000 100%)" }
   ];
+
+  const BeltColorDisplay = ({ belt, size = "default" }: { belt: typeof beltColors[0], size?: "small" | "default" | "large" }) => {
+    const sizeClasses = {
+      small: "w-6 h-3",
+      default: "w-20 h-6", 
+      large: "w-32 h-8"
+    };
+    
+    return (
+      <div 
+        className={`${sizeClasses[size]} rounded-sm border border-gray-300 shadow-sm`}
+        style={{ background: belt.visualColor }}
+      />
+    );
+  };
 
   const handleSaveStudent = async () => {
     try {
@@ -488,8 +503,8 @@ export default function AlunosGestao() {
                       <SelectContent>
                         {beltColors.map((belt) => (
                           <SelectItem key={belt.value} value={belt.value}>
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-3 h-3 rounded-full ${belt.color}`}></div>
+                            <div className="flex items-center space-x-3">
+                              <BeltColorDisplay belt={belt} size="small" />
                               <span>{belt.label}</span>
                             </div>
                           </SelectItem>
@@ -677,7 +692,10 @@ export default function AlunosGestao() {
                       <div>
                         <CardTitle className="text-lg">{student.profile?.full_name}</CardTitle>
                         <div className="flex items-center space-x-2">
-                          <div className={`w-3 h-3 rounded-full ${getBeltColor(student.belt_color)}`}></div>
+                          <BeltColorDisplay 
+                            belt={beltColors.find(b => b.value === student.belt_color) || beltColors[0]} 
+                            size="small" 
+                          />
                           <span className="text-sm text-muted-foreground">
                             {getBeltLabel(student.belt_color)} {student.belt_degree}º Grau
                           </span>
