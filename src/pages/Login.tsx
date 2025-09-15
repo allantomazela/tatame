@@ -324,10 +324,7 @@ export default function Login() {
                       <Label htmlFor="signup-userType">Tipo de Usuário</Label>
                       <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
                         <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50">
-                          <div className="flex items-center gap-2">
-                            {getUserTypeIcon(userType)}
-                            <SelectValue placeholder="Selecione o tipo" />
-                          </div>
+                          <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="aluno">
