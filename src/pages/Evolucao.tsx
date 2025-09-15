@@ -229,7 +229,7 @@ export default function Evolucao() {
               </SelectTrigger>
               <SelectContent>
                 {studentsLoading ? (
-                  <SelectItem value="" disabled>Carregando...</SelectItem>
+                  <SelectItem value="loading" disabled>Carregando...</SelectItem>
                 ) : (
                   students.map((student) => (
                     <SelectItem key={student.id} value={student.id}>
