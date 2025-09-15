@@ -32,7 +32,7 @@ import {
   AreaChart,
   ComposedChart
 } from "recharts";
-import { 
+import {
   TrendingUp, 
   Award, 
   Target,
@@ -56,7 +56,8 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
-  Trash2
+  Trash2,
+  ArrowLeft
 } from "lucide-react";
 import { useStudents } from "@/hooks/useStudents";
 import { useStudentEvolution } from "@/hooks/useStudentEvolution";
@@ -314,11 +315,23 @@ export default function Evolucao() {
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Evolução do Aluno</h1>
-            <p className="text-muted-foreground">
-              Acompanhe o progresso técnico e desenvolvimento dos alunos
-            </p>
+          <div className="flex items-center space-x-4">
+            {selectedStudentId && !showStudentSelection && (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowStudentSelection(true)}
+                className="flex items-center"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar
+              </Button>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Evolução do Aluno</h1>
+              <p className="text-muted-foreground">
+                Acompanhe o progresso técnico e desenvolvimento dos alunos
+              </p>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
