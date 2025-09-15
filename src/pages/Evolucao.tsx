@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LineChart,
   Line,
@@ -96,6 +97,7 @@ const movementsByCategory = {
 
 export default function Evolucao() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [showStudentSelection, setShowStudentSelection] = useState(true);
   const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isAchievementDialogOpen, setIsAchievementDialogOpen] = useState(false);
@@ -129,6 +131,38 @@ export default function Evolucao() {
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   const currentPoomsae = selectedStudent ? poomsaeByBelt[selectedStudent.belt_color as keyof typeof poomsaeByBelt] || [] : [];
+
+  // Função para calcular idade
+  const calculateAge = (birthDate: string | null) => {
+    if (!birthDate) return null;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    const age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      return age - 1;
+    }
+    return age;
+  };
+
+  // Função para obter cor da faixa
+  const getBeltColorStyle = (beltColor: string) => {
+    const colors: { [key: string]: string } = {
+      'branca': 'bg-gray-100 text-gray-800 border-gray-300',
+      'amarela': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      'laranja': 'bg-orange-100 text-orange-800 border-orange-300',
+      'verde': 'bg-green-100 text-green-800 border-green-300',
+      'azul': 'bg-blue-100 text-blue-800 border-blue-300',
+      'vermelha': 'bg-red-100 text-red-800 border-red-300',
+      'preta': 'bg-gray-900 text-white border-gray-700'
+    };
+    return colors[beltColor] || 'bg-gray-100 text-gray-800 border-gray-300';
+  };
+
+  const handleStudentSelect = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setShowStudentSelection(false);
+  };
 
   // Calcular dados para gráficos
   const evolutionChartData = useMemo(() => {
@@ -538,16 +572,102 @@ export default function Evolucao() {
           </div>
         </div>
 
-        {!selectedStudentId ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Selecione um Aluno</h3>
-              <p className="text-muted-foreground">
-                Selecione um aluno acima para visualizar sua evolução e desenvolvimento
-              </p>
-            </CardContent>
-          </Card>
+        {(!selectedStudentId || showStudentSelection) ? (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Selecionar Aluno
+                </CardTitle>
+                <CardDescription>
+                  Escolha um aluno para acompanhar sua evolução e desenvolvimento
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {studentsLoading ? (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="h-12 w-12 bg-muted rounded-full"></div>
+                            <div className="space-y-2 flex-1">
+                              <div className="h-4 bg-muted rounded w-3/4"></div>
+                              <div className="h-3 bg-muted rounded w-1/2"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : students.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Nenhum aluno encontrado</h3>
+                    <p className="text-muted-foreground">
+                      Cadastre alunos para acompanhar sua evolução
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {students.map((student) => {
+                      const profile = student.profile as any;
+                      const age = calculateAge(profile?.birth_date);
+                      
+                      return (
+                        <Card 
+                          key={student.id} 
+                          className="cursor-pointer transition-all hover:shadow-md hover:scale-[1.02] border-2 hover:border-primary/20"
+                          onClick={() => handleStudentSelect(student.id)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center space-x-4">
+                              <Avatar className="h-12 w-12">
+                                <AvatarImage 
+                                  src={profile?.avatar_url} 
+                                  alt={profile?.full_name}
+                                />
+                                <AvatarFallback>
+                                  {profile?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium truncate">
+                                  {profile?.full_name}
+                                </h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs ${getBeltColorStyle(student.belt_color)}`}
+                                  >
+                                    {student.belt_color} {student.belt_degree}º Dan
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                                  {age && (
+                                    <span className="flex items-center gap-1">
+                                      <User className="h-3 w-3" />
+                                      {age} anos
+                                    </span>
+                                  )}
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    {new Date(student.date_joined).toLocaleDateString('pt-BR')}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         ) : evolutionLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
