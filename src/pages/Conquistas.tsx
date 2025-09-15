@@ -97,34 +97,34 @@ export default function Conquistas() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <Card>
+          <Card className="bg-gradient-gold text-white shadow-gold">
             <CardContent className="pt-6">
               <div className="text-center">
-                <Trophy className="mx-auto h-8 w-8 text-yellow-600 mb-2" />
-                <div className="text-2xl font-bold">{conquistasDesbloqueadas.length}</div>
-                <p className="text-sm text-muted-foreground">Conquistas Desbloqueadas</p>
+                <Trophy className="mx-auto h-12 w-12 mb-4 animate-float" />
+                <div className="text-3xl font-bold">{conquistasDesbloqueadas.length}</div>
+                <p className="text-sm opacity-90">Conquistas Desbloqueadas</p>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-accent text-white shadow-accent">
             <CardContent className="pt-6">
               <div className="text-center">
-                <Target className="mx-auto h-8 w-8 text-blue-600 mb-2" />
-                <div className="text-2xl font-bold">{conquistasBloqueadas.length}</div>
-                <p className="text-sm text-muted-foreground">Metas Restantes</p>
+                <Target className="mx-auto h-12 w-12 mb-4 animate-pulse-glow" />
+                <div className="text-3xl font-bold">{conquistasBloqueadas.length}</div>
+                <p className="text-sm opacity-90">Metas Restantes</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-secondary text-white shadow-secondary">
             <CardContent className="pt-6">
               <div className="text-center">
-                <Star className="mx-auto h-8 w-8 text-purple-600 mb-2" />
-                <div className="text-2xl font-bold">
+                <Star className="mx-auto h-12 w-12 mb-4 animate-float" />
+                <div className="text-3xl font-bold">
                   {Math.round((conquistasDesbloqueadas.length / conquistas.length) * 100)}%
                 </div>
-                <p className="text-sm text-muted-foreground">Progresso Total</p>
+                <p className="text-sm opacity-90">Progresso Total</p>
               </div>
             </CardContent>
           </Card>
@@ -137,27 +137,27 @@ export default function Conquistas() {
               {conquistasDesbloqueadas.map((conquista) => {
                 const IconComponent = conquista.icon;
                 return (
-                  <Card key={conquista.id} className="border-2 border-green-200">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-full bg-green-100">
-                            <IconComponent className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg">{conquista.titulo}</CardTitle>
-                            <CardDescription>{conquista.data}</CardDescription>
-                          </div>
+                <Card key={conquista.id} className="border-2 border-tkd-green/30 bg-gradient-to-br from-card to-tkd-green/5 shadow-success hover:shadow-lg transition-all duration-200 animate-fade-in">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-full bg-gradient-success shadow-lg">
+                          <IconComponent className="h-6 w-6 text-white" />
                         </div>
-                        <Badge className={getCategoriaColor(conquista.categoria)}>
-                          {getCategoriaLabel(conquista.categoria)}
-                        </Badge>
+                        <div>
+                          <CardTitle className="text-lg text-tkd-green">{conquista.titulo}</CardTitle>
+                          <CardDescription className="text-tkd-green/70">{conquista.data}</CardDescription>
+                        </div>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">{conquista.descricao}</p>
-                    </CardContent>
-                  </Card>
+                      <Badge className={`${getCategoriaColor(conquista.categoria)} shadow-sm`}>
+                        {getCategoriaLabel(conquista.categoria)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">{conquista.descricao}</p>
+                  </CardContent>
+                </Card>
                 );
               })}
             </div>

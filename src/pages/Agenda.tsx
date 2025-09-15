@@ -11,7 +11,8 @@ export default function Agenda() {
       horario: "16:00 - 17:00",
       data: "Segunda-feira",
       participantes: 12,
-      tipo: "treino"
+      tipo: "treino",
+      cor: "tkd-blue"
     },
     {
       id: 2,
@@ -19,7 +20,8 @@ export default function Agenda() {
       horario: "19:00 - 20:30",
       data: "Segunda-feira", 
       participantes: 8,
-      tipo: "treino"
+      tipo: "treino",
+      cor: "tkd-red"
     },
     {
       id: 3,
@@ -27,7 +29,8 @@ export default function Agenda() {
       horario: "10:00 - 12:00",
       data: "Sábado",
       participantes: 5,
-      tipo: "evento"
+      tipo: "evento",
+      cor: "tkd-gold"
     }
   ];
 
@@ -41,7 +44,7 @@ export default function Agenda() {
               Gerencie treinos e eventos do dojang
             </p>
           </div>
-          <Button>
+          <Button className="bg-gradient-accent hover:bg-accent shadow-accent">
             <Plus className="mr-2 h-4 w-4" />
             Novo Evento
           </Button>
@@ -49,14 +52,14 @@ export default function Agenda() {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {eventos.map((evento) => (
-            <Card key={evento.id}>
+            <Card key={evento.id} className="hover:shadow-lg transition-all duration-200 animate-fade-in">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{evento.titulo}</CardTitle>
-                  <div className={`px-2 py-1 rounded text-xs font-medium ${
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium text-white shadow-sm ${
                     evento.tipo === 'treino' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'bg-green-100 text-green-700'
+                      ? `bg-${evento.cor}` 
+                      : `bg-${evento.cor}`
                   }`}>
                     {evento.tipo}
                   </div>
@@ -67,13 +70,13 @@ export default function Agenda() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-4 w-4 text-tkd-blue" />
                     {evento.horario}
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Users className="h-4 w-4" />
+                    <Users className="h-4 w-4 text-tkd-green" />
                     {evento.participantes} participantes
                   </div>
                 </div>

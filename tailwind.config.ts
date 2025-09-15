@@ -69,18 +69,29 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Enhanced Taekwondo color palette
+				'tkd-red': 'hsl(var(--taekwondo-red))',
+				'tkd-blue': 'hsl(var(--taekwondo-blue))',
+				'tkd-gold': 'hsl(var(--taekwondo-gold))',
+				'tkd-green': 'hsl(var(--taekwondo-green))',
+				'tkd-purple': 'hsl(var(--taekwondo-purple))',
+				'tkd-orange': 'hsl(var(--taekwondo-orange))'
 			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-secondary': 'var(--gradient-secondary)',
 				'gradient-accent': 'var(--gradient-accent)',
 				'gradient-hero': 'var(--gradient-hero)',
+				'gradient-gold': 'var(--gradient-gold)',
+				'gradient-success': 'var(--gradient-success)',
 			},
 			boxShadow: {
 				'primary': 'var(--shadow-primary)',
 				'secondary': 'var(--shadow-secondary)',
 				'accent': 'var(--shadow-accent)',
+				'gold': 'var(--shadow-gold)',
+				'success': 'var(--shadow-success)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

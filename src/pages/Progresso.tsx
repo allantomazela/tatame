@@ -39,10 +39,12 @@ export default function Progresso() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+          <Card className="bg-gradient-to-br from-card to-muted/20 border-tkd-blue/20 shadow-accent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
+                <div className="p-2 rounded-lg bg-gradient-accent">
+                  <Target className="h-5 w-5 text-white" />
+                </div>
                 Faixa Atual
               </CardTitle>
               <CardDescription>Progresso para próxima graduação</CardDescription>
@@ -50,36 +52,38 @@ export default function Progresso() {
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium">Faixa {progressoAtual.faixa}</p>
+                  <p className="font-medium text-lg">Faixa {progressoAtual.faixa}</p>
                   <p className="text-sm text-muted-foreground">
                     {progressoAtual.tempoNaFaixa} nesta faixa
                   </p>
                 </div>
-                <Badge variant="secondary">{progressoAtual.progresso}%</Badge>
+                <Badge className="bg-gradient-accent text-white shadow-accent">{progressoAtual.progresso}%</Badge>
               </div>
-              <Progress value={progressoAtual.progresso} className="w-full" />
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-4 w-4" />
+              <Progress value={progressoAtual.progresso} className="w-full h-3" />
+              <div className="flex items-center gap-2 text-sm bg-muted/50 p-3 rounded-lg">
+                <Calendar className="h-4 w-4 text-tkd-gold" />
                 Próximo exame: {progressoAtual.proximoExame}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-gradient-to-br from-card to-muted/20 border-tkd-green/20 shadow-success">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
+                <div className="p-2 rounded-lg bg-gradient-success">
+                  <TrendingUp className="h-5 w-5 text-white" />
+                </div>
                 Habilidades
               </CardTitle>
               <CardDescription>Suas competências técnicas</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {habilidades.map((habilidade) => (
-                  <div key={habilidade.nome} className="space-y-1">
+              <div className="space-y-4">
+                {habilidades.map((habilidade, index) => (
+                  <div key={habilidade.nome} className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>{habilidade.nome}</span>
-                      <span>{habilidade.nivel}%</span>
+                      <span className="font-medium">{habilidade.nome}</span>
+                      <span className="text-tkd-blue font-bold">{habilidade.nivel}%</span>
                     </div>
                     <Progress value={habilidade.nivel} className="h-2" />
                   </div>
@@ -89,10 +93,12 @@ export default function Progresso() {
           </Card>
         </div>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-card to-muted/20 border-tkd-gold/20 shadow-gold">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
+              <div className="p-2 rounded-lg bg-gradient-gold">
+                <Award className="h-5 w-5 text-white" />
+              </div>
               Conquistas Recentes
             </CardTitle>
             <CardDescription>
@@ -102,16 +108,16 @@ export default function Progresso() {
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               {conquistas.map((conquista, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 rounded-lg border">
-                  <div className={`p-2 rounded-full ${
-                    conquista.tipo === 'graduacao' ? 'bg-green-100 text-green-600' :
-                    conquista.tipo === 'competicao' ? 'bg-blue-100 text-blue-600' :
-                    'bg-purple-100 text-purple-600'
+                <div key={index} className="flex items-center gap-3 p-4 rounded-lg border-2 border-dashed border-muted hover:border-tkd-gold/50 transition-colors animate-fade-in">
+                  <div className={`p-3 rounded-full shadow-lg ${
+                    conquista.tipo === 'graduacao' ? 'bg-gradient-success' :
+                    conquista.tipo === 'competicao' ? 'bg-gradient-accent' :
+                    'bg-gradient-secondary'
                   }`}>
-                    <Award className="h-4 w-4" />
+                    <Award className="h-5 w-5 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium">{conquista.nome}</p>
+                    <p className="font-medium text-lg">{conquista.nome}</p>
                     <p className="text-sm text-muted-foreground">{conquista.data}</p>
                   </div>
                 </div>

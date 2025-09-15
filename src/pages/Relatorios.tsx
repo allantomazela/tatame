@@ -46,28 +46,32 @@ export default function Relatorios() {
       valor: "48",
       variacao: "+8%",
       icon: Users,
-      cor: "text-blue-600"
+      cor: "text-tkd-blue",
+      bg: "bg-gradient-accent"
     },
     {
       titulo: "Receita Mensal",
       valor: "R$ 12.500",
       variacao: "+15%", 
       icon: DollarSign,
-      cor: "text-green-600"
+      cor: "text-tkd-green",
+      bg: "bg-gradient-success"
     },
     {
       titulo: "Graduações",
       valor: "12",
       variacao: "+3",
       icon: TrendingUp,
-      cor: "text-purple-600"
+      cor: "text-tkd-purple",
+      bg: "bg-gradient-secondary"
     },
     {
       titulo: "Frequência Média",
       valor: "85%",
       variacao: "+5%",
       icon: Calendar,
-      cor: "text-orange-600"
+      cor: "text-tkd-gold",
+      bg: "bg-gradient-gold"
     }
   ];
 
@@ -109,7 +113,7 @@ export default function Relatorios() {
               Análises e relatórios do dojang
             </p>
           </div>
-          <Button>
+          <Button className="bg-gradient-accent hover:bg-accent shadow-accent">
             <FileText className="mr-2 h-4 w-4" />
             Gerar Relatório
           </Button>
@@ -119,7 +123,7 @@ export default function Relatorios() {
           {estatisticas.map((stat) => {
             const IconComponent = stat.icon;
             return (
-              <Card key={stat.titulo}>
+              <Card key={stat.titulo} className="hover:shadow-lg transition-all duration-200 animate-fade-in">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -127,11 +131,13 @@ export default function Relatorios() {
                         {stat.titulo}
                       </p>
                       <p className="text-2xl font-bold">{stat.valor}</p>
-                      <p className={`text-xs ${stat.cor}`}>
+                      <p className={`text-xs font-semibold ${stat.cor}`}>
                         {stat.variacao} do mês anterior
                       </p>
                     </div>
-                    <IconComponent className={`h-8 w-8 ${stat.cor}`} />
+                    <div className={`p-3 rounded-full ${stat.bg} shadow-lg`}>
+                      <IconComponent className="h-6 w-6 text-white" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

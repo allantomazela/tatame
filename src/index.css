@@ -50,16 +50,28 @@
 
     --radius: 0.5rem;
 
+    /* Enhanced Color Palette for Taekwondo */
+    --taekwondo-red: 355 85% 55%;
+    --taekwondo-blue: 216 100% 45%;
+    --taekwondo-gold: 45 100% 55%;
+    --taekwondo-green: 142 69% 45%;
+    --taekwondo-purple: 272 100% 60%;
+    --taekwondo-orange: 25 95% 55%;
+
     /* Gradients for Taekwondo Design */
     --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 15%));
-    --gradient-secondary: linear-gradient(135deg, hsl(355 70% 50%), hsl(355 80% 45%));
-    --gradient-accent: linear-gradient(135deg, hsl(216 100% 31%), hsl(216 85% 35%));
+    --gradient-secondary: linear-gradient(135deg, hsl(355 85% 55%), hsl(355 75% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(216 100% 45%), hsl(216 85% 40%));
     --gradient-hero: linear-gradient(135deg, hsl(0 0% 0%) 0%, hsl(216 100% 31%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(45 100% 55%), hsl(45 85% 50%));
+    --gradient-success: linear-gradient(135deg, hsl(142 69% 45%), hsl(142 60% 40%));
 
     /* Shadows with Korean colors */
     --shadow-primary: 0 4px 14px 0 hsl(0 0% 0% / 0.1);
-    --shadow-secondary: 0 4px 14px 0 hsl(355 70% 50% / 0.15);
-    --shadow-accent: 0 4px 14px 0 hsl(216 100% 31% / 0.15);
+    --shadow-secondary: 0 4px 14px 0 hsl(355 85% 55% / 0.15);
+    --shadow-accent: 0 4px 14px 0 hsl(216 100% 45% / 0.15);
+    --shadow-gold: 0 4px 14px 0 hsl(45 100% 55% / 0.15);
+    --shadow-success: 0 4px 14px 0 hsl(142 69% 45% / 0.15);
 
     --sidebar-background: 0 0% 98%;
 
