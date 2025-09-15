@@ -54,7 +54,8 @@ import {
   XCircle,
   ArrowUp,
   ArrowDown,
-  Minus
+  Minus,
+  Trash2
 } from "lucide-react";
 import { useStudents } from "@/hooks/useStudents";
 import { useStudentEvolution } from "@/hooks/useStudentEvolution";
@@ -122,7 +123,8 @@ export default function Evolucao() {
     createGoal,
     updateGoalProgress,
     createAchievement,
-    createCompetition
+    createCompetition,
+    deleteGoal
   } = useStudentEvolution(selectedStudentId);
 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
@@ -917,6 +919,14 @@ export default function Evolucao() {
                                 onClick={() => updateGoalProgress(goal.id, Math.min(100, goal.current_progress + 10))}
                               >
                                 <Plus className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => deleteGoal(goal.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
                           </div>

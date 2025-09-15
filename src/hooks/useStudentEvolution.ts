@@ -286,6 +286,33 @@ export function useStudentEvolution(studentId?: string) {
     }
   };
 
+  const deleteGoal = async (goalId: string) => {
+    try {
+      const { error } = await supabase
+        .from('student_goals')
+        .delete()
+        .eq('id', goalId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Meta excluída!",
+        description: "A meta foi excluída com sucesso."
+      });
+
+      if (studentId) fetchStudentData(studentId);
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      toast({
+        title: "Erro ao excluir meta",
+        description: "Não foi possível excluir a meta.",
+        variant: "destructive"
+      });
+      return { error };
+    }
+  };
+
   useEffect(() => {
     if (studentId) {
       fetchStudentData(studentId);
@@ -303,6 +330,7 @@ export function useStudentEvolution(studentId?: string) {
     updateGoalProgress,
     createAchievement,
     createCompetition,
+    deleteGoal,
     refetch: studentId ? () => fetchStudentData(studentId) : () => {}
   };
 }
