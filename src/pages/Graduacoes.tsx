@@ -52,6 +52,7 @@ export default function Graduacoes() {
 
   const { graduations, loading: graduationsLoading, createGraduation, deleteGraduation } = useGraduations();
   const { students, loading: studentsLoading } = useStudents();
+  console.log('Students in Graduacoes:', students, 'Loading:', studentsLoading); // Debug log
   const { profile } = useSupabaseAuth();
 
   const beltColors = [
@@ -167,22 +168,26 @@ export default function Graduacoes() {
                       </SelectTrigger>
                       <SelectContent className="max-h-48 overflow-auto">
                         {studentsLoading ? (
-                          <SelectItem value="" disabled>Carregando...</SelectItem>
+                          <SelectItem value="" disabled>Carregando alunos...</SelectItem>
                         ) : students.length === 0 ? (
                           <SelectItem value="" disabled>Nenhum aluno encontrado</SelectItem>
                         ) : (
-                          students.map((student) => (
-                            <SelectItem key={student.id} value={student.id}>
-                              <div className="flex items-center justify-between w-full">
-                                <span className="font-medium">
-                                  {(student.profile as any)?.full_name || 'Nome não disponível'}
-                                </span>
-                                <span className="text-xs text-muted-foreground ml-2">
-                                  {getBeltLabel(student.belt_color)} - {student.belt_degree}º Grau
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))
+                          students.map((student) => {
+                            console.log('Student data:', student); // Debug log
+                            const studentName = (student.profile as any)?.full_name || 'Nome não disponível';
+                            return (
+                              <SelectItem key={student.id} value={student.id}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span className="font-medium">
+                                    {studentName}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {getBeltLabel(student.belt_color)} - {student.belt_degree}º Grau
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            );
+                          })
                         )}
                       </SelectContent>
                     </Select>

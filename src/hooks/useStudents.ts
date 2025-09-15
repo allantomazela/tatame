@@ -52,7 +52,8 @@ export function useStudents() {
         .from('students')
         .select(`
           *,
-          profiles!students_profile_id_fkey (
+          profile:profiles!students_profile_id_fkey (
+            id,
             full_name,
             email,
             phone,
