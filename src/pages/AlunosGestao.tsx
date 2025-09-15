@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Plus, 
   Search, 
@@ -21,7 +20,8 @@ import {
   Phone,
   Mail,
   Calendar,
-  Award
+  Award,
+  Loader2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -29,44 +29,40 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface Student {
-  id: string;
-  profile_id: string;
-  belt_color: string;
-  belt_degree: number;
-  date_joined: string;
-  active: boolean;
-  monthly_fee: number;
-  medical_info?: string;
-  responsible_id?: string;
-  profiles?: {
-    full_name: string;
-    email: string;
-    phone?: string;
-    birth_date?: string;
-  };
-}
+import { useStudents, CreateStudentData } from "@/hooks/useStudents";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AlunosGestao() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { students, loading, createStudent, updateStudent, deleteStudent } = useStudents();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBelt, setFilterBelt] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
-  const { toast } = useToast();
+  const [editingStudent, setEditingStudent] = useState<string | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateStudentData>({
     full_name: "",
     email: "",
     phone: "",
     birth_date: "",
+    address: "",
+    emergency_contact: "",
     belt_color: "branca",
     belt_degree: 1,
-    monthly_fee: 0,
-    medical_info: ""
+    monthly_fee: 150,
+    medical_info: "",
+    payment_due_date: 5
   });
 
   const beltColors = [
@@ -79,71 +75,37 @@ export default function AlunosGestao() {
     { value: "preta", label: "Preta", color: "bg-black text-white" },
   ];
 
-  const fetchStudents = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('students')
-        .select(`
-          *,
-          profiles!students_profile_id_fkey (
-            full_name,
-            email,
-            phone,
-            birth_date
-          )
-        `)
-        .eq('active', true)
-        .order('date_joined', { ascending: false });
-
-      if (error) throw error;
-      setStudents(data as Student[] || []);
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os alunos",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
   const handleSaveStudent = async () => {
     try {
-      setLoading(true);
+      setActionLoading(true);
       
       if (editingStudent) {
-        // Update existing student
-        // Implementation for update would go here
-        toast({
-          title: "Sucesso",
-          description: "Aluno atualizado com sucesso"
-        });
+        await updateStudent(editingStudent, formData);
       } else {
-        // Create new student
-        // First create profile, then create student record
-        toast({
-          title: "Funcionalidade em desenvolvimento",
-          description: "Cadastro de novos alunos será implementado em breve"
-        });
+        await createStudent(formData);
       }
       
       setIsDialogOpen(false);
       setEditingStudent(null);
       resetForm();
-      fetchStudents();
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível salvar o aluno",
-        variant: "destructive"
-      });
+      console.error('Error saving student:', error);
     } finally {
-      setLoading(false);
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!studentToDelete) return;
+    
+    try {
+      setActionLoading(true);
+      await deleteStudent(studentToDelete);
+      setStudentToDelete(null);
+    } catch (error) {
+      console.error('Error deleting student:', error);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -153,24 +115,30 @@ export default function AlunosGestao() {
       email: "",
       phone: "",
       birth_date: "",
+      address: "",
+      emergency_contact: "",
       belt_color: "branca",
       belt_degree: 1,
-      monthly_fee: 0,
-      medical_info: ""
+      monthly_fee: 150,
+      medical_info: "",
+      payment_due_date: 5
     });
   };
 
-  const openEditDialog = (student: Student) => {
-    setEditingStudent(student);
+  const openEditDialog = (student: any) => {
+    setEditingStudent(student.id);
     setFormData({
-      full_name: student.profiles?.full_name || "",
-      email: student.profiles?.email || "",
-      phone: student.profiles?.phone || "",
-      birth_date: student.profiles?.birth_date || "",
+      full_name: student.profile?.full_name || "",
+      email: student.profile?.email || "",
+      phone: student.profile?.phone || "",
+      birth_date: student.profile?.birth_date || "",
+      address: student.profile?.address || "",
+      emergency_contact: student.profile?.emergency_contact || "",
       belt_color: student.belt_color,
       belt_degree: student.belt_degree,
-      monthly_fee: student.monthly_fee || 0,
-      medical_info: student.medical_info || ""
+      monthly_fee: student.monthly_fee || 150,
+      medical_info: student.medical_info || "",
+      payment_due_date: student.payment_due_date || 5
     });
     setIsDialogOpen(true);
   };
@@ -184,10 +152,10 @@ export default function AlunosGestao() {
   };
 
   const filteredStudents = students.filter(student => {
-    const matchesSearch = student.profiles?.full_name
+    const matchesSearch = student.profile?.full_name
       .toLowerCase()
       .includes(searchTerm.toLowerCase()) ||
-      student.profiles?.email
+      student.profile?.email
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
     
@@ -208,6 +176,54 @@ export default function AlunosGestao() {
     return `${age} anos`;
   };
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-8 w-64 mb-2" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+            <Skeleton className="h-10 w-32" />
+          </div>
+          
+          <div className="grid gap-4 md:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-4 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-8 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-10 w-full" />
+            </CardHeader>
+          </Card>
+          
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-20 w-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-16 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -225,7 +241,7 @@ export default function AlunosGestao() {
                 Novo Aluno
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
                   {editingStudent ? "Editar Aluno" : "Cadastrar Novo Aluno"}
@@ -238,22 +254,24 @@ export default function AlunosGestao() {
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">Nome Completo</Label>
+                    <Label htmlFor="full_name">Nome Completo *</Label>
                     <Input
                       id="full_name"
                       value={formData.full_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                       placeholder="Nome do aluno"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="email@exemplo.com"
+                      required
                     />
                   </div>
                 </div>
@@ -263,7 +281,7 @@ export default function AlunosGestao() {
                     <Label htmlFor="phone">Telefone</Label>
                     <Input
                       id="phone"
-                      value={formData.phone}
+                      value={formData.phone || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                       placeholder="(11) 99999-9999"
                     />
@@ -273,13 +291,33 @@ export default function AlunosGestao() {
                     <Input
                       id="birth_date"
                       type="date"
-                      value={formData.birth_date}
+                      value={formData.birth_date || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
                     />
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Endereço</Label>
+                  <Input
+                    id="address"
+                    value={formData.address || ""}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    placeholder="Rua, número, bairro, cidade"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_contact">Contato de Emergência</Label>
+                  <Input
+                    id="emergency_contact"
+                    value={formData.emergency_contact || ""}
+                    onChange={(e) => setFormData(prev => ({ ...prev, emergency_contact: e.target.value }))}
+                    placeholder="Nome e telefone para emergências"
+                  />
+                </div>
                 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="belt_color">Graduação</Label>
                     <Select 
@@ -309,7 +347,7 @@ export default function AlunosGestao() {
                       min="1"
                       max="10"
                       value={formData.belt_degree}
-                      onChange={(e) => setFormData(prev => ({ ...prev, belt_degree: parseInt(e.target.value) }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, belt_degree: parseInt(e.target.value) || 1 }))}
                     />
                   </div>
                   <div className="space-y-2">
@@ -318,8 +356,19 @@ export default function AlunosGestao() {
                       id="monthly_fee"
                       type="number"
                       step="0.01"
-                      value={formData.monthly_fee}
-                      onChange={(e) => setFormData(prev => ({ ...prev, monthly_fee: parseFloat(e.target.value) }))}
+                      value={formData.monthly_fee || 0}
+                      onChange={(e) => setFormData(prev => ({ ...prev, monthly_fee: parseFloat(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="payment_due_date">Vencimento</Label>
+                    <Input
+                      id="payment_due_date"
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={formData.payment_due_date || 5}
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment_due_date: parseInt(e.target.value) || 5 }))}
                     />
                   </div>
                 </div>
@@ -328,7 +377,7 @@ export default function AlunosGestao() {
                   <Label htmlFor="medical_info">Informações Médicas</Label>
                   <Textarea
                     id="medical_info"
-                    value={formData.medical_info}
+                    value={formData.medical_info || ""}
                     onChange={(e) => setFormData(prev => ({ ...prev, medical_info: e.target.value }))}
                     placeholder="Alergias, medicamentos, restrições..."
                     rows={3}
@@ -340,8 +389,9 @@ export default function AlunosGestao() {
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSaveStudent} disabled={loading}>
-                  {loading ? "Salvando..." : editingStudent ? "Atualizar" : "Cadastrar"}
+                <Button onClick={handleSaveStudent} disabled={actionLoading}>
+                  {actionLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  {editingStudent ? "Atualizar" : "Cadastrar"}
                 </Button>
               </div>
             </DialogContent>
@@ -366,7 +416,13 @@ export default function AlunosGestao() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">
+                {students.filter(s => {
+                  const joinDate = new Date(s.date_joined);
+                  const now = new Date();
+                  return joinDate.getMonth() === now.getMonth() && joinDate.getFullYear() === now.getFullYear();
+                }).length}
+              </div>
             </CardContent>
           </Card>
           
@@ -384,11 +440,13 @@ export default function AlunosGestao() {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taxa de Retenção</CardTitle>
+              <CardTitle className="text-sm font-medium">Mensalidade Média</CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">94%</div>
+              <div className="text-2xl font-bold">
+                R$ {students.length > 0 ? (students.reduce((sum, s) => sum + (s.monthly_fee || 0), 0) / students.length).toFixed(0) : 0}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -429,98 +487,127 @@ export default function AlunosGestao() {
         </Card>
 
         {/* Students Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredStudents.map((student) => (
-            <Card key={student.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold">
-                      {student.profiles?.full_name?.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{student.profiles?.full_name}</CardTitle>
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-3 h-3 rounded-full ${getBeltColor(student.belt_color)}`}></div>
-                        <span className="text-sm text-muted-foreground">
-                          {getBeltLabel(student.belt_color)} {student.belt_degree}º Grau
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => openEditDialog(student)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        <Trash className="h-4 w-4 mr-2" />
-                        Remover
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-2">
-                <div className="flex items-center space-x-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{student.profiles?.email}</span>
-                </div>
-                
-                {student.profiles?.phone && (
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{student.profiles.phone}</span>
-                  </div>
-                )}
-                
-                <div className="flex items-center space-x-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    {calculateAge(student.profiles?.birth_date)} • 
-                    Desde {new Date(student.date_joined).toLocaleDateString('pt-BR')}
-                  </span>
-                </div>
-                
-                {student.monthly_fee && (
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-sm font-medium">Mensalidade:</span>
-                    <Badge variant="secondary">
-                      R$ {student.monthly_fee.toFixed(2)}
-                    </Badge>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredStudents.length === 0 && !loading && (
+        {filteredStudents.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <User className="h-12 w-12 text-muted-foreground mb-4" />
+            <CardContent className="text-center py-12">
+              <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Nenhum aluno encontrado</h3>
-              <p className="text-muted-foreground text-center mb-4">
-                {searchTerm || filterBelt !== "all" 
-                  ? "Tente ajustar os filtros de busca" 
-                  : "Comece cadastrando seu primeiro aluno"}
+              <p className="text-muted-foreground mb-4">
+                {students.length === 0 
+                  ? "Cadastre o primeiro aluno para começar" 
+                  : "Tente ajustar os filtros de busca"
+                }
               </p>
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Cadastrar Primeiro Aluno
-              </Button>
+              {students.length === 0 && (
+                <Button onClick={() => setIsDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cadastrar Primeiro Aluno
+                </Button>
+              )}
             </CardContent>
           </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredStudents.map((student) => (
+              <Card key={student.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold">
+                        {student.profile?.full_name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{student.profile?.full_name}</CardTitle>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 rounded-full ${getBeltColor(student.belt_color)}`}></div>
+                          <span className="text-sm text-muted-foreground">
+                            {getBeltLabel(student.belt_color)} {student.belt_degree}º Grau
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => openEditDialog(student)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => setStudentToDelete(student.id)}
+                        >
+                          <Trash className="h-4 w-4 mr-2" />
+                          Remover
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-2">
+                  <div className="flex items-center space-x-2 text-sm">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="truncate">{student.profile?.email}</span>
+                  </div>
+                  
+                  {student.profile?.phone && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{student.profile.phone}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center space-x-2 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span>Idade: {calculateAge(student.profile?.birth_date)}</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-sm">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span>Desde: {new Date(student.date_joined).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                  
+                  {student.monthly_fee && (
+                    <div className="pt-2">
+                      <Badge variant="secondary">
+                        R$ {student.monthly_fee.toFixed(2)}/mês
+                      </Badge>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!studentToDelete} onOpenChange={() => setStudentToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remover Aluno</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja remover este aluno? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDeleteStudent}
+                disabled={actionLoading}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {actionLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Remover
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );
