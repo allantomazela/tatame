@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -707,24 +708,21 @@ export default function AlunosGestao() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredStudents.map((student) => (
-              <Card key={student.id} className="hover:shadow-md transition-shadow">
+              <Card key={student.id} className="hover:shadow-accent transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold">
-                        {student.profile?.full_name?.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src="" />
+                        <AvatarFallback className="bg-gradient-accent text-white">
+                          {student.profile?.full_name?.split(' ').map((n: string) => n[0]).join('') || 'A'}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
                         <CardTitle className="text-lg">{student.profile?.full_name}</CardTitle>
-                        <div className="flex items-center space-x-2">
-                          <BeltColorDisplay 
-                            belt={beltColors.find(b => b.value === student.belt_color) || beltColors[0]} 
-                            size="small" 
-                          />
-                          <span className="text-sm text-muted-foreground">
-                            {getBeltLabel(student.belt_color)} - {student.belt_degree}º Grau
-                          </span>
-                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(student.date_joined).toLocaleDateString('pt-BR')}
+                        </p>
                       </div>
                     </div>
                     
@@ -751,30 +749,41 @@ export default function AlunosGestao() {
                   </div>
                 </CardHeader>
                 
-                <CardContent className="space-y-2">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="truncate">{student.profile?.email}</span>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Faixa:</span>
+                    <div className="flex items-center space-x-2">
+                      <BeltColorDisplay 
+                        belt={beltColors.find(b => b.value === student.belt_color) || beltColors[0]} 
+                        size="small" 
+                      />
+                      <span className="text-sm">
+                        {getBeltLabel(student.belt_color)} - {student.belt_degree}º Grau
+                      </span>
+                    </div>
                   </div>
                   
-                  {student.profile?.phone && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{student.profile.phone}</span>
+                  {student.profile?.email && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Email:</span>
+                      <span className="font-medium truncate">{student.profile.email}</span>
                     </div>
                   )}
                   
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>Idade: {calculateAge(student.profile?.birth_date)}</span>
+                  {student.profile?.phone && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Telefone:</span>
+                      <span className="font-medium">{student.profile.phone}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Idade:</span>
+                    <span className="font-medium">{calculateAge(student.profile?.birth_date)} anos</span>
                   </div>
                   
-                  <div className="flex items-center space-x-2 text-sm">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span>Desde: {new Date(student.date_joined).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                  
-                  <div className="pt-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Mensalidade:</span>
                     <Badge variant={!student.monthly_fee || student.monthly_fee === 0 ? "outline" : "secondary"}>
                       {!student.monthly_fee || student.monthly_fee === 0 ? "Projeto Social" : `R$ ${Number(student.monthly_fee).toFixed(2)}/mês`}
                     </Badge>
