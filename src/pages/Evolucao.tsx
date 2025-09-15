@@ -1,9 +1,16 @@
+import { useState, useMemo } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import {
   LineChart,
   Line,
@@ -18,7 +25,9 @@ import {
   PolarRadiusAxis,
   Radar,
   BarChart,
-  Bar
+  Bar,
+  Area,
+  AreaChart
 } from "recharts";
 import { 
   TrendingUp, 
@@ -26,306 +35,1001 @@ import {
   Target,
   Calendar,
   Users,
-  Activity
+  Activity,
+  Plus,
+  Edit,
+  Trophy,
+  Brain,
+  Zap,
+  Shield,
+  User,
+  BookOpen,
+  Swords,
+  Heart,
+  Star,
+  TrendingDown
 } from "lucide-react";
+import { useStudents } from "@/hooks/useStudents";
+import { useStudentEvolution } from "@/hooks/useStudentEvolution";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
-const dadosProgresso = [
-  { mes: 'Jan', chutes: 65, socos: 70, defesas: 60, formas: 75 },
-  { mes: 'Fev', chutes: 70, socos: 72, defesas: 65, formas: 78 },
-  { mes: 'Mar', chutes: 75, socos: 75, defesas: 70, formas: 82 },
-  { mes: 'Abr', chutes: 80, socos: 78, defesas: 75, formas: 85 },
-  { mes: 'Mai', chutes: 85, socos: 82, defesas: 80, formas: 88 },
-  { mes: 'Jun', chutes: 88, socos: 85, defesas: 82, formas: 91 },
-];
+const categoryIcons = {
+  technique: BookOpen,
+  physical: Zap,
+  mental: Brain,
+  competition: Trophy
+};
 
-const dadosRadar = [
-  { habilidade: 'Chutes', valor: 88 },
-  { habilidade: 'Socos', valor: 85 },
-  { habilidade: 'Defesas', valor: 82 },
-  { habilidade: 'Formas', valor: 91 },
-  { habilidade: 'Equilíbrio', valor: 78 },
-  { habilidade: 'Flexibilidade', valor: 86 },
-];
-
-const dadosFrequencia = [
-  { semana: 'S1', presencas: 3 },
-  { semana: 'S2', presencas: 4 },
-  { semana: 'S3', presencas: 3 },
-  { semana: 'S4', presencas: 4 },
-  { semana: 'S5', presencas: 2 },
-  { semana: 'S6', presencas: 4 },
-  { semana: 'S7', presencas: 3 },
-  { semana: 'S8', presencas: 4 },
-];
+const categoryColors = {
+  technique: "hsl(var(--primary))",
+  physical: "hsl(var(--secondary))",
+  mental: "hsl(var(--accent))",
+  competition: "hsl(var(--warning))"
+};
 
 export default function Evolucao() {
+  const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const [isAchievementDialogOpen, setIsAchievementDialogOpen] = useState(false);
+  const [isCompetitionDialogOpen, setIsCompetitionDialogOpen] = useState(false);
+  
+  // Form states
+  const [evaluationForm, setEvaluationForm] = useState<any>({});
+  const [goalForm, setGoalForm] = useState<any>({});
+  const [achievementForm, setAchievementForm] = useState<any>({});
+  const [competitionForm, setCompetitionForm] = useState<any>({});
+
+  const { students, loading: studentsLoading } = useStudents();
+  const { profile } = useSupabaseAuth();
+  const {
+    evaluations,
+    goals,
+    achievements,
+    competitions,
+    loading: evolutionLoading,
+    createEvaluation,
+    createGoal,
+    updateGoalProgress,
+    createAchievement,
+    createCompetition
+  } = useStudentEvolution(selectedStudentId);
+
+  const selectedStudent = students.find(s => s.id === selectedStudentId);
+
+  // Calcular dados para gráficos
+  const evolutionChartData = useMemo(() => {
+    if (!evaluations.length) return [];
+    
+    return evaluations
+      .slice(0, 12) // últimas 12 avaliações
+      .reverse()
+      .map(evaluation => ({
+        date: new Date(evaluation.evaluation_date).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
+        tecnicas: ((evaluation.poomsae_score || 0) + (evaluation.kicks_score || 0) + (evaluation.punches_score || 0) + (evaluation.blocks_score || 0)) / 4,
+        combate: ((evaluation.sparring_technique || 0) + (evaluation.sparring_strategy || 0) + (evaluation.sparring_defense || 0)) / 3,
+        fisico: ((evaluation.balance_score || 0) + (evaluation.flexibility_score || 0) + (evaluation.strength_score || 0) + (evaluation.speed_score || 0)) / 4,
+        mental: ((evaluation.discipline_score || 0) + (evaluation.respect_score || 0) + (evaluation.focus_score || 0) + (evaluation.self_confidence || 0)) / 4
+      }));
+  }, [evaluations]);
+
+  const latestEvaluation = evaluations[0];
+  const radarData = useMemo(() => {
+    if (!latestEvaluation) return [];
+    
+    return [
+      { categoria: 'Poomsae', valor: latestEvaluation.poomsae_score || 0 },
+      { categoria: 'Chutes', valor: latestEvaluation.kicks_score || 0 },
+      { categoria: 'Socos', valor: latestEvaluation.punches_score || 0 },
+      { categoria: 'Defesas', valor: latestEvaluation.blocks_score || 0 },
+      { categoria: 'Equilíbrio', valor: latestEvaluation.balance_score || 0 },
+      { categoria: 'Flexibilidade', valor: latestEvaluation.flexibility_score || 0 },
+      { categoria: 'Força', valor: latestEvaluation.strength_score || 0 },
+      { categoria: 'Disciplina', valor: latestEvaluation.discipline_score || 0 }
+    ];
+  }, [latestEvaluation]);
+
+  const handleCreateEvaluation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentId) return;
+
+    const result = await createEvaluation({
+      student_id: selectedStudentId,
+      instructor_id: profile?.id,
+      ...evaluationForm
+    });
+
+    if (result?.data) {
+      setIsEvaluationDialogOpen(false);
+      setEvaluationForm({});
+    }
+  };
+
+  const handleCreateGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentId || !goalForm.title) return;
+
+    const result = await createGoal({
+      student_id: selectedStudentId,
+      instructor_id: profile?.id,
+      ...goalForm
+    });
+
+    if (result?.data) {
+      setIsGoalDialogOpen(false);
+      setGoalForm({});
+    }
+  };
+
+  const handleCreateAchievement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentId || !achievementForm.title) return;
+
+    const result = await createAchievement({
+      student_id: selectedStudentId,
+      ...achievementForm
+    });
+
+    if (result?.data) {
+      setIsAchievementDialogOpen(false);
+      setAchievementForm({});
+    }
+  };
+
+  const handleCreateCompetition = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentId || !competitionForm.competition_name) return;
+
+    const result = await createCompetition({
+      student_id: selectedStudentId,
+      ...competitionForm
+    });
+
+    if (result?.data) {
+      setIsCompetitionDialogOpen(false);
+      setCompetitionForm({});
+    }
+  };
+
+  const getAverageScore = (category: 'technical' | 'combat' | 'physical' | 'mental') => {
+    if (!latestEvaluation) return 0;
+    
+    switch (category) {
+      case 'technical':
+        return ((latestEvaluation.poomsae_score || 0) + (latestEvaluation.kicks_score || 0) + 
+                (latestEvaluation.punches_score || 0) + (latestEvaluation.blocks_score || 0)) / 4;
+      case 'combat':
+        return ((latestEvaluation.sparring_technique || 0) + (latestEvaluation.sparring_strategy || 0) + 
+                (latestEvaluation.sparring_defense || 0) + (latestEvaluation.sparring_control || 0)) / 4;
+      case 'physical':
+        return ((latestEvaluation.balance_score || 0) + (latestEvaluation.flexibility_score || 0) + 
+                (latestEvaluation.strength_score || 0) + (latestEvaluation.speed_score || 0)) / 4;
+      case 'mental':
+        return ((latestEvaluation.discipline_score || 0) + (latestEvaluation.respect_score || 0) + 
+                (latestEvaluation.focus_score || 0) + (latestEvaluation.self_confidence || 0)) / 4;
+      default:
+        return 0;
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard de Evolução</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Evolução do Aluno</h1>
             <p className="text-muted-foreground">
-              Acompanhe o progresso técnico dos alunos
+              Acompanhe o progresso técnico e desenvolvimento dos alunos
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Select defaultValue="joao">
-              <SelectTrigger className="w-48">
-                <SelectValue />
+            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Selecione um aluno" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="joao">João Silva</SelectItem>
-                <SelectItem value="maria">Maria Santos</SelectItem>
-                <SelectItem value="pedro">Pedro Oliveira</SelectItem>
-                <SelectItem value="ana">Ana Costa</SelectItem>
+                {studentsLoading ? (
+                  <SelectItem value="" disabled>Carregando...</SelectItem>
+                ) : (
+                  students.map((student) => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {(student.profile as any)?.full_name} - {student.belt_color}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
-            <Button className="bg-gradient-primary">
-              <Calendar className="mr-2 h-4 w-4" />
-              Relatório
-            </Button>
+            {selectedStudentId && (
+              <div className="flex space-x-2">
+                <Dialog open={isEvaluationDialogOpen} onOpenChange={setIsEvaluationDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-gradient-primary">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Nova Avaliação
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Nova Avaliação - {selectedStudent?.profile?.full_name}</DialogTitle>
+                      <DialogDescription>
+                        Registre uma avaliação detalhada do desenvolvimento do aluno
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateEvaluation} className="space-y-6">
+                      <Tabs defaultValue="technical" className="w-full">
+                        <TabsList className="grid w-full grid-cols-4">
+                          <TabsTrigger value="technical">Técnicas</TabsTrigger>
+                          <TabsTrigger value="combat">Combate</TabsTrigger>
+                          <TabsTrigger value="physical">Físico</TabsTrigger>
+                          <TabsTrigger value="mental">Mental</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="technical" className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            {[
+                              { key: 'poomsae_score', label: 'Poomsae' },
+                              { key: 'kicks_score', label: 'Chutes' },
+                              { key: 'punches_score', label: 'Socos' },
+                              { key: 'blocks_score', label: 'Defesas' },
+                              { key: 'stances_score', label: 'Posições' },
+                              { key: 'precision_score', label: 'Precisão' }
+                            ].map(field => (
+                              <div key={field.key} className="space-y-2">
+                                <Label>{field.label} (0-10)</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="10"
+                                  step="0.1"
+                                  value={evaluationForm[field.key] || ''}
+                                  onChange={(e) => setEvaluationForm(prev => ({
+                                    ...prev,
+                                    [field.key]: parseFloat(e.target.value) || 0
+                                  }))}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="combat" className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            {[
+                              { key: 'sparring_technique', label: 'Técnica no Combate' },
+                              { key: 'sparring_strategy', label: 'Estratégia' },
+                              { key: 'sparring_defense', label: 'Defesa' },
+                              { key: 'sparring_control', label: 'Controle' },
+                              { key: 'sparring_attitude', label: 'Atitude' }
+                            ].map(field => (
+                              <div key={field.key} className="space-y-2">
+                                <Label>{field.label} (0-10)</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="10"
+                                  step="0.1"
+                                  value={evaluationForm[field.key] || ''}
+                                  onChange={(e) => setEvaluationForm(prev => ({
+                                    ...prev,
+                                    [field.key]: parseFloat(e.target.value) || 0
+                                  }))}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="physical" className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            {[
+                              { key: 'balance_score', label: 'Equilíbrio' },
+                              { key: 'flexibility_score', label: 'Flexibilidade' },
+                              { key: 'strength_score', label: 'Força' },
+                              { key: 'speed_score', label: 'Velocidade' }
+                            ].map(field => (
+                              <div key={field.key} className="space-y-2">
+                                <Label>{field.label} (0-10)</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="10"
+                                  step="0.1"
+                                  value={evaluationForm[field.key] || ''}
+                                  onChange={(e) => setEvaluationForm(prev => ({
+                                    ...prev,
+                                    [field.key]: parseFloat(e.target.value) || 0
+                                  }))}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </TabsContent>
+                        
+                        <TabsContent value="mental" className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            {[
+                              { key: 'discipline_score', label: 'Disciplina' },
+                              { key: 'respect_score', label: 'Respeito' },
+                              { key: 'focus_score', label: 'Foco' },
+                              { key: 'improvement_attitude', label: 'Atitude de Melhoria' },
+                              { key: 'self_confidence', label: 'Autoconfiança' }
+                            ].map(field => (
+                              <div key={field.key} className="space-y-2">
+                                <Label>{field.label} (0-10)</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="10"
+                                  step="0.1"
+                                  value={evaluationForm[field.key] || ''}
+                                  onChange={(e) => setEvaluationForm(prev => ({
+                                    ...prev,
+                                    [field.key]: parseFloat(e.target.value) || 0
+                                  }))}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                      
+                      <Separator />
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Observações Gerais</Label>
+                          <Textarea
+                            placeholder="Observações sobre o desempenho geral do aluno..."
+                            value={evaluationForm.observations || ''}
+                            onChange={(e) => setEvaluationForm(prev => ({
+                              ...prev,
+                              observations: e.target.value
+                            }))}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Pontos Fortes</Label>
+                            <Textarea
+                              placeholder="Principais pontos fortes do aluno..."
+                              value={evaluationForm.strengths || ''}
+                              onChange={(e) => setEvaluationForm(prev => ({
+                                ...prev,
+                                strengths: e.target.value
+                              }))}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Áreas para Melhoria</Label>
+                            <Textarea
+                              placeholder="Áreas que precisam de mais atenção..."
+                              value={evaluationForm.areas_for_improvement || ''}
+                              onChange={(e) => setEvaluationForm(prev => ({
+                                ...prev,
+                                areas_for_improvement: e.target.value
+                              }))}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Metas de Curto Prazo</Label>
+                            <Textarea
+                              placeholder="Objetivos para as próximas semanas..."
+                              value={evaluationForm.short_term_goals || ''}
+                              onChange={(e) => setEvaluationForm(prev => ({
+                                ...prev,
+                                short_term_goals: e.target.value
+                              }))}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Metas de Longo Prazo</Label>
+                            <Textarea
+                              placeholder="Objetivos para os próximos meses..."
+                              value={evaluationForm.long_term_goals || ''}
+                              onChange={(e) => setEvaluationForm(prev => ({
+                                ...prev,
+                                long_term_goals: e.target.value
+                              }))}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Data da Avaliação</Label>
+                          <Input
+                            type="date"
+                            value={evaluationForm.evaluation_date || new Date().toISOString().split('T')[0]}
+                            onChange={(e) => setEvaluationForm(prev => ({
+                              ...prev,
+                              evaluation_date: e.target.value
+                            }))}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsEvaluationDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" className="bg-gradient-primary">
+                          Salvar Avaliação
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+                
+                <Button variant="outline" onClick={() => setIsGoalDialogOpen(true)}>
+                  <Target className="mr-2 h-4 w-4" />
+                  Nova Meta
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Métricas Principais */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {!selectedStudentId ? (
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Faixa Atual</CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-secondary">Verde</div>
-              <p className="text-xs text-muted-foreground">
-                Próxima: Azul em 45 dias
+            <CardContent className="py-12 text-center">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Selecione um Aluno</h3>
+              <p className="text-muted-foreground">
+                Selecione um aluno acima para visualizar sua evolução e desenvolvimento
               </p>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Progresso Geral</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">86%</div>
-              <p className="text-xs text-muted-foreground">
-                +12% este mês
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Frequência</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">92%</div>
-              <p className="text-xs text-muted-foreground">
-                28 aulas de 30
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Meta Mensal</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">8/10</div>
-              <p className="text-xs text-muted-foreground">
-                Objetivos alcançados
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Evolução por Técnica */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Evolução por Técnica</CardTitle>
-              <CardDescription>
-                Progresso nas habilidades principais nos últimos 6 meses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={dadosProgresso}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="chutes" 
-                    stroke="hsl(var(--secondary))" 
-                    strokeWidth={2}
-                    name="Chutes"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="socos" 
-                    stroke="hsl(var(--accent))" 
-                    strokeWidth={2}
-                    name="Socos"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="defesas" 
-                    stroke="hsl(var(--warning))" 
-                    strokeWidth={2}
-                    name="Defesas"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="formas" 
-                    stroke="hsl(var(--success))" 
-                    strokeWidth={2}
-                    name="Formas"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Radar de Habilidades */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Perfil de Habilidades</CardTitle>
-              <CardDescription>
-                Avaliação atual em todas as áreas técnicas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={dadosRadar}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="habilidade" />
-                  <PolarRadiusAxis domain={[0, 100]} />
-                  <Radar
-                    name="Habilidades"
-                    dataKey="valor"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.2}
-                    strokeWidth={2}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Frequência Semanal */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Frequência Semanal</CardTitle>
-              <CardDescription>
-                Presenças nas últimas 8 semanas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={dadosFrequencia}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="semana" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar 
-                    dataKey="presencas" 
-                    fill="hsl(var(--accent))"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Metas e Conquistas */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Metas do Mês</CardTitle>
-              <CardDescription>
-                Objetivos técnicos e de frequência
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { meta: "Aperfeiçoar Ap Chagi", progresso: 85, concluido: false },
-                { meta: "Memorizar Poomsae Taegeuk 4", progresso: 100, concluido: true },
-                { meta: "Frequência 90%+", progresso: 92, concluido: true },
-                { meta: "Melhoria na Flexibilidade", progresso: 70, concluido: false },
-                { meta: "Técnicas de Defesa", progresso: 60, concluido: false },
-              ].map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">{item.meta}</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm">{item.progresso}%</span>
-                      {item.concluido && (
-                        <Badge className="bg-gradient-secondary text-white">
-                          Concluído
-                        </Badge>
-                      )}
-                    </div>
+        ) : evolutionLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                    <div className="h-8 bg-muted rounded w-3/4"></div>
+                    <div className="h-3 bg-muted rounded w-full"></div>
                   </div>
-                  <Progress 
-                    value={item.progresso} 
-                    className="h-2"
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Conquistas Recentes */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Conquistas Recentes</CardTitle>
-            <CardDescription>
-              Últimas conquistas e marcos alcançados
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  titulo: "Faixa Verde Conquistada",
-                  data: "15/02/2024",
-                  tipo: "graduacao",
-                  descricao: "Aprovado em todos os quesitos técnicos"
-                },
-                {
-                  titulo: "100 Aulas Frequentadas",
-                  data: "10/02/2024",
-                  tipo: "frequencia",
-                  descricao: "Marco de dedicação e persistência"
-                },
-                {
-                  titulo: "1º Lugar - Poomsae Regional",
-                  data: "28/01/2024",
-                  tipo: "competicao",
-                  descricao: "Excelente desempenho em competição"
-                }
-              ].map((conquista, index) => (
-                <div key={index} className="p-4 border rounded-lg space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Award className="h-5 w-5 text-secondary" />
-                    <h4 className="font-medium">{conquista.titulo}</h4>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Métricas Principais */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Média Técnica</CardTitle>
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-secondary">
+                    {getAverageScore('technical').toFixed(1)}
                   </div>
-                  <p className="text-sm text-muted-foreground">{conquista.descricao}</p>
-                  <p className="text-xs text-muted-foreground">{conquista.data}</p>
-                </div>
-              ))}
+                  <p className="text-xs text-muted-foreground">
+                    {latestEvaluation ? 'Última avaliação' : 'Sem avaliações'}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Combate</CardTitle>
+                  <Swords className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {getAverageScore('combat').toFixed(1)}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Habilidades de luta
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Condição Física</CardTitle>
+                  <Zap className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {getAverageScore('physical').toFixed(1)}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Força, velocidade, flexibilidade
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Disciplina Mental</CardTitle>
+                  <Brain className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {getAverageScore('mental').toFixed(1)}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Foco, disciplina, confiança
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+
+            {evolutionChartData.length > 0 && (
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Evolução por Categoria */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Evolução por Categoria</CardTitle>
+                    <CardDescription>
+                      Progresso nas diferentes áreas ao longo do tempo
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={evolutionChartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" />
+                        <YAxis domain={[0, 10]} />
+                        <Tooltip />
+                        <Area 
+                          type="monotone" 
+                          dataKey="tecnicas" 
+                          stackId="1"
+                          stroke="hsl(var(--primary))" 
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.3}
+                          name="Técnicas"
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="combate" 
+                          stackId="2"
+                          stroke="hsl(var(--secondary))" 
+                          fill="hsl(var(--secondary))"
+                          fillOpacity={0.3}
+                          name="Combate"
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="fisico" 
+                          stackId="3"
+                          stroke="hsl(var(--accent))" 
+                          fill="hsl(var(--accent))"
+                          fillOpacity={0.3}
+                          name="Físico"
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="mental" 
+                          stackId="4"
+                          stroke="hsl(var(--warning))" 
+                          fill="hsl(var(--warning))"
+                          fillOpacity={0.3}
+                          name="Mental"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Radar de Habilidades */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Perfil Atual de Habilidades</CardTitle>
+                    <CardDescription>
+                      Avaliação detalhada por área técnica
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <RadarChart data={radarData}>
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="categoria" />
+                        <PolarRadiusAxis domain={[0, 10]} />
+                        <Radar
+                          name="Habilidades"
+                          dataKey="valor"
+                          stroke="hsl(var(--primary))"
+                          fill="hsl(var(--primary))"
+                          fillOpacity={0.2}
+                          strokeWidth={2}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Metas Ativas */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Metas Ativas</CardTitle>
+                    <CardDescription>
+                      Objetivos em andamento
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setIsGoalDialogOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova Meta
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {goals.filter(g => !g.completed).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">
+                      Nenhuma meta ativa. Crie uma nova meta para acompanhar o progresso.
+                    </p>
+                  ) : (
+                    goals.filter(g => !g.completed).map((goal) => {
+                      const Icon = categoryIcons[goal.category as keyof typeof categoryIcons];
+                      return (
+                        <div key={goal.id} className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center space-x-2">
+                              <Icon className="h-4 w-4" style={{ color: categoryColors[goal.category as keyof typeof categoryColors] }} />
+                              <span className="text-sm font-medium">{goal.title}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm">{goal.current_progress}%</span>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => updateGoalProgress(goal.id, Math.min(100, goal.current_progress + 10))}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <Progress value={goal.current_progress} className="h-2" />
+                          {goal.description && (
+                            <p className="text-xs text-muted-foreground">{goal.description}</p>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Conquistas Recentes */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Conquistas Recentes</CardTitle>
+                    <CardDescription>
+                      Últimas conquistas e marcos
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setIsAchievementDialogOpen(true)}
+                  >
+                    <Award className="h-4 w-4 mr-2" />
+                    Nova Conquista
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {achievements.slice(0, 5).map((achievement) => (
+                      <div key={achievement.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                        <div className="flex-shrink-0">
+                          <Award className="h-6 w-6 text-yellow-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium">{achievement.title}</p>
+                          {achievement.description && (
+                            <p className="text-xs text-muted-foreground">{achievement.description}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(achievement.achievement_date).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                        {achievement.points && achievement.points > 0 && (
+                          <Badge variant="secondary">
+                            {achievement.points} pts
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {achievements.length === 0 && (
+                      <p className="text-muted-foreground text-center py-4">
+                        Nenhuma conquista registrada ainda.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Competições */}
+            {competitions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Histórico de Competições</CardTitle>
+                  <CardDescription>
+                    Participações e resultados em competições
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {competitions.map((competition) => (
+                      <div key={competition.id} className="p-4 border rounded-lg space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">{competition.competition_name}</h4>
+                          {competition.position && (
+                            <Badge 
+                              variant={competition.position <= 3 ? "default" : "secondary"}
+                              className={
+                                competition.position === 1 ? "bg-yellow-500" :
+                                competition.position === 2 ? "bg-gray-400" :
+                                competition.position === 3 ? "bg-amber-600" : ""
+                              }
+                            >
+                              {competition.position}º lugar
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {competition.category} - {competition.division}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(competition.competition_date).toLocaleDateString('pt-BR')}
+                        </p>
+                        {competition.total_participants && (
+                          <p className="text-xs text-muted-foreground">
+                            {competition.total_participants} participantes
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Última Avaliação Detalhada */}
+            {latestEvaluation && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Última Avaliação Detalhada</CardTitle>
+                  <CardDescription>
+                    Avaliação de {new Date(latestEvaluation.evaluation_date).toLocaleDateString('pt-BR')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {latestEvaluation.observations && (
+                    <div>
+                      <h4 className="font-medium mb-2">Observações Gerais</h4>
+                      <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                        {latestEvaluation.observations}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {latestEvaluation.strengths && (
+                      <div>
+                        <h4 className="font-medium mb-2 flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
+                          Pontos Fortes
+                        </h4>
+                        <p className="text-sm text-muted-foreground bg-green-50 p-3 rounded">
+                          {latestEvaluation.strengths}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {latestEvaluation.areas_for_improvement && (
+                      <div>
+                        <h4 className="font-medium mb-2 flex items-center">
+                          <TrendingDown className="h-4 w-4 mr-2 text-amber-500" />
+                          Áreas para Melhoria
+                        </h4>
+                        <p className="text-sm text-muted-foreground bg-amber-50 p-3 rounded">
+                          {latestEvaluation.areas_for_improvement}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {latestEvaluation.short_term_goals && (
+                      <div>
+                        <h4 className="font-medium mb-2 flex items-center">
+                          <Target className="h-4 w-4 mr-2 text-blue-500" />
+                          Metas de Curto Prazo
+                        </h4>
+                        <p className="text-sm text-muted-foreground bg-blue-50 p-3 rounded">
+                          {latestEvaluation.short_term_goals}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {latestEvaluation.long_term_goals && (
+                      <div>
+                        <h4 className="font-medium mb-2 flex items-center">
+                          <Star className="h-4 w-4 mr-2 text-purple-500" />
+                          Metas de Longo Prazo
+                        </h4>
+                        <p className="text-sm text-muted-foreground bg-purple-50 p-3 rounded">
+                          {latestEvaluation.long_term_goals}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
+
+        {/* Dialog para Nova Meta */}
+        <Dialog open={isGoalDialogOpen} onOpenChange={setIsGoalDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nova Meta</DialogTitle>
+              <DialogDescription>
+                Defina uma nova meta para {selectedStudent?.profile?.full_name}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateGoal} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Título da Meta</Label>
+                <Input
+                  required
+                  placeholder="Ex: Aperfeiçoar Ap Chagi"
+                  value={goalForm.title || ''}
+                  onChange={(e) => setGoalForm(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Categoria</Label>
+                <Select 
+                  value={goalForm.category || ''} 
+                  onValueChange={(value) => setGoalForm(prev => ({ ...prev, category: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="technique">Técnica</SelectItem>
+                    <SelectItem value="physical">Física</SelectItem>
+                    <SelectItem value="mental">Mental</SelectItem>
+                    <SelectItem value="competition">Competição</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="Detalhes sobre a meta..."
+                  value={goalForm.description || ''}
+                  onChange={(e) => setGoalForm(prev => ({ ...prev, description: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Data Alvo</Label>
+                <Input
+                  type="date"
+                  value={goalForm.target_date || ''}
+                  onChange={(e) => setGoalForm(prev => ({ ...prev, target_date: e.target.value }))}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsGoalDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-gradient-primary">
+                  Criar Meta
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog para Nova Conquista */}
+        <Dialog open={isAchievementDialogOpen} onOpenChange={setIsAchievementDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nova Conquista</DialogTitle>
+              <DialogDescription>
+                Registre uma conquista para {selectedStudent?.profile?.full_name}
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateAchievement} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Título da Conquista</Label>
+                <Input
+                  required
+                  placeholder="Ex: 1º Lugar em Poomsae"
+                  value={achievementForm.title || ''}
+                  onChange={(e) => setAchievementForm(prev => ({ ...prev, title: e.target.value }))}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Tipo de Conquista</Label>
+                <Select 
+                  value={achievementForm.achievement_type || ''} 
+                  onValueChange={(value) => setAchievementForm(prev => ({ ...prev, achievement_type: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="belt">Graduação</SelectItem>
+                    <SelectItem value="competition">Competição</SelectItem>
+                    <SelectItem value="milestone">Marco</SelectItem>
+                    <SelectItem value="technique">Técnica</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="Detalhes sobre a conquista..."
+                  value={achievementForm.description || ''}
+                  onChange={(e) => setAchievementForm(prev => ({ ...prev, description: e.target.value }))}
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Data da Conquista</Label>
+                  <Input
+                    type="date"
+                    value={achievementForm.achievement_date || new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setAchievementForm(prev => ({ ...prev, achievement_date: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Pontos (Opcional)</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={achievementForm.points || ''}
+                    onChange={(e) => setAchievementForm(prev => ({ 
+                      ...prev, 
+                      points: e.target.value ? parseInt(e.target.value) : 0 
+                    }))}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsAchievementDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-gradient-primary">
+                  Registrar Conquista
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

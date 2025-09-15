@@ -481,6 +481,225 @@ export type Database = {
         }
         Relationships: []
       }
+      student_achievements: {
+        Row: {
+          achievement_date: string
+          achievement_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          points: number | null
+          student_id: string
+          title: string
+        }
+        Insert: {
+          achievement_date?: string
+          achievement_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          points?: number | null
+          student_id: string
+          title: string
+        }
+        Update: {
+          achievement_date?: string
+          achievement_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          points?: number | null
+          student_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      student_competitions: {
+        Row: {
+          category: string | null
+          competition_date: string
+          competition_name: string
+          created_at: string | null
+          division: string | null
+          id: string
+          notes: string | null
+          position: number | null
+          student_id: string
+          total_participants: number | null
+        }
+        Insert: {
+          category?: string | null
+          competition_date: string
+          competition_name: string
+          created_at?: string | null
+          division?: string | null
+          id?: string
+          notes?: string | null
+          position?: number | null
+          student_id: string
+          total_participants?: number | null
+        }
+        Update: {
+          category?: string | null
+          competition_date?: string
+          competition_name?: string
+          created_at?: string | null
+          division?: string | null
+          id?: string
+          notes?: string | null
+          position?: number | null
+          student_id?: string
+          total_participants?: number | null
+        }
+        Relationships: []
+      }
+      student_evaluations: {
+        Row: {
+          areas_for_improvement: string | null
+          balance_score: number | null
+          blocks_score: number | null
+          created_at: string | null
+          discipline_score: number | null
+          evaluation_date: string
+          flexibility_score: number | null
+          focus_score: number | null
+          id: string
+          improvement_attitude: number | null
+          instructor_id: string | null
+          kicks_score: number | null
+          long_term_goals: string | null
+          observations: string | null
+          poomsae_score: number | null
+          precision_score: number | null
+          punches_score: number | null
+          respect_score: number | null
+          self_confidence: number | null
+          short_term_goals: string | null
+          sparring_attitude: number | null
+          sparring_control: number | null
+          sparring_defense: number | null
+          sparring_strategy: number | null
+          sparring_technique: number | null
+          speed_score: number | null
+          stances_score: number | null
+          strength_score: number | null
+          strengths: string | null
+          student_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          areas_for_improvement?: string | null
+          balance_score?: number | null
+          blocks_score?: number | null
+          created_at?: string | null
+          discipline_score?: number | null
+          evaluation_date?: string
+          flexibility_score?: number | null
+          focus_score?: number | null
+          id?: string
+          improvement_attitude?: number | null
+          instructor_id?: string | null
+          kicks_score?: number | null
+          long_term_goals?: string | null
+          observations?: string | null
+          poomsae_score?: number | null
+          precision_score?: number | null
+          punches_score?: number | null
+          respect_score?: number | null
+          self_confidence?: number | null
+          short_term_goals?: string | null
+          sparring_attitude?: number | null
+          sparring_control?: number | null
+          sparring_defense?: number | null
+          sparring_strategy?: number | null
+          sparring_technique?: number | null
+          speed_score?: number | null
+          stances_score?: number | null
+          strength_score?: number | null
+          strengths?: string | null
+          student_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          areas_for_improvement?: string | null
+          balance_score?: number | null
+          blocks_score?: number | null
+          created_at?: string | null
+          discipline_score?: number | null
+          evaluation_date?: string
+          flexibility_score?: number | null
+          focus_score?: number | null
+          id?: string
+          improvement_attitude?: number | null
+          instructor_id?: string | null
+          kicks_score?: number | null
+          long_term_goals?: string | null
+          observations?: string | null
+          poomsae_score?: number | null
+          precision_score?: number | null
+          punches_score?: number | null
+          respect_score?: number | null
+          self_confidence?: number | null
+          short_term_goals?: string | null
+          sparring_attitude?: number | null
+          sparring_control?: number | null
+          sparring_defense?: number | null
+          sparring_strategy?: number | null
+          sparring_technique?: number | null
+          speed_score?: number | null
+          stances_score?: number | null
+          strength_score?: number | null
+          strengths?: string | null
+          student_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      student_goals: {
+        Row: {
+          category: string
+          completed: boolean | null
+          completed_date: string | null
+          created_at: string | null
+          current_progress: number | null
+          description: string | null
+          id: string
+          instructor_id: string | null
+          student_id: string
+          target_date: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          completed?: boolean | null
+          completed_date?: string | null
+          created_at?: string | null
+          current_progress?: number | null
+          description?: string | null
+          id?: string
+          instructor_id?: string | null
+          student_id: string
+          target_date?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          completed?: boolean | null
+          completed_date?: string | null
+          created_at?: string | null
+          current_progress?: number | null
+          description?: string | null
+          id?: string
+          instructor_id?: string | null
+          student_id?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           active: boolean
