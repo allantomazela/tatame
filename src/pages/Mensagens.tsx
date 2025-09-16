@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ export default function Mensagens() {
   const [conversaSelecionada, setConversaSelecionada] = useState<string | null>(null);
   const [novaMensagem, setNovaMensagem] = useState("");
   const [busca, setBusca] = useState("");
+  const [searchParams] = useSearchParams();
   
   const { user } = useSupabaseAuth();
   const { messages, conversations, loading, fetchMessages, sendMessage } = useMessages();
@@ -67,6 +69,20 @@ export default function Mensagens() {
     setConversaSelecionada(userId);
     await fetchMessages(userId);
   };
+
+  // Check for chat parameter in URL and auto-select conversation
+  useEffect(() => {
+    const chatUserId = searchParams.get('chat');
+    if (chatUserId && conversations.length > 0) {
+      const existingConversation = conversations.find(conv => conv.user_id === chatUserId);
+      if (existingConversation) {
+        setConversaSelecionada(existingConversation.user_id);
+      } else {
+        // Start a new conversation with this user
+        setConversaSelecionada(chatUserId);
+      }
+    }
+  }, [searchParams, conversations]);
 
   useEffect(() => {
     if (conversaSelecionada) {

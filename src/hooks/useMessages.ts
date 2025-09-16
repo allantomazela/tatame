@@ -123,7 +123,11 @@ export function useMessages() {
         .or(`and(sender_id.eq.${user.id},recipient_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},recipient_id.eq.${user.id})`)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar mensagens:', error);
+        setMessages([]); // Set empty array even if no messages exist yet
+        return;
+      }
 
       setMessages(data || []);
 
@@ -137,6 +141,7 @@ export function useMessages() {
 
     } catch (error) {
       console.error('Erro ao buscar mensagens:', error);
+      setMessages([]);
       toast({
         title: "Erro",
         description: "Não foi possível carregar as mensagens.",

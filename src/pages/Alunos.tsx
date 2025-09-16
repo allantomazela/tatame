@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -24,65 +26,13 @@ import {
   Calendar
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface Aluno {
-  id: string;
-  nome: string;
-  faixa: string;
-  idade: number;
-  frequencia: number;
-  proximaGraduacao: string;
-  contato: string;
-  status: "ativo" | "inativo" | "suspenso";
-}
-
-const alunosMock: Aluno[] = [
-  {
-    id: "1",
-    nome: "João Silva",
-    faixa: "Verde",
-    idade: 14,
-    frequencia: 92,
-    proximaGraduacao: "2024-04-15",
-    contato: "joao@email.com",
-    status: "ativo"
-  },
-  {
-    id: "2",
-    nome: "Maria Santos",
-    faixa: "Azul",
-    idade: 16,
-    frequencia: 87,
-    proximaGraduacao: "2024-06-20",
-    contato: "maria@email.com",
-    status: "ativo"
-  },
-  {
-    id: "3",
-    nome: "Pedro Oliveira",
-    faixa: "Amarela",
-    idade: 12,
-    frequencia: 78,
-    proximaGraduacao: "2024-03-10",
-    contato: "pedro@email.com",
-    status: "ativo"
-  },
-  {
-    id: "4",
-    nome: "Ana Costa",
-    faixa: "Branca",
-    idade: 10,
-    frequencia: 95,
-    proximaGraduacao: "2024-05-05",
-    contato: "ana@email.com",
-    status: "ativo"
-  },
-];
+import { useStudents } from "@/hooks/useStudents";
 
 export default function Alunos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFaixa, setFilterFaixa] = useState("todas");
-  const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null);
+  const { students, loading } = useStudents();
+  const navigate = useNavigate();
 
   const getFaixaColor = (faixa: string) => {
     const colors = {
@@ -105,9 +55,26 @@ export default function Alunos() {
     return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
-  const filteredAlunos = alunosMock.filter(aluno => {
-    const matchesSearch = aluno.nome.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFaixa = filterFaixa === "todas" || aluno.faixa === filterFaixa;
+  const getAge = (birthDate: string | null): number => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const handleChatClick = (studentProfileId: string) => {
+    navigate(`/mensagens?chat=${studentProfileId}`);
+  };
+
+  const filteredStudents = students.filter(student => {
+    const studentName = student.profile?.full_name || '';
+    const matchesSearch = studentName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFaixa = filterFaixa === "todas" || student.belt_color === filterFaixa.toLowerCase();
     return matchesSearch && matchesFaixa;
   });
 
@@ -205,12 +172,12 @@ export default function Alunos() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todas">Todas as Faixas</SelectItem>
-                    <SelectItem value="Branca">Branca</SelectItem>
-                    <SelectItem value="Amarela">Amarela</SelectItem>
-                    <SelectItem value="Verde">Verde</SelectItem>
-                    <SelectItem value="Azul">Azul</SelectItem>
-                    <SelectItem value="Vermelha">Vermelha</SelectItem>
-                    <SelectItem value="Preta">Preta</SelectItem>
+                    <SelectItem value="branca">Branca</SelectItem>
+                    <SelectItem value="amarela">Amarela</SelectItem>
+                    <SelectItem value="verde">Verde</SelectItem>
+                    <SelectItem value="azul">Azul</SelectItem>
+                    <SelectItem value="vermelha">Vermelha</SelectItem>
+                    <SelectItem value="preta">Preta</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -220,65 +187,102 @@ export default function Alunos() {
 
         {/* Lista de Alunos */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredAlunos.map((aluno) => (
-            <Card key={aluno.id} className="hover:shadow-accent transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarImage src="" />
-                      <AvatarFallback className="bg-gradient-accent text-white">
-                        {aluno.nome.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <CardTitle className="text-lg">{aluno.nome}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{aluno.idade} anos</p>
+          {loading ? (
+            // Loading skeletons
+            Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div>
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-16 mt-1" />
+                      </div>
                     </div>
+                    <Skeleton className="h-6 w-16" />
                   </div>
-                  <Badge className={getFaixaColor(aluno.faixa)}>
-                    {aluno.faixa}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Frequência:</span>
-                  <span className="font-medium">{aluno.frequencia}%</span>
-                </div>
-                
-                <div className="flex items-center justify-between text-sm">
-                  <span>Status:</span>
-                  <Badge className={getStatusColor(aluno.status)} variant="outline">
-                    {aluno.status}
-                  </Badge>
-                </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex space-x-2 pt-2">
+                    <Skeleton className="h-8 flex-1" />
+                    <Skeleton className="h-8 flex-1" />
+                    <Skeleton className="h-8 flex-1" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            filteredStudents.map((student) => (
+              <Card key={student.id} className="hover:shadow-accent transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarImage src={student.profile?.avatar_url || ""} />
+                        <AvatarFallback className="bg-gradient-accent text-white">
+                          {student.profile?.full_name?.split(' ').map(n => n[0]).join('') || 'A'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">{student.profile?.full_name || 'Nome não disponível'}</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          {getAge(student.profile?.birth_date || null)} anos
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className={getFaixaColor(student.belt_color)}>
+                      {student.belt_color.charAt(0).toUpperCase() + student.belt_color.slice(1)}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Grau da Faixa:</span>
+                    <span className="font-medium">{student.belt_degree}º Dan</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Status:</span>
+                    <Badge className="bg-green-100 text-green-800" variant="outline">
+                      {student.active ? 'Ativo' : 'Inativo'}
+                    </Badge>
+                  </div>
 
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Próxima Graduação:</span>
-                  <p className="font-medium">{new Date(aluno.proximaGraduacao).toLocaleDateString('pt-BR')}</p>
-                </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Data de Ingresso:</span>
+                    <p className="font-medium">{new Date(student.date_joined).toLocaleDateString('pt-BR')}</p>
+                  </div>
 
-                <div className="flex space-x-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Eye className="mr-1 h-3 w-3" />
-                    Ver
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Edit className="mr-1 h-3 w-3" />
-                    Editar
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <MessageCircle className="mr-1 h-3 w-3" />
-                    Chat
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="flex space-x-2 pt-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Eye className="mr-1 h-3 w-3" />
+                      Ver
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Edit className="mr-1 h-3 w-3" />
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleChatClick(student.profile_id || '')}
+                    >
+                      <MessageCircle className="mr-1 h-3 w-3" />
+                      Chat
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
-        {filteredAlunos.length === 0 && (
+        {!loading && filteredStudents.length === 0 && (
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground">
