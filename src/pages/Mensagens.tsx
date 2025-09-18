@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useMessages, type Conversation, type Message } from "@/hooks/useMessages";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { NewConversationDialog } from "@/components/messaging/NewConversationDialog";
 
 // Remoção dos dados mock - agora usando dados do banco
 
@@ -105,6 +106,12 @@ export default function Mensagens() {
           <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle>Conversas</CardTitle>
+              
+              {/* Botão Nova Conversa */}
+              <NewConversationDialog 
+                onSelectUser={(userId) => selecionarConversa(userId)} 
+              />
+              
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
