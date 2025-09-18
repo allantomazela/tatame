@@ -20,6 +20,7 @@ import {
 import { useMessages, type Conversation, type Message } from "@/hooks/useMessages";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { NewConversationDialog } from "@/components/messaging/NewConversationDialog";
+import { useUsers } from "@/hooks/useUsers";
 
 // Remoção dos dados mock - agora usando dados do banco
 
@@ -31,8 +32,25 @@ export default function Mensagens() {
   
   const { user } = useSupabaseAuth();
   const { messages, conversations, loading, fetchMessages, sendMessage } = useMessages();
+  const { users } = useUsers();
 
   const conversaAtual = conversations.find(c => c.user_id === conversaSelecionada);
+  
+  // Se não existe conversa mas temos userId selecionado, criar conversa temporária
+  const conversaTemporaria = conversaSelecionada && !conversaAtual ? (() => {
+    const usuarioSelecionado = users.find(u => u.id === conversaSelecionada);
+    return {
+      id: conversaSelecionada,
+      user_id: conversaSelecionada,
+      name: usuarioSelecionado?.full_name || "Nova Conversa",
+      type: (usuarioSelecionado?.user_type || "aluno") as "instrutor" | "aluno" | "responsavel",
+      lastMessage: "",
+      time: "",
+      unreadCount: 0,
+      online: false,
+      avatar_url: usuarioSelecionado?.avatar_url
+    };
+  })() : null;
   
   const conversasFiltradas = conversations.filter(conversa =>
     conversa.name.toLowerCase().includes(busca.toLowerCase()) ||
@@ -68,6 +86,12 @@ export default function Mensagens() {
 
   const selecionarConversa = async (userId: string) => {
     setConversaSelecionada(userId);
+    await fetchMessages(userId);
+  };
+
+  const iniciarNovaConversa = async (userId: string) => {
+    setConversaSelecionada(userId);
+    // Força a busca de mensagens mesmo que não existam ainda
     await fetchMessages(userId);
   };
 
@@ -109,7 +133,7 @@ export default function Mensagens() {
               
               {/* Botão Nova Conversa */}
               <NewConversationDialog 
-                onSelectUser={(userId) => selecionarConversa(userId)} 
+                onSelectUser={(userId) => iniciarNovaConversa(userId)} 
               />
               
               <div className="relative">
@@ -203,25 +227,25 @@ export default function Mensagens() {
 
           {/* Chat Ativo */}
           <Card className="lg:col-span-2 flex flex-col">
-            {conversaAtual ? (
+            {(conversaAtual || conversaTemporaria) ? (
               <>
                 {/* Header do Chat */}
                 <CardHeader className="border-b">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={conversaAtual.avatar_url || ""} />
-                        <AvatarFallback className={getTipoColor(conversaAtual.type)}>
-                          {conversaAtual.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-semibold">{getTipoLabel(conversaAtual.type)} {conversaAtual.name}</h3>
-                        <p className="text-xs text-muted-foreground">
-                          {conversaAtual.online ? 'Online agora' : 'Visto por último hoje'}
-                        </p>
-                      </div>
-                    </div>
+                     <div className="flex items-center space-x-3">
+                       <Avatar className="h-10 w-10">
+                         <AvatarImage src={(conversaAtual || conversaTemporaria)?.avatar_url || ""} />
+                         <AvatarFallback className={getTipoColor((conversaAtual || conversaTemporaria)?.type || "aluno")}>
+                           {(conversaAtual || conversaTemporaria)?.name.split(' ').map(n => n[0]).join('') || "??"}
+                         </AvatarFallback>
+                       </Avatar>
+                       <div>
+                         <h3 className="font-semibold">{getTipoLabel((conversaAtual || conversaTemporaria)?.type || "aluno")} {(conversaAtual || conversaTemporaria)?.name}</h3>
+                         <p className="text-xs text-muted-foreground">
+                           {(conversaAtual || conversaTemporaria)?.online ? 'Online agora' : 'Disponível'}
+                         </p>
+                       </div>
+                     </div>
                     <div className="flex items-center space-x-2">
                       <Button variant="ghost" size="icon">
                         <Phone className="h-4 w-4" />
