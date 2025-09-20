@@ -10,11 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useClasses } from "@/hooks/useClasses";
 import { useStudents } from "@/hooks/useStudents";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Plus, Users, Clock, CalendarDays, UserPlus, UserMinus } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 
 const diasSemana = [
   { value: 0, label: 'Domingo' },
@@ -29,9 +30,10 @@ const diasSemana = [
 interface NovaClassForm {
   name: string;
   description: string;
-  day_of_week: number;
-  start_time: string;
-  end_time: string;
+  polo_name: string;
+  instructor_name: string;
+  training_days: number[];
+  training_schedule: Record<string, { start_time: string; end_time: string }>;
   max_students: number;
 }
 
@@ -43,7 +45,14 @@ export default function MinhasTurmas() {
   const [novaClassDialog, setNovaClassDialog] = useState(false);
   const [matriculaDialog, setMatriculaDialog] = useState(false);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<NovaClassForm>();
+  const { register, handleSubmit, reset, control, watch, setValue, formState: { errors } } = useForm<NovaClassForm>({
+    defaultValues: {
+      training_days: [],
+      training_schedule: {}
+    }
+  });
+
+  const selectedDays = watch('training_days') || [];
 
   // Verificar permissão APÓS todos os hooks
   if (userType !== 'mestre') {
@@ -58,8 +67,25 @@ export default function MinhasTurmas() {
 
   const onSubmitNovaClass = async (data: NovaClassForm) => {
     try {
+      // Para compatibilidade com o campo day_of_week existente, usar o primeiro dia selecionado
+      const firstDay = data.training_days.length > 0 ? data.training_days[0] : 1;
+      
+      // Para compatibilidade com start_time e end_time, usar o horário do primeiro dia
+      const firstDaySchedule = data.training_schedule[firstDay.toString()];
+      const start_time = firstDaySchedule?.start_time || "08:00";
+      const end_time = firstDaySchedule?.end_time || "09:00";
+
       await createClass({
-        ...data,
+        name: data.name,
+        description: data.description,
+        polo_name: data.polo_name,
+        instructor_name: data.instructor_name,
+        training_days: data.training_days,
+        training_schedule: data.training_schedule,
+        max_students: data.max_students,
+        day_of_week: firstDay,
+        start_time,
+        end_time,
         active: true
       });
       setNovaClassDialog(false);
@@ -135,6 +161,7 @@ export default function MinhasTurmas() {
                     />
                     {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
                   </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="description">Descrição</Label>
                     <Textarea 
@@ -143,49 +170,125 @@ export default function MinhasTurmas() {
                       placeholder="Descrição da turma..." 
                     />
                   </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="day_of_week">Dia da Semana</Label>
-                      <Select onValueChange={(value) => register("day_of_week").onChange({ target: { value: parseInt(value) } })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o dia" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {diasSemana.map(dia => (
-                            <SelectItem key={dia.value} value={dia.value.toString()}>
-                              {dia.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="max_students">Máx. Alunos</Label>
+                      <Label htmlFor="polo_name">Nome do Polo</Label>
                       <Input 
-                        id="max_students" 
-                        type="number" 
-                        {...register("max_students", { valueAsNumber: true })}
-                        placeholder="20" 
+                        id="polo_name" 
+                        {...register("polo_name", { required: "Nome do polo é obrigatório" })}
+                        placeholder="Ex: Polo Centro" 
                       />
+                      {errors.polo_name && <p className="text-sm text-red-500">{errors.polo_name.message}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="instructor_name">Nome do Professor</Label>
+                      <Input 
+                        id="instructor_name" 
+                        {...register("instructor_name", { required: "Nome do professor é obrigatório" })}
+                        placeholder="Ex: Mestre João" 
+                      />
+                      {errors.instructor_name && <p className="text-sm text-red-500">{errors.instructor_name.message}</p>}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="start_time">Horário Início</Label>
-                      <Input 
-                        id="start_time" 
-                        type="time" 
-                        {...register("start_time", { required: "Horário de início é obrigatório" })}
-                      />
+
+                  <div className="space-y-2">
+                    <Label>Dias de Treinos da Semana</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {diasSemana.map(dia => (
+                        <Controller
+                          key={dia.value}
+                          name="training_days"
+                          control={control}
+                          rules={{ 
+                            validate: value => value && value.length > 0 || "Selecione pelo menos um dia"
+                          }}
+                          render={({ field }) => (
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`day-${dia.value}`}
+                                checked={field.value?.includes(dia.value) || false}
+                                onCheckedChange={(checked) => {
+                                  const current = field.value || [];
+                                  if (checked) {
+                                    field.onChange([...current, dia.value]);
+                                  } else {
+                                    field.onChange(current.filter(d => d !== dia.value));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={`day-${dia.value}`} className="text-sm">
+                                {dia.label}
+                              </Label>
+                            </div>
+                          )}
+                        />
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="end_time">Horário Fim</Label>
-                      <Input 
-                        id="end_time" 
-                        type="time" 
-                        {...register("end_time", { required: "Horário de fim é obrigatório" })}
-                      />
+                    {errors.training_days && <p className="text-sm text-red-500">{errors.training_days.message}</p>}
+                  </div>
+
+                  {selectedDays.length > 0 && (
+                    <div className="space-y-3">
+                      <Label>Horários dos Treinos</Label>
+                      <div className="space-y-3">
+                        {selectedDays.map(dayValue => {
+                          const dayLabel = diasSemana.find(d => d.value === dayValue)?.label;
+                          return (
+                            <div key={dayValue} className="border rounded-lg p-3 space-y-2">
+                              <h4 className="font-medium text-sm">{dayLabel}</h4>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                  <Label className="text-xs">Início</Label>
+                                  <Input 
+                                    type="time" 
+                                    placeholder="08:00"
+                                    onChange={(e) => {
+                                      const current = watch('training_schedule') || {};
+                                      setValue('training_schedule', {
+                                        ...current,
+                                        [dayValue]: {
+                                          ...current[dayValue],
+                                          start_time: e.target.value
+                                        }
+                                      });
+                                    }}
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-xs">Fim</Label>
+                                  <Input 
+                                    type="time" 
+                                    placeholder="09:00"
+                                    onChange={(e) => {
+                                      const current = watch('training_schedule') || {};
+                                      setValue('training_schedule', {
+                                        ...current,
+                                        [dayValue]: {
+                                          ...current[dayValue],
+                                          end_time: e.target.value
+                                        }
+                                      });
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="max_students">Máximo de Alunos</Label>
+                    <Input 
+                      id="max_students" 
+                      type="number" 
+                      {...register("max_students", { valueAsNumber: true })}
+                      placeholder="20" 
+                    />
                   </div>
                 </div>
                 <DialogFooter>
@@ -244,13 +347,33 @@ export default function MinhasTurmas() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
+                        {turma.polo_name && (
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <span className="h-4 w-4 mr-2">🏢</span>
+                            {turma.polo_name}
+                          </div>
+                        )}
+                        {turma.instructor_name && (
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <span className="h-4 w-4 mr-2">👨‍🏫</span>
+                            {turma.instructor_name}
+                          </div>
+                        )}
                         <div className="flex items-center text-sm text-muted-foreground">
                           <CalendarDays className="h-4 w-4 mr-2" />
-                          {getDayLabel(turma.day_of_week)}
+                          {turma.training_days && turma.training_days.length > 0 
+                            ? turma.training_days.map(day => getDayLabel(day)).join(', ')
+                            : getDayLabel(turma.day_of_week)
+                          }
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Clock className="h-4 w-4 mr-2" />
-                          {formatTime(turma.start_time)} - {formatTime(turma.end_time)}
+                          {turma.training_schedule && Object.keys(turma.training_schedule).length > 0
+                            ? Object.entries(turma.training_schedule).map(([day, schedule]) => 
+                                `${getDayLabel(parseInt(day))}: ${schedule.start_time}-${schedule.end_time}`
+                              ).join(' | ')
+                            : `${formatTime(turma.start_time)} - ${formatTime(turma.end_time)}`
+                          }
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Users className="h-4 w-4 mr-2" />
@@ -271,8 +394,23 @@ export default function MinhasTurmas() {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>{turma.name}</CardTitle>
-                      <CardDescription>
-                        {getDayLabel(turma.day_of_week)} • {formatTime(turma.start_time)} - {formatTime(turma.end_time)}
+                      <CardDescription className="space-y-1">
+                        {turma.polo_name && <div>📍 {turma.polo_name}</div>}
+                        {turma.instructor_name && <div>👨‍🏫 {turma.instructor_name}</div>}
+                        <div>
+                          📅 {turma.training_days && turma.training_days.length > 0 
+                            ? turma.training_days.map(day => getDayLabel(day)).join(', ')
+                            : getDayLabel(turma.day_of_week)
+                          }
+                        </div>
+                        <div>
+                          🕐 {turma.training_schedule && Object.keys(turma.training_schedule).length > 0
+                            ? Object.entries(turma.training_schedule).map(([day, schedule]) => 
+                                `${getDayLabel(parseInt(day))}: ${schedule.start_time}-${schedule.end_time}`
+                              ).join(' | ')
+                            : `${formatTime(turma.start_time)} - ${formatTime(turma.end_time)}`
+                          }
+                        </div>
                       </CardDescription>
                     </div>
                     <Dialog open={matriculaDialog} onOpenChange={setMatriculaDialog}>

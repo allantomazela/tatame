@@ -17,6 +17,9 @@ export interface ClassData {
   updated_at?: string;
   instructor_name?: string;
   enrolled_count?: number;
+  polo_name?: string;
+  training_days?: number[];
+  training_schedule?: Record<string, { start_time: string; end_time: string }>;
 }
 
 export interface ClassEnrollment {
@@ -62,7 +65,8 @@ export function useClasses() {
 
       const classesWithDetails = (data || []).map(cls => ({
         ...cls,
-        instructor_name: cls.profiles?.full_name || 'Não definido'
+        instructor_name: cls.profiles?.full_name || 'Não definido',
+        training_schedule: cls.training_schedule as Record<string, { start_time: string; end_time: string }> || {}
       }));
 
       setClasses(classesWithDetails);
