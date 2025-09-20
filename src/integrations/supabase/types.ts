@@ -138,9 +138,13 @@ export type Database = {
           end_time: string
           id: string
           instructor_id: string | null
+          instructor_name: string | null
           max_students: number | null
           name: string
+          polo_name: string | null
           start_time: string
+          training_days: number[] | null
+          training_schedule: Json | null
           updated_at: string | null
         }
         Insert: {
@@ -151,9 +155,13 @@ export type Database = {
           end_time: string
           id?: string
           instructor_id?: string | null
+          instructor_name?: string | null
           max_students?: number | null
           name: string
+          polo_name?: string | null
           start_time: string
+          training_days?: number[] | null
+          training_schedule?: Json | null
           updated_at?: string | null
         }
         Update: {
@@ -164,9 +172,13 @@ export type Database = {
           end_time?: string
           id?: string
           instructor_id?: string | null
+          instructor_name?: string | null
           max_students?: number | null
           name?: string
+          polo_name?: string | null
           start_time?: string
+          training_days?: number[] | null
+          training_schedule?: Json | null
           updated_at?: string | null
         }
         Relationships: [
