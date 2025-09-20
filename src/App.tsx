@@ -16,6 +16,7 @@ import Configuracoes from "./pages/Configuracoes";
 import Progresso from "./pages/Progresso";
 import Conquistas from "./pages/Conquistas";
 import Relatorios from "./pages/Relatorios";
+import MinhasTurmas from "./pages/MinhasTurmas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -77,6 +78,11 @@ const App = () => (
           <Route path="/configuracoes" element={
             <ProtectedRoute>
               <Configuracoes />
+            </ProtectedRoute>
+          } />
+          <Route path="/minhas-turmas" element={
+            <ProtectedRoute allowedUserTypes={["mestre"]}>
+              <MinhasTurmas />
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -9,7 +9,8 @@ import {
   GraduationCap,
   Calendar,
   FileText,
-  Award
+  Award,
+  School
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -23,6 +24,7 @@ const navigationItems = {
   mestre: [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
     { icon: Users, label: "Alunos", href: "/alunos" },
+    { icon: School, label: "Minhas Turmas", href: "/minhas-turmas" },
     { icon: MessageCircle, label: "Mensagens", href: "/mensagens" },
     { icon: TrendingUp, label: "Evolução", href: "/evolucao" },
     { icon: GraduationCap, label: "Graduações", href: "/graduacoes" },
