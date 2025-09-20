@@ -45,7 +45,7 @@ export default function MinhasTurmas() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<NovaClassForm>();
 
-  // Verificar permissão
+  // Verificar permissão APÓS todos os hooks
   if (userType !== 'mestre') {
     return (
       <Layout>
