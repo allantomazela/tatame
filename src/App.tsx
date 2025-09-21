@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { Layout } from "@/components/layout/Layout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -33,57 +34,79 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              <Dashboard />
+              <Layout>
+                <Dashboard />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/alunos" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <AlunosGestao />
+              <Layout>
+                <AlunosGestao />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/mensagens" element={
             <ProtectedRoute>
-              <Mensagens />
+              <Layout>
+                <Mensagens />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/evolucao" element={
             <ProtectedRoute>
-              <Evolucao />
+              <Layout>
+                <Evolucao />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/progresso" element={
             <ProtectedRoute>
-              <Progresso />
+              <Layout>
+                <Progresso />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/conquistas" element={
             <ProtectedRoute>
-              <Conquistas />
+              <Layout>
+                <Conquistas />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/graduacoes" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <Graduacoes />
+              <Layout>
+                <Graduacoes />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/agenda" element={
             <ProtectedRoute>
-              <Agenda />
+              <Layout>
+                <Agenda />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/relatorios" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <Relatorios />
+              <Layout>
+                <Relatorios />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/configuracoes" element={
             <ProtectedRoute>
-              <Configuracoes />
+              <Layout>
+                <Configuracoes />
+              </Layout>
             </ProtectedRoute>
           } />
           <Route path="/minhas-turmas" element={
             <ProtectedRoute allowedUserTypes={["mestre"]}>
-              <MinhasTurmas />
+              <Layout>
+                <MinhasTurmas />
+              </Layout>
             </ProtectedRoute>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
