@@ -54,7 +54,7 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
       ? "bg-gradient-primary text-white shadow-primary/20 shadow-lg" 
-      : "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-200"
+      : "hover:bg-sidebar-accent/80 hover:text-accent transition-all duration-200"
 
   const filterItemsByRole = (items: typeof mainItems) => {
     return items.filter(item => {
@@ -94,7 +94,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <item.icon className="h-5 w-5 flex-shrink-0 text-tkd-blue group-hover:text-tkd-red transition-colors duration-200" />
                       {state !== "collapsed" && <span className="font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -113,7 +113,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <item.icon className="h-5 w-5 flex-shrink-0 text-tkd-gold group-hover:text-tkd-orange transition-colors duration-200" />
                       {state !== "collapsed" && <span className="font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -129,7 +129,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={handleSignOut} className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group">
-                  <LogOut className="h-5 w-5 flex-shrink-0 group-hover:rotate-12 transition-transform duration-200" />
+                  <LogOut className="h-5 w-5 flex-shrink-0 text-destructive group-hover:rotate-12 transition-all duration-200" />
                   {state !== "collapsed" && <span className="font-medium">Sair</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
