@@ -1,3 +1,4 @@
+// Updated sidebar with new icons
 import { NavLink, useLocation } from "react-router-dom"
 import { 
   LayoutDashboard, 
