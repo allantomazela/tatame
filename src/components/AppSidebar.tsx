@@ -1,15 +1,17 @@
 import { NavLink, useLocation } from "react-router-dom"
 import { 
-  Home, 
-  Users, 
-  Award, 
-  Calendar, 
-  MessageSquare, 
-  DollarSign, 
-  BarChart3,
+  LayoutDashboard, 
+  GraduationCap, 
+  Trophy, 
+  CalendarDays, 
+  MessageCircle, 
+  Banknote, 
+  PieChart,
   Settings,
   LogOut,
-  TrendingUp 
+  TrendingUp,
+  MapPin,
+  Users2
 } from "lucide-react"
 
 import {
@@ -27,17 +29,17 @@ import {
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 
 const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Alunos", url: "/alunos", icon: Users, requiredRole: "mestre" },
-  { title: "Graduações", url: "/graduacoes", icon: Award, requiredRole: "mestre" },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Alunos", url: "/alunos", icon: GraduationCap, requiredRole: "mestre" },
+  { title: "Graduações", url: "/graduacoes", icon: Trophy, requiredRole: "mestre" },
   { title: "Evolução", url: "/evolucao", icon: TrendingUp },
-  { title: "Agenda", url: "/agenda", icon: Calendar },
-  { title: "Mensagens", url: "/mensagens", icon: MessageSquare },
+  { title: "Agenda", url: "/agenda", icon: CalendarDays },
+  { title: "Mensagens", url: "/mensagens", icon: MessageCircle },
 ]
 
 const managementItems = [
-  { title: "Financeiro", url: "/financeiro", icon: DollarSign, requiredRole: "mestre" },
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3, requiredRole: "mestre" },
+  { title: "Financeiro", url: "/financeiro", icon: Banknote, requiredRole: "mestre" },
+  { title: "Relatórios", url: "/relatorios", icon: PieChart, requiredRole: "mestre" },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
 ]
 
@@ -49,7 +51,9 @@ export function AppSidebar() {
 
   const isActive = (path: string) => currentPath === path
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
+    isActive 
+      ? "bg-gradient-primary text-white shadow-primary/20 shadow-lg" 
+      : "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground transition-all duration-200"
 
   const filterItemsByRole = (items: typeof mainItems) => {
     return items.filter(item => {
@@ -66,12 +70,17 @@ export function AppSidebar() {
     <Sidebar className={state === "collapsed" ? "w-14" : "w-64"}>
       <SidebarContent>
         {/* Logo/Brand */}
-        <div className="p-4 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">畳</span>
+        <div className="p-4 border-b border-sidebar-border/60">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg">
+              <span className="text-white font-bold text-lg">畳</span>
             </div>
-            {state !== "collapsed" && <span className="font-bold text-lg">Tatame</span>}
+            {state !== "collapsed" && (
+              <div className="flex flex-col">
+                <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">Tatame</span>
+                <span className="text-xs text-muted-foreground">Academia</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -84,8 +93,8 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {state !== "collapsed" && <span>{item.title}</span>}
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {state !== "collapsed" && <span className="font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -103,8 +112,8 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {state !== "collapsed" && <span>{item.title}</span>}
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {state !== "collapsed" && <span className="font-medium">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -118,9 +127,9 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleSignOut} className="hover:bg-destructive/10 hover:text-destructive">
-                  <LogOut className="h-4 w-4" />
-                  {state !== "collapsed" && <span>Sair</span>}
+                <SidebarMenuButton onClick={handleSignOut} className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group">
+                  <LogOut className="h-5 w-5 flex-shrink-0 group-hover:rotate-12 transition-transform duration-200" />
+                  {state !== "collapsed" && <span className="font-medium">Sair</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
