@@ -111,8 +111,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-accent/5 p-4 animate-fade-in">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center justify-items-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-accent/5 p-4 animate-fade-in overflow-y-auto">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center justify-items-center py-8">
         {/* Hero Section */}
         <div className="hidden lg:block w-full max-w-lg animate-scale-in">
           <div className="relative overflow-hidden rounded-2xl shadow-accent h-[600px] group hover:shadow-2xl transition-all duration-500">
@@ -151,7 +151,7 @@ export default function Login() {
 
         {/* Login Form */}
         <div className="w-full max-w-lg animate-slide-in-right">
-          <Card className="shadow-primary border-0 bg-card/95 backdrop-blur-sm h-[600px] flex flex-col hover:shadow-2xl transition-all duration-500 group">
+          <Card className="shadow-primary border-0 bg-card/95 backdrop-blur-sm min-h-fit flex flex-col hover:shadow-2xl transition-all duration-500 group">
             <CardHeader className="text-center pb-6">
               <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mb-4 shadow-primary animate-pulse-glow group-hover:scale-110 transition-transform duration-300">
                 <span className="text-white text-2xl font-bold">畳</span>
@@ -161,7 +161,7 @@ export default function Login() {
                 Acesse sua conta para gerenciar seu tatame
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-center">
+            <CardContent className="flex-1 flex flex-col justify-center pb-8">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Entrar</TabsTrigger>

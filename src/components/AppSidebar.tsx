@@ -1,4 +1,5 @@
 // Sidebar com ícones atualizados
+import React from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import { 
   LayoutDashboard, 
@@ -28,20 +29,30 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import { cn } from "@/lib/utils"
 
-const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Alunos", url: "/alunos", icon: GraduationCap, requiredRole: "mestre" },
-  { title: "Graduações", url: "/graduacoes", icon: Trophy, requiredRole: "mestre" },
-  { title: "Evolução", url: "/evolucao", icon: TrendingUp },
-  { title: "Agenda", url: "/agenda", icon: CalendarDays },
-  { title: "Mensagens", url: "/mensagens", icon: MessageCircle },
+type MenuItem = {
+  title: string
+  url: string
+  icon: React.ComponentType<{ className?: string }>
+  requiredRole?: string
+  iconColor?: string
+  activeColor?: "blue" | "red"
+}
+
+const mainItems: MenuItem[] = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, iconColor: "text-blue-600", activeColor: "blue" },
+  { title: "Alunos", url: "/alunos", icon: GraduationCap, requiredRole: "mestre", iconColor: "text-purple-600", activeColor: "blue" },
+  { title: "Graduações", url: "/graduacoes", icon: Trophy, requiredRole: "mestre", iconColor: "text-yellow-600", activeColor: "red" },
+  { title: "Evolução", url: "/evolucao", icon: TrendingUp, iconColor: "text-green-600", activeColor: "blue" },
+  { title: "Agenda", url: "/agenda", icon: CalendarDays, iconColor: "text-orange-600", activeColor: "red" },
+  { title: "Mensagens", url: "/mensagens", icon: MessageCircle, iconColor: "text-pink-600", activeColor: "red" },
 ]
 
-const managementItems = [
-  { title: "Financeiro", url: "/financeiro", icon: Banknote, requiredRole: "mestre" },
-  { title: "Relatórios", url: "/relatorios", icon: PieChart, requiredRole: "mestre" },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
+const managementItems: MenuItem[] = [
+  { title: "Financeiro", url: "/financeiro", icon: Banknote, requiredRole: "mestre", iconColor: "text-emerald-600", activeColor: "blue" },
+  { title: "Relatórios", url: "/relatorios", icon: PieChart, requiredRole: "mestre", iconColor: "text-indigo-600", activeColor: "blue" },
+  { title: "Configurações", url: "/configuracoes", icon: Settings, iconColor: "text-gray-600", activeColor: "red" },
 ]
 
 export function AppSidebar() {
@@ -51,10 +62,15 @@ export function AppSidebar() {
   const currentPath = location.pathname
 
   const isActive = (path: string) => currentPath === path
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive 
-      ? "bg-gradient-primary text-white shadow-primary/20 shadow-lg" 
-      : "hover:bg-sidebar-accent/80 hover:text-accent transition-all duration-200"
+  const getNavCls = ({ isActive, activeColor = "blue" }: { isActive: boolean; activeColor?: "blue" | "red" }) =>
+    cn(
+      "flex items-center gap-2 w-full",
+      isActive 
+        ? activeColor === "blue"
+          ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30"
+          : "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30"
+        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200"
+    )
 
   const filterItemsByRole = (items: typeof mainItems) => {
     return items.filter(item => {
@@ -87,15 +103,31 @@ export function AppSidebar() {
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold">
+            Principal
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filterItemsByRole(mainItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-5 w-5 flex-shrink-0 text-tkd-blue group-hover:text-tkd-red transition-colors duration-200" />
-                      {state !== "collapsed" && <span className="font-medium">{item.title}</span>}
+                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                    <NavLink to={item.url} end className={getNavCls({ isActive: isActive(item.url), activeColor: item.activeColor })}>
+                      <item.icon className={cn(
+                        "h-5 w-5 flex-shrink-0 transition-colors duration-200",
+                        isActive(item.url) 
+                          ? "text-white" 
+                          : item.iconColor || "text-foreground/70 group-hover:text-foreground"
+                      )} />
+                      {state !== "collapsed" && (
+                        <span className={cn(
+                          "font-medium transition-colors",
+                          isActive(item.url)
+                            ? "text-white"
+                            : "text-foreground/80 group-hover:text-foreground"
+                        )}>
+                          {item.title}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -106,15 +138,31 @@ export function AppSidebar() {
 
         {/* Management */}
         <SidebarGroup>
-          <SidebarGroupLabel>Gestão</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold">
+            Gestão
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filterItemsByRole(managementItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-5 w-5 flex-shrink-0 text-tkd-gold group-hover:text-tkd-orange transition-colors duration-200" />
-                      {state !== "collapsed" && <span className="font-medium">{item.title}</span>}
+                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                    <NavLink to={item.url} end className={getNavCls({ isActive: isActive(item.url), activeColor: item.activeColor })}>
+                      <item.icon className={cn(
+                        "h-5 w-5 flex-shrink-0 transition-colors duration-200",
+                        isActive(item.url) 
+                          ? "text-white" 
+                          : item.iconColor || "text-foreground/70 group-hover:text-foreground"
+                      )} />
+                      {state !== "collapsed" && (
+                        <span className={cn(
+                          "font-medium transition-colors",
+                          isActive(item.url)
+                            ? "text-white"
+                            : "text-foreground/80 group-hover:text-foreground"
+                        )}>
+                          {item.title}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -128,9 +176,16 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleSignOut} className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group">
+                <SidebarMenuButton 
+                  onClick={handleSignOut} 
+                  className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group text-foreground/80"
+                >
                   <LogOut className="h-5 w-5 flex-shrink-0 text-destructive group-hover:rotate-12 transition-all duration-200" />
-                  {state !== "collapsed" && <span className="font-medium">Sair</span>}
+                  {state !== "collapsed" && (
+                    <span className="font-medium text-foreground/80 group-hover:text-destructive transition-colors">
+                      Sair
+                    </span>
+                  )}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
