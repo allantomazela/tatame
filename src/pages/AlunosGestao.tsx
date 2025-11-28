@@ -31,6 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useStudents, CreateStudentData } from "@/hooks/useStudents";
+import { usePolos } from "@/hooks/usePolos";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,7 @@ import {
 
 export default function AlunosGestao() {
   const { students, loading, createStudent, updateStudent, deleteStudent } = useStudents();
+  const { polos } = usePolos();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBelt, setFilterBelt] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -72,7 +74,8 @@ export default function AlunosGestao() {
     monthly_fee: 150,
     medical_info: "",
     payment_due_date: 5,
-    date_joined: new Date().toISOString().split('T')[0]
+    date_joined: new Date().toISOString().split('T')[0],
+    polo_id: ""
   });
 
   const beltColors = [
@@ -160,7 +163,8 @@ export default function AlunosGestao() {
       monthly_fee: 150,
       medical_info: "",
       payment_due_date: 5,
-      date_joined: new Date().toISOString().split('T')[0]
+      date_joined: new Date().toISOString().split('T')[0],
+      polo_id: ""
     });
   };
 
@@ -487,6 +491,33 @@ export default function AlunosGestao() {
                         placeholder="Ex: Mãe, telefone alternativo, endereço se diferente..."
                         rows={3}
                       />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold">Polo *</Label>
+                  <div className="p-4 border rounded-lg bg-muted/10">
+                    <div className="space-y-2">
+                      <Label htmlFor="polo_id">Selecione o Polo</Label>
+                      <Select 
+                        value={formData.polo_id || undefined} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, polo_id: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o polo onde o aluno treinará" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {polos.map((polo) => (
+                            <SelectItem key={polo.id} value={polo.id}>
+                              {polo.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        O aluno será automaticamente vinculado a este polo ao ser cadastrado
+                      </p>
                     </div>
                   </div>
                 </div>

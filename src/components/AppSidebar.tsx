@@ -50,6 +50,7 @@ const mainItems: MenuItem[] = [
 ]
 
 const managementItems: MenuItem[] = [
+  { title: "Polos", url: "/polos", icon: MapPin, requiredRole: "mestre", iconColor: "text-cyan-600", activeColor: "blue" },
   { title: "Financeiro", url: "/financeiro", icon: Banknote, requiredRole: "mestre", iconColor: "text-emerald-600", activeColor: "blue" },
   { title: "Relatórios", url: "/relatorios", icon: PieChart, requiredRole: "mestre", iconColor: "text-indigo-600", activeColor: "blue" },
   { title: "Configurações", url: "/configuracoes", icon: Settings, iconColor: "text-gray-600", activeColor: "red" },

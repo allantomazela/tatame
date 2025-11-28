@@ -19,6 +19,7 @@ import Progresso from "./pages/Progresso";
 import Conquistas from "./pages/Conquistas";
 import Relatorios from "./pages/Relatorios";
 import MinhasTurmas from "./pages/MinhasTurmas";
+import Polos from "./pages/Polos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -106,6 +107,13 @@ const App = () => (
             <ProtectedRoute allowedUserTypes={["mestre"]}>
               <Layout>
                 <MinhasTurmas />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/polos" element={
+            <ProtectedRoute allowedUserTypes={["mestre"]}>
+              <Layout>
+                <Polos />
               </Layout>
             </ProtectedRoute>
           } />

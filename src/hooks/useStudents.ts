@@ -38,6 +38,9 @@ export interface CreateStudentData {
   payment_due_date?: number;
   medical_info?: string;
   date_joined: string;
+  
+  // Polo information
+  polo_id?: string;
 }
 
 export function useStudents() {
@@ -163,6 +166,22 @@ export function useStudents() {
           variant: "destructive"
         });
         return { error: studentError.message };
+      }
+
+      // Vincular aluno ao polo se fornecido
+      if (studentData.polo_id && studentCreated) {
+        const { error: poloError } = await supabase
+          .from('student_polos')
+          .insert({
+            student_id: studentCreated.id,
+            polo_id: studentData.polo_id,
+            active: true
+          });
+
+        if (poloError) {
+          console.error('Error linking student to polo:', poloError);
+          // Não falhar a criação do aluno, apenas logar o erro
+        }
       }
 
       toast({
