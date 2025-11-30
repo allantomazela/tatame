@@ -17,6 +17,7 @@ export interface TrainingSession {
   created_at: string;
   updated_at: string;
   polo_name?: string;
+  polo_color?: string;
   class_name?: string;
   instructor_name?: string;
   attendance_count?: number;
@@ -52,7 +53,11 @@ export function useTrainingSessions() {
   const { toast } = useToast();
 
   const fetchSessions = async (poloId?: string, startDate?: string, endDate?: string) => {
-    if (!user) return;
+    if (!user) {
+      console.log('Usuário não autenticado, aguardando...');
+      setSessions([]); // Limpar sessões se não houver usuário
+      return;
+    }
 
     setLoading(true);
     try {
@@ -60,7 +65,7 @@ export function useTrainingSessions() {
         .from('training_sessions')
         .select(`
           *,
-          polos:polo_id (name),
+          polos:polo_id (name, color),
           classes:class_id (name),
           profiles:instructor_id (full_name)
         `)
@@ -88,13 +93,19 @@ export function useTrainingSessions() {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro na query:', error);
+        throw error;
+      }
+
+      console.log('Sessões encontradas:', data?.length || 0, 'para polo:', poloId || 'todos', 'data:', startDate);
 
       const sessionsWithDetails = (data || []).map(session => ({
         ...session,
-        polo_name: session.polos?.name || 'Não encontrado',
-        class_name: session.classes?.name || null,
-        instructor_name: session.profiles?.full_name || 'Não definido',
+        polo_name: (session.polos as any)?.name || 'Não encontrado',
+        polo_color: (session.polos as any)?.color || '#3b82f6',
+        class_name: (session.classes as any)?.name || null,
+        instructor_name: (session.profiles as any)?.full_name || 'Não definido',
         attendance_count: 0 // Será calculado separadamente se necessário
       }));
 
@@ -106,6 +117,7 @@ export function useTrainingSessions() {
         description: "Não foi possível carregar as sessões de treino.",
         variant: "destructive",
       });
+      setSessions([]); // Limpar sessões em caso de erro
     } finally {
       setLoading(false);
     }
@@ -196,6 +208,8 @@ export function useTrainingSessions() {
 
   const getSessionAttendance = async (sessionId: string): Promise<AttendanceRecord[]> => {
     try {
+      console.log('Buscando frequência para sessão:', sessionId);
+      
       // Primeiro, buscar a sessão para obter o polo_id e class_id
       const { data: sessionData, error: sessionError } = await supabase
         .from('training_sessions')
@@ -203,32 +217,50 @@ export function useTrainingSessions() {
         .eq('id', sessionId)
         .single();
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        console.error('Erro ao buscar sessão:', sessionError);
+        throw sessionError;
+      }
+
+      console.log('Dados da sessão:', sessionData);
 
       // Buscar alunos do polo (e da classe se houver)
       let studentIds: string[] = [];
       
       if (sessionData.class_id) {
         // Se há classe, buscar alunos matriculados na classe
-        const { data: enrollments } = await supabase
+        console.log('Buscando alunos da classe:', sessionData.class_id);
+        const { data: enrollments, error: enrollmentsError } = await supabase
           .from('class_enrollments')
           .select('student_id')
           .eq('class_id', sessionData.class_id)
           .eq('active', true);
         
-        studentIds = enrollments?.map(e => e.student_id) || [];
+        if (enrollmentsError) {
+          console.error('Erro ao buscar matrículas:', enrollmentsError);
+        } else {
+          studentIds = enrollments?.map(e => e.student_id) || [];
+          console.log('Alunos encontrados na classe:', studentIds.length);
+        }
       } else {
         // Se não há classe, buscar todos os alunos do polo
-        const { data: studentPolos } = await supabase
+        console.log('Buscando alunos do polo:', sessionData.polo_id);
+        const { data: studentPolos, error: studentPolosError } = await supabase
           .from('student_polos')
           .select('student_id')
           .eq('polo_id', sessionData.polo_id)
           .eq('active', true);
         
-        studentIds = studentPolos?.map(sp => sp.student_id) || [];
+        if (studentPolosError) {
+          console.error('Erro ao buscar alunos do polo:', studentPolosError);
+        } else {
+          studentIds = studentPolos?.map(sp => sp.student_id) || [];
+          console.log('Alunos encontrados no polo:', studentIds.length, studentIds);
+        }
       }
 
       if (studentIds.length === 0) {
+        console.warn('Nenhum aluno encontrado para esta sessão');
         return [];
       }
 
@@ -246,15 +278,14 @@ export function useTrainingSessions() {
         `)
         .eq('training_session_id', sessionId);
 
-      if (attendanceError) throw attendanceError;
+      if (attendanceError) {
+        console.error('Erro ao buscar frequência existente:', attendanceError);
+        // Não lançar erro, apenas continuar sem frequência existente
+      }
 
       const existingMap = new Map(
         (existingAttendance || []).map(att => [att.student_id, att])
       );
-
-      if (studentIds.length === 0) {
-        return [];
-      }
 
       // Buscar dados dos alunos
       const { data: studentsData, error: studentsError } = await supabase
@@ -262,20 +293,45 @@ export function useTrainingSessions() {
         .select(`
           id,
           belt_color,
-          profile_id,
-          profiles!students_profile_id_fkey (full_name)
+          profile_id
         `)
         .in('id', studentIds)
         .eq('active', true);
 
       if (studentsError) {
-        console.error('Erro ao buscar alunos:', studentsError);
+        console.error('Erro ao buscar dados dos alunos:', studentsError);
         throw studentsError;
       }
 
+      console.log('Dados dos alunos encontrados:', studentsData?.length || 0);
+
+      if (!studentsData || studentsData.length === 0) {
+        console.warn('Nenhum aluno ativo encontrado');
+        return [];
+      }
+
+      // Buscar perfis dos alunos
+      const profileIds = studentsData.map(s => s.profile_id).filter(Boolean);
+      let profilesMap = new Map();
+      
+      if (profileIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', profileIds);
+
+        if (profilesError) {
+          console.error('Erro ao buscar perfis:', profilesError);
+        } else {
+          profilesMap = new Map((profilesData || []).map(p => [p.id, p]));
+        }
+      }
+
       // Criar registros para todos os alunos (com presença existente ou não)
-      return (studentsData || []).map(student => {
+      const records = studentsData.map(student => {
         const existing = existingMap.get(student.id);
+        const profile = profilesMap.get(student.profile_id);
+        
         return {
           id: existing?.id || '',
           student_id: student.id,
@@ -284,12 +340,20 @@ export function useTrainingSessions() {
           notes: existing?.notes || null,
           recorded_by: existing?.recorded_by || null,
           created_at: existing?.created_at || new Date().toISOString(),
-          student_name: student.profiles?.full_name || 'Não encontrado',
+          student_name: profile?.full_name || 'Não encontrado',
           student_belt_color: student.belt_color || 'branca'
         };
       });
+
+      console.log('Registros de frequência criados:', records.length);
+      return records;
     } catch (error) {
       console.error('Erro ao buscar frequência da sessão:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar a lista de alunos para a chamada.",
+        variant: "destructive",
+      });
       return [];
     }
   };

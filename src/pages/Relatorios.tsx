@@ -77,21 +77,21 @@ export default function Relatorios() {
 
   const getTipoColor = (tipo: string) => {
     const colors = {
-      alunos: "bg-blue-100 text-blue-700",
-      financeiro: "bg-green-100 text-green-700",
-      graduacoes: "bg-purple-100 text-purple-700",
-      eventos: "bg-orange-100 text-orange-700"
+      alunos: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200",
+      financeiro: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200",
+      graduacoes: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200",
+      eventos: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200"
     };
-    return colors[tipo as keyof typeof colors] || "bg-gray-100 text-gray-700";
+    return colors[tipo as keyof typeof colors] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
   };
 
   const getStatusColor = (status: string) => {
     const colors = {
-      pronto: "bg-green-100 text-green-700",
-      em_andamento: "bg-yellow-100 text-yellow-700",
-      pendente: "bg-red-100 text-red-700"
+      pronto: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200",
+      em_andamento: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200",
+      pendente: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200"
     };
-    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-700";
+    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
   };
 
   const getStatusLabel = (status: string) => {

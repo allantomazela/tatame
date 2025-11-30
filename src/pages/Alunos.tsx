@@ -37,13 +37,13 @@ export default function Alunos() {
   const getFaixaColor = (faixa: string) => {
     const colors = {
       "Branca": "bg-gray-100 text-gray-800",
-      "Amarela": "bg-yellow-100 text-yellow-800",
-      "Verde": "bg-green-100 text-green-800",
-      "Azul": "bg-blue-100 text-blue-800",
-      "Vermelha": "bg-red-100 text-red-800",
-      "Preta": "bg-gray-900 text-white"
+      "Amarela": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      "Verde": "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      "Azul": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      "Vermelha": "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+      "Preta": "bg-gray-900 text-white dark:bg-gray-800 dark:text-gray-100"
     };
-    return colors[faixa as keyof typeof colors] || "bg-gray-100 text-gray-800";
+    return colors[faixa as keyof typeof colors] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
   };
 
   const getStatusColor = (status: string) => {

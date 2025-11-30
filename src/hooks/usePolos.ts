@@ -10,6 +10,7 @@ export interface Polo {
   responsible_id: string | null;
   max_capacity: number;
   active: boolean;
+  color?: string;
   created_at: string;
   updated_at: string;
   responsible_name?: string;
@@ -33,6 +34,7 @@ export interface CreatePoloData {
   address: string;
   responsible_id?: string | null;
   max_capacity: number;
+  color?: string;
 }
 
 export function usePolos() {
@@ -57,13 +59,8 @@ export function usePolos() {
 
       // Se não for mestre, filtrar apenas polos onde o usuário tem acesso
       if (userType !== 'mestre') {
-        // Alunos e responsáveis veem apenas polos onde estão vinculados
-        const { data: studentPolos } = await supabase
-          .from('student_polos')
-          .select('polo_id')
-          .eq('active', true);
-
         if (userType === 'aluno') {
+          // Alunos veem apenas polos onde estão vinculados
           const { data: studentData } = await supabase
             .from('students')
             .select('id')
@@ -86,6 +83,10 @@ export function usePolos() {
               return;
             }
           }
+        } else {
+          // Instrutores e responsáveis veem apenas polos onde são responsáveis
+          // As políticas RLS já fazem isso, mas vamos garantir no frontend também
+          query = query.eq('responsible_id', user.id);
         }
       }
 

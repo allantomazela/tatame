@@ -26,22 +26,22 @@ export function Header({ userType = "mestre", userName = "Mestre Kim", onToggleS
   };
 
   return (
-    <header className="border-b bg-white shadow-sm">
+    <header className="border-b bg-white dark:bg-gray-900 shadow-sm dark:border-gray-800">
       <div className="flex h-16 items-center px-4 lg:px-6">
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden mr-2"
+          className="lg:hidden mr-2 dark:hover:bg-gray-800"
           onClick={onToggleSidebar}
         >
-          <Menu className="h-6 w-6" />
+          <Menu className="h-6 w-6 dark:text-gray-200" />
         </Button>
 
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-            <span className="text-white text-sm font-bold">畳</span>
+          <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600">
+            <span className="text-white dark:text-amber-50 text-sm font-bold">畳</span>
           </div>
-          <h1 className="text-xl font-bold text-foreground">Tatame</h1>
+          <h1 className="text-xl font-bold text-foreground dark:text-gray-100">Tatame</h1>
         </div>
 
         <div className="flex-1" />

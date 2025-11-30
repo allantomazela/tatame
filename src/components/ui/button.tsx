@@ -13,16 +13,16 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-800",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700",
+        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-gray-800 dark:hover:text-gray-100",
         link: "text-primary underline-offset-4 hover:underline",
         // Taekwondo Design System Variants
-        hero: "bg-gradient-hero text-white shadow-primary hover:shadow-accent transition-all duration-300",
-        accent: "bg-gradient-accent text-white shadow-accent hover:opacity-90 transition-all",
-        success: "bg-success text-success-foreground hover:bg-success/90",
-        warning: "bg-warning text-warning-foreground hover:bg-warning/90",
+        hero: "bg-gradient-hero text-white shadow-primary hover:shadow-accent transition-all duration-300 dark:bg-gradient-to-r dark:from-blue-600 dark:to-blue-500 dark:text-white",
+        accent: "bg-gradient-accent text-white shadow-accent hover:opacity-90 transition-all dark:bg-gradient-to-r dark:from-cyan-500 dark:to-blue-500 dark:text-white",
+        success: "bg-success text-success-foreground hover:bg-success/90 dark:bg-green-500 dark:text-white dark:hover:bg-green-600",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90 dark:bg-amber-500 dark:text-gray-900 dark:hover:bg-amber-600",
       },
       size: {
         default: "h-10 px-4 py-2",

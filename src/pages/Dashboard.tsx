@@ -98,7 +98,7 @@ export default function Dashboard() {
                   <div className="text-2xl font-bold">{stat.value}</div>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  <span className={stat.change.startsWith('+') ? 'text-green-600' : stat.change.startsWith('-') ? 'text-red-600' : 'text-gray-600'}>
+                  <span className={stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : stat.change.startsWith('-') ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}>
                     {stat.change}
                   </span>
                   {" "}em relação ao mês anterior

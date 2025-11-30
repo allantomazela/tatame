@@ -106,12 +106,12 @@ export default function MinhasTurmas() {
 
   const getBeltColor = (color: string) => {
     const colors: { [key: string]: string } = {
-      'branca': 'bg-white text-black border',
-      'amarela': 'bg-yellow-400',
-      'laranja': 'bg-orange-400',
-      'verde': 'bg-green-400',
-      'azul': 'bg-blue-400',
-      'marrom': 'bg-amber-700',
+      'branca': 'bg-white text-black border dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600',
+      'amarela': 'bg-yellow-400 dark:bg-yellow-600',
+      'laranja': 'bg-orange-400 dark:bg-orange-600',
+      'verde': 'bg-green-400 dark:bg-green-600',
+      'azul': 'bg-blue-400 dark:bg-blue-600',
+      'marrom': 'bg-amber-700 dark:bg-amber-800',
       'preta': 'bg-black text-white'
     };
     return colors[color] || 'bg-gray-400';

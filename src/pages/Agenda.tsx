@@ -15,6 +15,7 @@ import { usePolos } from "@/hooks/usePolos";
 import { useTrainingSessions } from "@/hooks/useTrainingSessions";
 import { useClasses } from "@/hooks/useClasses";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -22,7 +23,8 @@ export default function Agenda() {
   const { polos, loading: polosLoading } = usePolos();
   const { sessions, loading: sessionsLoading, fetchSessions, createSession, getSessionAttendance, markMultipleAttendance } = useTrainingSessions();
   const { classes } = useClasses();
-  const { userType } = useSupabaseAuth();
+  const { userType, user, loading: authLoading } = useSupabaseAuth();
+  const { toast } = useToast();
   
   const [selectedPolo, setSelectedPolo] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
@@ -44,14 +46,16 @@ export default function Agenda() {
     max_participants: 30
   });
 
-  // Carregar sessões quando polo ou data mudarem
+  // Carregar sessões quando polo ou data mudarem, mas apenas após autenticação
   useEffect(() => {
-    if (selectedPolo && selectedPolo !== "all") {
-      fetchSessions(selectedPolo, selectedDate, selectedDate);
-    } else {
-      fetchSessions(undefined, selectedDate, selectedDate);
+    if (authLoading || !user) {
+      return; // Aguardar autenticação
     }
-  }, [selectedPolo, selectedDate]);
+    
+    const poloId = selectedPolo && selectedPolo !== "all" ? selectedPolo : undefined;
+    fetchSessions(poloId, selectedDate, selectedDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPolo, selectedDate, user, authLoading]);
 
   // Carregar frequência quando sessão for selecionada
   useEffect(() => {
@@ -61,13 +65,31 @@ export default function Agenda() {
   }, [selectedSession, isAttendanceDialogOpen]);
 
   const loadAttendance = async () => {
-    if (!selectedSession) return;
+    if (!selectedSession) {
+      console.log('Nenhuma sessão selecionada');
+      return;
+    }
     try {
       setActionLoading(true);
+      setAttendanceRecords([]); // Limpar registros anteriores
+      console.log('Carregando frequência para sessão:', selectedSession);
       const records = await getSessionAttendance(selectedSession);
+      console.log('Registros carregados:', records.length);
       setAttendanceRecords(records);
+      if (records.length === 0) {
+        toast({
+          title: "Aviso",
+          description: "Nenhum aluno encontrado para esta sessão. Verifique se há alunos vinculados ao polo.",
+          variant: "default",
+        });
+      }
     } catch (error) {
       console.error('Erro ao carregar frequência:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar a lista de alunos.",
+        variant: "destructive",
+      });
     } finally {
       setActionLoading(false);
     }
@@ -88,6 +110,9 @@ export default function Agenda() {
       });
       setIsSessionDialogOpen(false);
       resetSessionForm();
+      // Recarregar sessões após criar
+      const poloId = selectedPolo && selectedPolo !== "all" ? selectedPolo : undefined;
+      await fetchSessions(poloId, selectedDate, selectedDate);
     } catch (error) {
       console.error('Error creating session:', error);
     } finally {
@@ -105,6 +130,16 @@ export default function Agenda() {
       prev.map(record => 
         record.student_id === studentId 
           ? { ...record, present: !record.present }
+          : record
+      )
+    );
+  };
+
+  const handleUpdateNotes = (studentId: string, notes: string) => {
+    setAttendanceRecords(prev => 
+      prev.map(record => 
+        record.student_id === studentId 
+          ? { ...record, notes }
           : record
       )
     );
@@ -191,12 +226,26 @@ export default function Agenda() {
                       onValueChange={(value) => setSessionForm({ ...sessionForm, polo_id: value })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione o polo" />
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {sessionForm.polo_id && polos.find(p => p.id === sessionForm.polo_id) && (
+                            <div 
+                              className="w-3 h-3 rounded-full flex-shrink-0 border border-gray-300" 
+                              style={{ backgroundColor: polos.find(p => p.id === sessionForm.polo_id)?.color || '#3b82f6' }}
+                            />
+                          )}
+                          <SelectValue placeholder="Selecione o polo" />
+                        </div>
                       </SelectTrigger>
                       <SelectContent>
                         {polos.map((polo) => (
                           <SelectItem key={polo.id} value={polo.id}>
-                            {polo.name}
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full flex-shrink-0 border border-gray-300" 
+                                style={{ backgroundColor: polo.color || '#3b82f6' }}
+                              />
+                              <span>{polo.name}</span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -294,13 +343,33 @@ export default function Agenda() {
         {/* Filtros */}
         <Card>
           <CardHeader>
-            <CardTitle>Filtros</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Filtros</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const poloId = selectedPolo && selectedPolo !== "all" ? selectedPolo : undefined;
+                  fetchSessions(poloId, selectedDate, selectedDate);
+                }}
+                disabled={sessionsLoading}
+              >
+                {sessionsLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Atualizar
+                  </>
+                )}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
                 <Label>Polo</Label>
-                <Select value={selectedPolo || "all"} onValueChange={(value) => setSelectedPolo(value === "all" ? "" : value)}>
+                <Select value={selectedPolo} onValueChange={(value) => setSelectedPolo(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Todos os polos" />
                   </SelectTrigger>
@@ -328,24 +397,56 @@ export default function Agenda() {
 
         {/* Lista de Sessões */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {sessionsLoading ? (
+          {authLoading ? (
             <div className="col-span-full text-center py-12">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground mt-2">Carregando...</p>
+            </div>
+          ) : sessionsLoading ? (
+            <div className="col-span-full text-center py-12">
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground mt-2">Carregando sessões...</p>
             </div>
           ) : filteredSessions.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Nenhuma sessão encontrada</p>
+              <p className="text-muted-foreground mb-2">Nenhuma sessão encontrada</p>
+              <p className="text-sm text-muted-foreground">
+                {selectedPolo === "all" 
+                  ? "Não há sessões cadastradas para a data selecionada."
+                  : `Não há sessões cadastradas para ${polos.find(p => p.id === selectedPolo)?.name || "este polo"} na data selecionada.`}
+              </p>
+              {(userType === 'mestre' || userType === 'aluno') && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Use "Nova Sessão" para criar uma sessão avulsa ou configure horários fixos no gerenciamento de Polos.
+                </p>
+              )}
             </div>
           ) : (
             filteredSessions.map((session) => (
-              <Card key={session.id} className="hover:shadow-lg transition-all duration-200">
+              <Card 
+                key={session.id} 
+                className="hover:shadow-lg transition-all duration-200 border-l-4" 
+                style={{ borderLeftColor: session.polo_color || '#3b82f6' }}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">
-                      {session.class_name || "Sessão de Treino"}
-                    </CardTitle>
-                    <Badge variant="outline">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: session.polo_color || '#3b82f6' }}
+                      />
+                      <CardTitle className="text-lg">
+                        {session.class_name || "Sessão de Treino"}
+                      </CardTitle>
+                    </div>
+                    <Badge 
+                      variant="outline"
+                      style={{ 
+                        borderColor: session.polo_color || '#3b82f6',
+                        color: session.polo_color || '#3b82f6'
+                      }}
+                    >
                       {session.polo_name}
                     </Badge>
                   </div>
@@ -393,47 +494,74 @@ export default function Agenda() {
 
         {/* Dialog de Chamada */}
         <Dialog open={isAttendanceDialogOpen} onOpenChange={setIsAttendanceDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Chamada de Frequência</DialogTitle>
               <DialogDescription>
-                Marque a presença dos alunos nesta sessão
+                Marque a presença dos alunos e adicione justificativas quando necessário
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-3 py-4">
               {attendanceRecords.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Carregando lista de alunos...
                 </p>
               ) : (
                 attendanceRecords.map((record) => (
-                  <div key={record.student_id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={record.present}
-                        onCheckedChange={() => handleToggleAttendance(record.student_id)}
-                      />
-                      <div>
-                        <p className="font-medium">{record.student_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Faixa {record.student_belt_color}
-                        </p>
+                  <Card 
+                    key={record.student_id} 
+                    className={`transition-all ${
+                      record.present 
+                        ? 'border-green-200 bg-green-50/50' 
+                        : 'border-red-200 bg-red-50/50'
+                    }`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className="flex items-center gap-3 flex-1">
+                          <Checkbox
+                            checked={record.present}
+                            onCheckedChange={() => handleToggleAttendance(record.student_id)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-semibold text-base">{record.student_name}</p>
+                              <Badge variant="outline" className="text-xs">
+                                {record.student_belt_color}
+                              </Badge>
+                            </div>
+                            <div className="mt-2">
+                              <Label htmlFor={`notes-${record.student_id}`} className="text-xs text-muted-foreground">
+                                Justificativa / Observações
+                              </Label>
+                              <Textarea
+                                id={`notes-${record.student_id}`}
+                                value={record.notes || ""}
+                                onChange={(e) => handleUpdateNotes(record.student_id, e.target.value)}
+                                placeholder={record.present ? "Observações (opcional)" : "Justificativa da falta (opcional)"}
+                                rows={2}
+                                className="mt-1 text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          {record.present ? (
+                            <Badge className="bg-green-500 hover:bg-green-600 text-white">
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              Presente
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="bg-red-500 hover:bg-red-600">
+                              <XCircle className="mr-1 h-3 w-3" />
+                              Ausente
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {record.present ? (
-                        <Badge className="bg-green-500">
-                          <CheckCircle2 className="mr-1 h-3 w-3" />
-                          Presente
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive">
-                          <XCircle className="mr-1 h-3 w-3" />
-                          Ausente
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 ))
               )}
             </div>

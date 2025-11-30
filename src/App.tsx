@@ -20,6 +20,7 @@ import Conquistas from "./pages/Conquistas";
 import Relatorios from "./pages/Relatorios";
 import MinhasTurmas from "./pages/MinhasTurmas";
 import Polos from "./pages/Polos";
+import Financeiro from "./pages/Financeiro";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -114,6 +115,13 @@ const App = () => (
             <ProtectedRoute allowedUserTypes={["mestre"]}>
               <Layout>
                 <Polos />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/financeiro" element={
+            <ProtectedRoute allowedUserTypes={["mestre"]}>
+              <Layout>
+                <Financeiro />
               </Layout>
             </ProtectedRoute>
           } />

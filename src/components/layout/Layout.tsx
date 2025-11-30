@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 
 interface LayoutProps {
@@ -9,20 +9,15 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <main className="flex-1 flex flex-col">
-          <header className="h-14 flex items-center border-b bg-background px-4">
-            <SidebarTrigger />
-            <div className="ml-4">
-              <h1 className="text-lg font-semibold">Sistema Tatame</h1>
-            </div>
-          </header>
-          <div className="flex-1 p-6">
-            {children}
-          </div>
-        </main>
-      </div>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 dark:bg-gray-900 dark:border-gray-800">
+          <SidebarTrigger />
+        </header>
+        <div className="flex-1 p-6 overflow-y-auto">
+          {children}
+        </div>
+      </SidebarInset>
     </SidebarProvider>
   );
 }

@@ -1,13 +1,13 @@
 // Sidebar com ícones atualizados
 import React from "react"
 import { NavLink, useLocation } from "react-router-dom"
-import { 
-  LayoutDashboard, 
-  GraduationCap, 
-  Trophy, 
-  CalendarDays, 
-  MessageCircle, 
-  Banknote, 
+import {
+  LayoutDashboard,
+  GraduationCap,
+  Trophy,
+  CalendarDays,
+  MessageCircle,
+  Banknote,
   PieChart,
   Settings,
   LogOut,
@@ -25,7 +25,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
@@ -63,15 +62,6 @@ export function AppSidebar() {
   const currentPath = location.pathname
 
   const isActive = (path: string) => currentPath === path
-  const getNavCls = ({ isActive, activeColor = "blue" }: { isActive: boolean; activeColor?: "blue" | "red" }) =>
-    cn(
-      "flex items-center gap-2 w-full",
-      isActive 
-        ? activeColor === "blue"
-          ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30"
-          : "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30"
-        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200"
-    )
 
   const filterItemsByRole = (items: typeof mainItems) => {
     return items.filter(item => {
@@ -84,18 +74,29 @@ export function AppSidebar() {
     await signOut()
   }
 
+  const isCollapsed = state === "collapsed"
+
   return (
-    <Sidebar className={state === "collapsed" ? "w-14" : "w-64"}>
-      <SidebarContent>
+    <Sidebar collapsible="icon" className="transition-all duration-300 ease-in-out">
+      <SidebarContent className="overflow-y-auto overflow-x-hidden">
         {/* Logo/Brand */}
-        <div className="p-4 border-b border-sidebar-border/60">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg">
-              <span className="text-white font-bold text-lg">畳</span>
+        <div className={cn(
+          "border-b border-sidebar-border/60 transition-all duration-300",
+          isCollapsed ? "p-2" : "p-4"
+        )}>
+          <div className={cn(
+            "flex items-center transition-all duration-300",
+            isCollapsed ? "justify-center" : "space-x-3"
+          )}>
+            <div className={cn(
+              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 transition-all duration-300",
+              isCollapsed ? "w-10 h-10" : "w-10 h-10"
+            )}>
+              <span className="text-white dark:text-amber-50 font-bold text-lg">畳</span>
             </div>
-            {state !== "collapsed" && (
-              <div className="flex flex-col">
-                <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">Tatame</span>
+            {!isCollapsed && (
+              <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
+                <span className="font-bold text-lg text-foreground dark:text-gray-100">Tatame</span>
                 <span className="text-xs text-muted-foreground">Academia</span>
               </div>
             )}
@@ -104,27 +105,44 @@ export function AppSidebar() {
 
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold">
-            Principal
-          </SidebarGroupLabel>
+          {!isCollapsed && (
+            <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
+              Principal
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               {filterItemsByRole(mainItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end className={getNavCls({ isActive: isActive(item.url), activeColor: item.activeColor })}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={isCollapsed ? item.title : undefined}
+                  >
+                    <NavLink
+                      to={item.url}
+                      end
+                      className={cn(
+                        "flex items-center gap-2 w-full justify-start",
+                        isActive(item.url)
+                          ? item.activeColor === "blue"
+                            ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/50"
+                            : "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30 dark:from-red-500 dark:to-red-600 dark:shadow-red-500/50"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                      )}
+                    >
                       <item.icon className={cn(
                         "h-5 w-5 flex-shrink-0 transition-colors duration-200",
-                        isActive(item.url) 
-                          ? "text-white" 
-                          : item.iconColor || "text-foreground/70 group-hover:text-foreground"
+                        isActive(item.url)
+                          ? "text-white"
+                          : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
                       )} />
-                      {state !== "collapsed" && (
+                      {!isCollapsed && (
                         <span className={cn(
-                          "font-medium transition-colors",
+                          "font-medium transition-colors whitespace-nowrap",
                           isActive(item.url)
                             ? "text-white"
-                            : "text-foreground/80 group-hover:text-foreground"
+                            : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
                         )}>
                           {item.title}
                         </span>
@@ -139,27 +157,44 @@ export function AppSidebar() {
 
         {/* Management */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold">
-            Gestão
-          </SidebarGroupLabel>
+          {!isCollapsed && (
+            <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
+              Gestão
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               {filterItemsByRole(managementItems).map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end className={getNavCls({ isActive: isActive(item.url), activeColor: item.activeColor })}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    tooltip={isCollapsed ? item.title : undefined}
+                  >
+                    <NavLink
+                      to={item.url}
+                      end
+                      className={cn(
+                        "flex items-center gap-2 w-full justify-start",
+                        isActive(item.url)
+                          ? item.activeColor === "blue"
+                            ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/50"
+                            : "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30 dark:from-red-500 dark:to-red-600 dark:shadow-red-500/50"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                      )}
+                    >
                       <item.icon className={cn(
                         "h-5 w-5 flex-shrink-0 transition-colors duration-200",
-                        isActive(item.url) 
-                          ? "text-white" 
-                          : item.iconColor || "text-foreground/70 group-hover:text-foreground"
+                        isActive(item.url)
+                          ? "text-white"
+                          : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
                       )} />
-                      {state !== "collapsed" && (
+                      {!isCollapsed && (
                         <span className={cn(
-                          "font-medium transition-colors",
+                          "font-medium transition-colors whitespace-nowrap",
                           isActive(item.url)
                             ? "text-white"
-                            : "text-foreground/80 group-hover:text-foreground"
+                            : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
                         )}>
                           {item.title}
                         </span>
@@ -177,13 +212,14 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={handleSignOut} 
-                  className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group text-foreground/80"
+                <SidebarMenuButton
+                  onClick={handleSignOut}
+                  tooltip={isCollapsed ? "Sair" : undefined}
+                  className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group text-foreground/80 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 >
-                  <LogOut className="h-5 w-5 flex-shrink-0 text-destructive group-hover:rotate-12 transition-all duration-200" />
-                  {state !== "collapsed" && (
-                    <span className="font-medium text-foreground/80 group-hover:text-destructive transition-colors">
+                  <LogOut className="h-5 w-5 flex-shrink-0 text-destructive group-hover:rotate-12 transition-all duration-200 dark:text-red-400" />
+                  {!isCollapsed && (
+                    <span className="font-medium text-foreground/80 group-hover:text-destructive transition-colors whitespace-nowrap dark:text-gray-200 dark:group-hover:text-red-400">
                       Sair
                     </span>
                   )}
