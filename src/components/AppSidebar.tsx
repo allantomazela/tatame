@@ -25,6 +25,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
@@ -56,7 +57,7 @@ const managementItems: MenuItem[] = [
 ]
 
 export function AppSidebar() {
-  const { state } = useSidebar()
+  const { state, toggleSidebar } = useSidebar()
   const location = useLocation()
   const { userType, signOut } = useSupabaseAuth()
   const currentPath = location.pathname
@@ -78,29 +79,44 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="transition-all duration-300 ease-in-out">
-      <SidebarContent className="overflow-y-auto overflow-x-hidden">
-        {/* Logo/Brand */}
+      <SidebarRail />
+      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0">
+        {/* Logo/Brand - clique alterna entre expandido e só ícones */}
         <div className={cn(
-          "border-b border-sidebar-border/60 transition-all duration-300",
-          isCollapsed ? "p-2" : "p-4"
+          "border-b border-sidebar-border/60 transition-all duration-300 overflow-hidden min-w-0 shrink-0",
+          isCollapsed ? "px-1 py-2" : "p-4"
         )}>
-          <div className={cn(
-            "flex items-center transition-all duration-300",
-            isCollapsed ? "justify-center" : "space-x-3"
-          )}>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleSidebar()
+            }}
+            className={cn(
+              "flex w-full items-center transition-all duration-300 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2 focus:ring-offset-sidebar min-w-0",
+              isCollapsed ? "justify-center p-0 w-full max-w-[var(--sidebar-width-icon)]" : "space-x-3"
+            )}
+            aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
+          >
             <div className={cn(
-              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 transition-all duration-300",
-              isCollapsed ? "w-10 h-10" : "w-10 h-10"
+              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 transition-all duration-300 shrink-0",
+              "w-10 h-10"
             )}>
               <span className="text-white dark:text-amber-50 font-bold text-lg">畳</span>
             </div>
-            {!isCollapsed && (
-              <div className="flex flex-col animate-in fade-in slide-in-from-left-2 duration-300">
-                <span className="font-bold text-lg text-foreground dark:text-gray-100">Tatame</span>
-                <span className="text-xs text-muted-foreground">Academia</span>
-              </div>
-            )}
-          </div>
+            <div
+              className={cn(
+                "flex flex-col text-left min-w-0 flex-shrink-0 overflow-hidden",
+                "group-data-[state=collapsed]:!hidden",
+                isCollapsed && "!hidden w-0 overflow-hidden",
+                !isCollapsed && "animate-in fade-in slide-in-from-left-2 duration-300"
+              )}
+              aria-hidden={isCollapsed}
+            >
+              <span className="font-bold text-lg text-foreground dark:text-gray-100 truncate">Tatame</span>
+              <span className="text-xs text-muted-foreground truncate">Academia</span>
+            </div>
+          </button>
         </div>
 
         {/* Main Navigation */}
@@ -117,13 +133,13 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={isActive(item.url)}
-                    tooltip={isCollapsed ? item.title : undefined}
+                    tooltip={isCollapsed ? { children: item.title, sideOffset: 10 } : undefined}
                   >
                     <NavLink
                       to={item.url}
                       end
                       className={cn(
-                        "flex items-center gap-2 w-full justify-start",
+                        "flex items-center gap-2 w-full justify-start min-w-0",
                         isActive(item.url)
                           ? item.activeColor === "blue"
                             ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/50"
@@ -132,14 +148,14 @@ export function AppSidebar() {
                       )}
                     >
                       <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0 transition-colors duration-200",
+                        "h-5 w-5 flex-shrink-0 transition-colors duration-200 shrink-0",
                         isActive(item.url)
                           ? "text-white"
                           : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
                       )} />
                       {!isCollapsed && (
                         <span className={cn(
-                          "font-medium transition-colors whitespace-nowrap",
+                          "font-medium transition-colors whitespace-nowrap truncate min-w-0",
                           isActive(item.url)
                             ? "text-white"
                             : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
@@ -169,13 +185,13 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={isActive(item.url)}
-                    tooltip={isCollapsed ? item.title : undefined}
+                    tooltip={isCollapsed ? { children: item.title, sideOffset: 10 } : undefined}
                   >
                     <NavLink
                       to={item.url}
                       end
                       className={cn(
-                        "flex items-center gap-2 w-full justify-start",
+                        "flex items-center gap-2 w-full justify-start min-w-0",
                         isActive(item.url)
                           ? item.activeColor === "blue"
                             ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/50"
@@ -184,14 +200,14 @@ export function AppSidebar() {
                       )}
                     >
                       <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0 transition-colors duration-200",
+                        "h-5 w-5 flex-shrink-0 transition-colors duration-200 shrink-0",
                         isActive(item.url)
                           ? "text-white"
                           : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
                       )} />
                       {!isCollapsed && (
                         <span className={cn(
-                          "font-medium transition-colors whitespace-nowrap",
+                          "font-medium transition-colors whitespace-nowrap truncate min-w-0",
                           isActive(item.url)
                             ? "text-white"
                             : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
@@ -214,15 +230,17 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={handleSignOut}
-                  tooltip={isCollapsed ? "Sair" : undefined}
+                  tooltip={isCollapsed ? { children: "Sair", sideOffset: 10 } : undefined}
                   className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group text-foreground/80 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 >
                   <LogOut className="h-5 w-5 flex-shrink-0 text-destructive group-hover:rotate-12 transition-all duration-200 dark:text-red-400" />
-                  {!isCollapsed && (
-                    <span className="font-medium text-foreground/80 group-hover:text-destructive transition-colors whitespace-nowrap dark:text-gray-200 dark:group-hover:text-red-400">
-                      Sair
-                    </span>
-                  )}
+                  <span className={cn(
+                    "font-medium text-foreground/80 group-hover:text-destructive transition-colors whitespace-nowrap dark:text-gray-200 dark:group-hover:text-red-400",
+                    "group-data-[state=collapsed]:hidden",
+                    isCollapsed && "hidden"
+                  )}>
+                    Sair
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -14,25 +14,25 @@ export default function Dashboard() {
       title: "Total de Alunos", 
       value: loading ? "..." : stats.activeStudents.toString(), 
       icon: Users, 
-      change: "+12%" 
+      change: "—" 
     },
     { 
       title: "Graduações este mês", 
       value: loading ? "..." : stats.graduationsThisMonth.toString(), 
       icon: Award, 
-      change: "+25%" 
+      change: "—" 
     },
     { 
       title: "Turmas ativas", 
       value: loading ? "..." : stats.totalClasses.toString(), 
       icon: Calendar, 
-      change: "+5%" 
+      change: "—" 
     },
     { 
       title: "Mensagens", 
       value: loading ? "..." : stats.pendingMessages.toString(), 
       icon: MessageSquare, 
-      change: "0%" 
+      change: "—" 
     },
   ];
 
@@ -42,13 +42,13 @@ export default function Dashboard() {
         title: "Receita mensal", 
         value: loading ? "..." : `R$ ${stats.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 
         icon: DollarSign, 
-        change: "+8%" 
+        change: "—" 
       },
       { 
         title: "Taxa de frequência", 
         value: loading ? "..." : `${stats.attendanceRate}%`, 
         icon: TrendingUp, 
-        change: "+3%" 
+        change: "—" 
       }
     );
   }
@@ -98,10 +98,10 @@ export default function Dashboard() {
                   <div className="text-2xl font-bold">{stat.value}</div>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  <span className={stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : stat.change.startsWith('-') ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}>
+                  <span className={stat.change !== "—" && stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : stat.change !== "—" && stat.change.startsWith('-') ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}>
                     {stat.change}
                   </span>
-                  {" "}em relação ao mês anterior
+                  {stat.change === "—" ? " sem comparação anterior" : " em relação ao mês anterior"}
                 </p>
               </CardContent>
             </Card>

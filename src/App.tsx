@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { Layout } from "@/components/layout/Layout";
 import Index from "./pages/Index";
@@ -22,6 +22,7 @@ import MinhasTurmas from "./pages/MinhasTurmas";
 import Polos from "./pages/Polos";
 import Financeiro from "./pages/Financeiro";
 import NotFound from "./pages/NotFound";
+import Unauthorized from "./pages/Unauthorized";
 
 const queryClient = new QueryClient();
 
@@ -30,10 +31,14 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename={(import.meta.env.BASE_URL ?? "/").replace(/\/$/, "")}>
         <Routes>
           <Route path="/" element={<Index />} />
+          {/* Em dev (base /), redireciona /tatame e /tatame/* para / para evitar 404 */}
+          <Route path="/tatame" element={<Navigate to="/" replace />} />
+          <Route path="/tatame/*" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Layout>

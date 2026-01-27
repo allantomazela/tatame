@@ -12,10 +12,11 @@ import {
 interface HeaderProps {
   userType?: "mestre" | "aluno" | "responsavel";
   userName?: string;
+  avatarUrl?: string | null;
   onToggleSidebar?: () => void;
 }
 
-export function Header({ userType = "mestre", userName = "Mestre Kim", onToggleSidebar }: HeaderProps) {
+export function Header({ userType = "mestre", userName = "", avatarUrl, onToggleSidebar }: HeaderProps) {
   const getUserTypeLabel = (type: string) => {
     switch (type) {
       case "mestre": return "Mestre";
@@ -50,9 +51,9 @@ export function Header({ userType = "mestre", userName = "Mestre Kim", onToggleS
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-avatar.jpg" alt={userName} />
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={userName || "Usuário"} />}
                 <AvatarFallback className="bg-gradient-accent text-white">
-                  {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {userName ? userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "?"}
                 </AvatarFallback>
               </Avatar>
             </Button>

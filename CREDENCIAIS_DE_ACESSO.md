@@ -24,7 +24,7 @@ Tipo: Mestre
 
 ### Opção 2: Formulário da Aplicação
 
-1. Acesse: http://localhost:8080/login
+1. Acesse: http://localhost:8080/ ou http://localhost:8080/login
 2. Clique na aba **"Cadastrar"**
 3. Preencha:
    - Nome: `Administrador`
@@ -46,7 +46,8 @@ Após criar o usuário e fazer login, você deve ver:
 
 ## 🔗 Links Úteis
 
-- **Aplicação Local**: http://localhost:8080/login
+- **Aplicação Local (dev)**: http://localhost:8080/ ou http://localhost:8080/login
+- **Se alterações não aparecem:** veja `DEV_MODO_DESENVOLVIMENTO.md`
 - **Supabase Dashboard**: https://supabase.com/dashboard
 - **SQL Editor**: https://supabase.com/dashboard/project/[seu-project-id]/sql
 

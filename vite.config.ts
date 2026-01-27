@@ -5,10 +5,14 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/tatame/", // <--- A LINHA FOI ADICIONADA AQUI
+  base: mode === "development" ? "/" : "/tatame/",
   server: {
     host: "::",
     port: 8080,
+    hmr: true,
+    watch: process.env.VITE_WATCH_POLLING === "1"
+      ? { usePolling: true, interval: 500 }
+      : undefined,
   },
   plugins: [
     react(),
