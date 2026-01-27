@@ -18,6 +18,9 @@ jobs:
           cache: "npm"
 
       - name: Instalar dependências e fazer build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm ci && npm run build
 
       - name: Enviar arquivos para o servidor Vultr

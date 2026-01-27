@@ -4,11 +4,14 @@
 -- =========================================
 
 -- ---------------------------------------------------------------
--- 1. STUDENTS – Remover "Everyone" e restaurar políticas por papel
+-- 1. STUDENTS – Remover "Everyone" e políticas antigas; criar por papel
 -- ---------------------------------------------------------------
 DROP POLICY IF EXISTS "Everyone can view students" ON public.students;
 DROP POLICY IF EXISTS "Everyone can create students" ON public.students;
 DROP POLICY IF EXISTS "Everyone can update students" ON public.students;
+DROP POLICY IF EXISTS "Mestres can manage students" ON public.students;
+DROP POLICY IF EXISTS "Students can view own record" ON public.students;
+DROP POLICY IF EXISTS "Responsaveis can view their students" ON public.students;
 
 CREATE POLICY "Mestres can manage students" ON public.students
   FOR ALL USING (
@@ -31,6 +34,9 @@ DROP POLICY IF EXISTS "Everyone can create graduations" ON public.graduations;
 DROP POLICY IF EXISTS "Everyone can update graduations" ON public.graduations;
 DROP POLICY IF EXISTS "Everyone can delete graduations" ON public.graduations;
 DROP POLICY IF EXISTS "Temp access graduations" ON public.graduations;
+DROP POLICY IF EXISTS "Mestres manage graduations" ON public.graduations;
+DROP POLICY IF EXISTS "Students can view own graduations" ON public.graduations;
+DROP POLICY IF EXISTS "Responsaveis can view graduations of their students" ON public.graduations;
 
 CREATE POLICY "Mestres manage graduations" ON public.graduations
   FOR ALL USING (
@@ -62,6 +68,9 @@ CREATE POLICY "Responsaveis can view graduations of their students" ON public.gr
 
 -- student_evaluations
 DROP POLICY IF EXISTS "Everyone can access student evaluations" ON public.student_evaluations;
+DROP POLICY IF EXISTS "Mestres can manage student evaluations" ON public.student_evaluations;
+DROP POLICY IF EXISTS "Students can view own evaluations" ON public.student_evaluations;
+DROP POLICY IF EXISTS "Responsaveis can view evaluations of their students" ON public.student_evaluations;
 
 CREATE POLICY "Mestres can manage student evaluations" ON public.student_evaluations
   FOR ALL USING (
@@ -89,6 +98,9 @@ CREATE POLICY "Responsaveis can view evaluations of their students" ON public.st
 
 -- student_goals
 DROP POLICY IF EXISTS "Everyone can access student goals" ON public.student_goals;
+DROP POLICY IF EXISTS "Mestres can manage student goals" ON public.student_goals;
+DROP POLICY IF EXISTS "Students can view own goals" ON public.student_goals;
+DROP POLICY IF EXISTS "Responsaveis can view goals of their students" ON public.student_goals;
 
 CREATE POLICY "Mestres can manage student goals" ON public.student_goals
   FOR ALL USING (
@@ -116,6 +128,9 @@ CREATE POLICY "Responsaveis can view goals of their students" ON public.student_
 
 -- student_achievements
 DROP POLICY IF EXISTS "Everyone can access student achievements" ON public.student_achievements;
+DROP POLICY IF EXISTS "Mestres can manage student achievements" ON public.student_achievements;
+DROP POLICY IF EXISTS "Students can view own achievements" ON public.student_achievements;
+DROP POLICY IF EXISTS "Responsaveis can view achievements of their students" ON public.student_achievements;
 
 CREATE POLICY "Mestres can manage student achievements" ON public.student_achievements
   FOR ALL USING (
@@ -143,6 +158,9 @@ CREATE POLICY "Responsaveis can view achievements of their students" ON public.s
 
 -- student_competitions
 DROP POLICY IF EXISTS "Everyone can access student competitions" ON public.student_competitions;
+DROP POLICY IF EXISTS "Mestres can manage student competitions" ON public.student_competitions;
+DROP POLICY IF EXISTS "Students can view own competitions" ON public.student_competitions;
+DROP POLICY IF EXISTS "Responsaveis can view competitions of their students" ON public.student_competitions;
 
 CREATE POLICY "Mestres can manage student competitions" ON public.student_competitions
   FOR ALL USING (
@@ -177,6 +195,12 @@ DROP POLICY IF EXISTS "Users can insert any profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can view profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Users can insert own or mestre inserts" ON public.profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Mestres can view all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Responsaveis can view linked profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Mestres can update profiles" ON public.profiles;
 
 -- INSERT: próprio perfil (signup/trigger) ou mestre criando perfil de aluno
 CREATE POLICY "Users can insert own or mestre inserts" ON public.profiles
