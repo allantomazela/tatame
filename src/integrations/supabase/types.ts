@@ -451,6 +451,401 @@ export type Database = {
           },
         ]
       }
+      polos: {
+        Row: {
+          id: string
+          name: string
+          address: string
+          responsible_id: string | null
+          max_capacity: number
+          active: boolean
+          color: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          address: string
+          responsible_id?: string | null
+          max_capacity?: number
+          active?: boolean
+          color?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          address?: string
+          responsible_id?: string | null
+          max_capacity?: number
+          active?: boolean
+          color?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "polos_responsible_id_fkey"
+            columns: ["responsible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_polos: {
+        Row: {
+          id: string
+          student_id: string
+          polo_id: string
+          enrolled_at: string | null
+          active: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          polo_id: string
+          enrolled_at?: string | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          polo_id?: string
+          enrolled_at?: string | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_polos_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_polos_polo_id_fkey"
+            columns: ["polo_id"]
+            isOneToOne: false
+            referencedRelation: "polos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_sessions: {
+        Row: {
+          id: string
+          polo_id: string
+          class_id: string | null
+          session_date: string
+          start_time: string
+          end_time: string
+          instructor_id: string | null
+          description: string | null
+          max_participants: number | null
+          active: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          polo_id: string
+          class_id?: string | null
+          session_date: string
+          start_time: string
+          end_time: string
+          instructor_id?: string | null
+          description?: string | null
+          max_participants?: number | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          polo_id?: string
+          class_id?: string | null
+          session_date?: string
+          start_time?: string
+          end_time?: string
+          instructor_id?: string | null
+          description?: string | null
+          max_participants?: number | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_polo_id_fkey"
+            columns: ["polo_id"]
+            isOneToOne: false
+            referencedRelation: "polos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_sessions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_sessions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polo_schedules: {
+        Row: {
+          id: string
+          polo_id: string
+          class_id: string | null
+          day_of_week: number
+          start_time: string
+          end_time: string
+          instructor_id: string | null
+          description: string | null
+          max_participants: number | null
+          active: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          polo_id: string
+          class_id?: string | null
+          day_of_week: number
+          start_time: string
+          end_time: string
+          instructor_id?: string | null
+          description?: string | null
+          max_participants?: number | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          polo_id?: string
+          class_id?: string | null
+          day_of_week?: number
+          start_time?: string
+          end_time?: string
+          instructor_id?: string | null
+          description?: string | null
+          max_participants?: number | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "polo_schedules_polo_id_fkey"
+            columns: ["polo_id"]
+            isOneToOne: false
+            referencedRelation: "polos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "polo_schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "polo_schedules_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          id: string
+          transaction_type: string
+          category: string
+          description: string
+          amount: number
+          transaction_date: string
+          payment_method: string | null
+          reference_number: string | null
+          supplier_payee: string | null
+          polo_id: string | null
+          student_id: string | null
+          is_recurring: boolean
+          recurring_period: string | null
+          attachment_url: string | null
+          notes: string | null
+          recorded_by: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          transaction_type: string
+          category: string
+          description: string
+          amount: number
+          transaction_date?: string
+          payment_method?: string | null
+          reference_number?: string | null
+          supplier_payee?: string | null
+          polo_id?: string | null
+          student_id?: string | null
+          is_recurring?: boolean
+          recurring_period?: string | null
+          attachment_url?: string | null
+          notes?: string | null
+          recorded_by: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          transaction_type?: string
+          category?: string
+          description?: string
+          amount?: number
+          transaction_date?: string
+          payment_method?: string | null
+          reference_number?: string | null
+          supplier_payee?: string | null
+          polo_id?: string | null
+          student_id?: string | null
+          is_recurring?: boolean
+          recurring_period?: string | null
+          attachment_url?: string | null
+          notes?: string | null
+          recorded_by?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_polo_id_fkey"
+            columns: ["polo_id"]
+            isOneToOne: false
+            referencedRelation: "polos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_categories: {
+        Row: {
+          id: string
+          name: string
+          type: string
+          description: string | null
+          active: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          type: string
+          description?: string | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          type?: string
+          description?: string | null
+          active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          id: string
+          user_id: string
+          theme: string
+          language: string
+          email_notifications: boolean
+          push_notifications: boolean
+          payment_reminders: boolean
+          attendance_notifications: boolean
+          event_notifications: boolean
+          message_notifications: boolean
+          auto_backup: boolean
+          date_format: string
+          time_format: string
+          currency_symbol: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          theme?: string
+          language?: string
+          email_notifications?: boolean
+          push_notifications?: boolean
+          payment_reminders?: boolean
+          attendance_notifications?: boolean
+          event_notifications?: boolean
+          message_notifications?: boolean
+          auto_backup?: boolean
+          date_format?: string
+          time_format?: string
+          currency_symbol?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          theme?: string
+          language?: string
+          email_notifications?: boolean
+          push_notifications?: boolean
+          payment_reminders?: boolean
+          attendance_notifications?: boolean
+          event_notifications?: boolean
+          message_notifications?: boolean
+          auto_backup?: boolean
+          date_format?: string
+          time_format?: string
+          currency_symbol?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null

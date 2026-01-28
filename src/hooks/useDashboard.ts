@@ -38,12 +38,20 @@ export function useDashboard() {
     try {
       setLoading(true);
 
+      // As queries são filtradas por RLS conforme o perfil (mestre vê todos, responsável vê só seus alunos, etc.)
       // Buscar estatísticas dos alunos
       const { data: studentsData, error: studentsError } = await supabase
         .from('students')
         .select('id, active, created_at, monthly_fee');
 
-      if (studentsError) throw studentsError;
+      if (studentsError) {
+        console.error('Dashboard students error:', studentsError.message, {
+          code: studentsError.code,
+          details: studentsError.details,
+          hint: studentsError.hint,
+        });
+        throw studentsError;
+      }
 
       const totalStudents = studentsData?.length || 0;
       const activeStudents = studentsData?.filter(s => s.active)?.length || 0;
@@ -149,13 +157,14 @@ export function useDashboard() {
         .order('graduation_date', { ascending: false })
         .limit(3);
 
+      type StudentWithProfile = { profile?: { full_name?: string } };
       recentGraduations?.forEach(grad => {
-        const student = grad.students as any;
+        const student = (grad.students as StudentWithProfile) ?? {};
         activities.push({
           id: grad.id,
           type: 'graduation',
           title: 'Nova graduação registrada',
-          description: `${student.profile?.full_name} - Faixa ${grad.belt_color}`,
+          description: `${student.profile?.full_name ?? 'Aluno'} - Faixa ${grad.belt_color}`,
           timestamp: grad.graduation_date
         });
       });
@@ -172,13 +181,14 @@ export function useDashboard() {
         .order('created_at', { ascending: false })
         .limit(3);
 
+      type ProfileName = { full_name?: string };
       recentStudents?.forEach(student => {
-        const profile = student.profile as any;
+        const profile = (student.profile as ProfileName) ?? {};
         activities.push({
           id: student.id,
           type: 'student',
           title: 'Novo aluno cadastrado',
-          description: profile?.full_name || 'Nome não disponível',
+          description: profile?.full_name ?? 'Nome não disponível',
           timestamp: student.created_at
         });
       });

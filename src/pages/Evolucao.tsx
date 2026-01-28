@@ -1507,8 +1507,7 @@ export default function Evolucao() {
                   Cancelar
                 </Button>
                 <Button className="bg-gradient-primary" onClick={() => {
-                  // Aqui você poderia salvar a avaliação específica de Poomsae
-                  console.log('Avaliação de Poomsae:', poomsaeForm);
+                  // TODO: persistir avaliação de Poomsae via useStudentEvolution ou RPC
                   setIsPoomsaeDialogOpen(false);
                 }}>
                   Salvar Avaliação

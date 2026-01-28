@@ -8,10 +8,10 @@ type GoalRow = Database['public']['Tables']['student_goals']['Row'];
 type AchievementRow = Database['public']['Tables']['student_achievements']['Row'];
 type CompetitionRow = Database['public']['Tables']['student_competitions']['Row'];
 
-export interface StudentEvaluation extends EvaluationRow {}
-export interface StudentGoal extends GoalRow {}
-export interface StudentAchievement extends AchievementRow {}
-export interface StudentCompetition extends CompetitionRow {}
+export type StudentEvaluation = EvaluationRow;
+export type StudentGoal = GoalRow;
+export type StudentAchievement = AchievementRow;
+export type StudentCompetition = CompetitionRow;
 
 export interface CreateEvaluationData {
   student_id: string;

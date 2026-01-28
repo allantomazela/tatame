@@ -65,16 +65,11 @@ export default function Agenda() {
   }, [selectedSession, isAttendanceDialogOpen]);
 
   const loadAttendance = async () => {
-    if (!selectedSession) {
-      console.log('Nenhuma sessão selecionada');
-      return;
-    }
+    if (!selectedSession) return;
     try {
       setActionLoading(true);
-      setAttendanceRecords([]); // Limpar registros anteriores
-      console.log('Carregando frequência para sessão:', selectedSession);
+      setAttendanceRecords([]);
       const records = await getSessionAttendance(selectedSession);
-      console.log('Registros carregados:', records.length);
       setAttendanceRecords(records);
       if (records.length === 0) {
         toast({
@@ -416,6 +411,11 @@ export default function Agenda() {
                   ? "Não há sessões cadastradas para a data selecionada."
                   : `Não há sessões cadastradas para ${polos.find(p => p.id === selectedPolo)?.name || "este polo"} na data selecionada.`}
               </p>
+              {userType === "responsavel" && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Quando houver alunos vinculados ao seu perfil e treinos cadastrados nos polos deles, as sessões aparecerão aqui.
+                </p>
+              )}
               {(userType === 'mestre' || userType === 'aluno') && (
                 <p className="text-sm text-muted-foreground mt-2">
                   Use "Nova Sessão" para criar uma sessão avulsa ou configure horários fixos no gerenciamento de Polos.

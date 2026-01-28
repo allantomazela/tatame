@@ -77,7 +77,13 @@ export default function Configuracoes() {
   const handleUpdateProfile = async () => {
     try {
       setActionLoading(true);
-      await updateProfile(profileForm);
+      if (avatarFile) {
+        const { url } = await uploadAvatar(avatarFile);
+        await updateProfile({ ...profileForm, avatar_url: url });
+        setAvatarFile(null);
+      } else {
+        await updateProfile(profileForm);
+      }
     } catch (error) {
       // Error já tratado no hook
     } finally {
@@ -131,7 +137,8 @@ export default function Configuracoes() {
 
     try {
       setActionLoading(true);
-      await uploadAvatar(avatarFile);
+      const { url } = await uploadAvatar(avatarFile);
+      await updateProfile({ avatar_url: url });
       setAvatarFile(null);
     } catch (error) {
       // Error já tratado no hook
@@ -140,13 +147,16 @@ export default function Configuracoes() {
     }
   };
 
+  /** Alinhado ao limite do useProfile (2MB). Evita enviar arquivo grande só para ser rejeitado no hook. */
+  const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > AVATAR_MAX_BYTES) {
         toast({
-          title: "Erro",
-          description: "A imagem deve ter no máximo 5MB.",
+          title: "Arquivo grande",
+          description: `A imagem deve ter no máximo 2 MB. O arquivo tem ${(file.size / 1024 / 1024).toFixed(2)} MB.`,
           variant: "destructive",
         });
         return;
@@ -259,7 +269,7 @@ export default function Configuracoes() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB
+                      Formatos: JPEG, PNG, WebP, GIF. Tamanho máximo: 2 MB. A foto é salva no Storage, não no banco.
                     </p>
                   </div>
                 </div>

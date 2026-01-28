@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { Tables } from "@/integrations/supabase/types";
 
 export type UserType = 'mestre' | 'aluno' | 'responsavel';
 
+type ProfileRow = Tables<"profiles">;
+
 interface AuthState {
   user: User | null;
-  profile: any | null;
+  profile: ProfileRow | null;
   session: Session | null;
   loading: boolean;
 }
@@ -41,7 +44,11 @@ export function useSupabaseAuth() {
         .maybeSingle();
 
       if (error) {
-        console.error('Profile fetch error:', error);
+        console.error('Profile fetch error:', error.message, {
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+        });
         setAuthState(prev => ({ ...prev, profile: null, loading: false }));
         return;
       }
@@ -119,9 +126,15 @@ export function useSupabaseAuth() {
       });
 
       if (error) {
+        let description = error.message;
+        if (error.message.toLowerCase().includes('email not confirmed') || error.message.toLowerCase().includes('confirm your')) {
+          description = 'E-mail ainda não confirmado. Verifique sua caixa de entrada (e o spam) pelo link enviado, ou peça ao administrador para confirmar sua conta no painel do Supabase.';
+        } else if (error.message.toLowerCase().includes('invalid login') || error.message.toLowerCase().includes('invalid credentials')) {
+          description = 'E-mail ou senha incorretos. Confira os dados e tente novamente.';
+        }
         toast({
           title: "Erro no login",
-          description: error.message,
+          description,
           variant: "destructive"
         });
         return { error: error.message };
@@ -235,36 +248,6 @@ export function useSupabaseAuth() {
     }
   };
 
-  const signInWithGoogle = async (): Promise<{ error?: string }> => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`
-        }
-      });
-
-      if (error) {
-        toast({
-          title: "Erro no login com Google",
-          description: error.message,
-          variant: "destructive"
-        });
-        return { error: error.message };
-      }
-
-      return {};
-    } catch (error) {
-      const errorMessage = 'Erro inesperado no login com Google';
-      toast({
-        title: "Erro no login com Google",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      return { error: errorMessage };
-    }
-  };
-
   return {
     user: authState.user,
     profile: authState.profile,
@@ -273,7 +256,6 @@ export function useSupabaseAuth() {
     signIn,
     signUp,
     signOut,
-    signInWithGoogle,
     isAuthenticated: !!authState.user,
     userType: authState.profile?.user_type as UserType | undefined,
   };

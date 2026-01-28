@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from './useSupabaseAuth';
 import { useToast } from './use-toast';
@@ -52,76 +52,72 @@ export function useTrainingSessions() {
   const { user, userType } = useSupabaseAuth();
   const { toast } = useToast();
 
-  const fetchSessions = async (poloId?: string, startDate?: string, endDate?: string) => {
-    if (!user) {
-      console.log('Usuário não autenticado, aguardando...');
-      setSessions([]); // Limpar sessões se não houver usuário
-      return;
-    }
-
-    setLoading(true);
-    try {
-      let query = supabase
-        .from('training_sessions')
-        .select(`
-          *,
-          polos:polo_id (name, color),
-          classes:class_id (name),
-          profiles:instructor_id (full_name)
-        `)
-        .eq('active', true)
-        .order('session_date', { ascending: true })
-        .order('start_time', { ascending: true });
-
-      if (poloId) {
-        query = query.eq('polo_id', poloId);
+  const fetchSessions = useCallback(
+    async (poloId?: string, startDate?: string, endDate?: string) => {
+      if (!user) {
+        setSessions([]);
+        return;
       }
 
-      if (startDate) {
-        query = query.gte('session_date', startDate);
+      setLoading(true);
+      try {
+        let query = supabase
+          .from('training_sessions')
+          .select(`
+            *,
+            polos:polo_id (name, color),
+            classes:class_id (name),
+            profiles:instructor_id (full_name)
+          `)
+          .eq('active', true)
+          .order('session_date', { ascending: true })
+          .order('start_time', { ascending: true });
+
+        if (poloId) {
+          query = query.eq('polo_id', poloId);
+        }
+
+        if (startDate) {
+          query = query.gte('session_date', startDate);
+        }
+
+        if (endDate) {
+          query = query.lte('session_date', endDate);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          throw error;
+        }
+
+        type PoloRel = { name?: string; color?: string };
+        type ClassRel = { name?: string };
+        type ProfileRel = { full_name?: string };
+        const sessionsWithDetails = (data || []).map(session => ({
+          ...session,
+          polo_name: (session.polos as PoloRel | null)?.name ?? 'Não encontrado',
+          polo_color: (session.polos as PoloRel | null)?.color ?? '#3b82f6',
+          class_name: (session.classes as ClassRel | null)?.name ?? null,
+          instructor_name: (session.profiles as ProfileRel | null)?.full_name ?? 'Não definido',
+          attendance_count: 0
+        }));
+
+        setSessions(sessionsWithDetails);
+      } catch (error) {
+        console.error('Erro ao buscar sessões de treino:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as sessões de treino.",
+          variant: "destructive",
+        });
+        setSessions([]);
+      } finally {
+        setLoading(false);
       }
-
-      if (endDate) {
-        query = query.lte('session_date', endDate);
-      }
-
-      // Se não for mestre, filtrar apenas sessões dos polos do usuário
-      if (userType !== 'mestre' && userType !== 'aluno') {
-        // Para responsáveis, filtrar por polos dos seus alunos
-        // Isso será feito via RLS, mas podemos adicionar filtro adicional se necessário
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Erro na query:', error);
-        throw error;
-      }
-
-      console.log('Sessões encontradas:', data?.length || 0, 'para polo:', poloId || 'todos', 'data:', startDate);
-
-      const sessionsWithDetails = (data || []).map(session => ({
-        ...session,
-        polo_name: (session.polos as any)?.name || 'Não encontrado',
-        polo_color: (session.polos as any)?.color || '#3b82f6',
-        class_name: (session.classes as any)?.name || null,
-        instructor_name: (session.profiles as any)?.full_name || 'Não definido',
-        attendance_count: 0 // Será calculado separadamente se necessário
-      }));
-
-      setSessions(sessionsWithDetails);
-    } catch (error) {
-      console.error('Erro ao buscar sessões de treino:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar as sessões de treino.",
-        variant: "destructive",
-      });
-      setSessions([]); // Limpar sessões em caso de erro
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [user?.id, userType, toast]
+  );
 
   const createSession = async (sessionData: CreateTrainingSessionData) => {
     try {
@@ -208,9 +204,6 @@ export function useTrainingSessions() {
 
   const getSessionAttendance = async (sessionId: string): Promise<AttendanceRecord[]> => {
     try {
-      console.log('Buscando frequência para sessão:', sessionId);
-      
-      // Primeiro, buscar a sessão para obter o polo_id e class_id
       const { data: sessionData, error: sessionError } = await supabase
         .from('training_sessions')
         .select('polo_id, class_id')
@@ -222,45 +215,35 @@ export function useTrainingSessions() {
         throw sessionError;
       }
 
-      console.log('Dados da sessão:', sessionData);
-
-      // Buscar alunos do polo (e da classe se houver)
       let studentIds: string[] = [];
-      
+
       if (sessionData.class_id) {
-        // Se há classe, buscar alunos matriculados na classe
-        console.log('Buscando alunos da classe:', sessionData.class_id);
         const { data: enrollments, error: enrollmentsError } = await supabase
           .from('class_enrollments')
           .select('student_id')
           .eq('class_id', sessionData.class_id)
           .eq('active', true);
-        
+
         if (enrollmentsError) {
           console.error('Erro ao buscar matrículas:', enrollmentsError);
         } else {
           studentIds = enrollments?.map(e => e.student_id) || [];
-          console.log('Alunos encontrados na classe:', studentIds.length);
         }
       } else {
-        // Se não há classe, buscar todos os alunos do polo
-        console.log('Buscando alunos do polo:', sessionData.polo_id);
         const { data: studentPolos, error: studentPolosError } = await supabase
           .from('student_polos')
           .select('student_id')
           .eq('polo_id', sessionData.polo_id)
           .eq('active', true);
-        
+
         if (studentPolosError) {
           console.error('Erro ao buscar alunos do polo:', studentPolosError);
         } else {
           studentIds = studentPolos?.map(sp => sp.student_id) || [];
-          console.log('Alunos encontrados no polo:', studentIds.length, studentIds);
         }
       }
 
       if (studentIds.length === 0) {
-        console.warn('Nenhum aluno encontrado para esta sessão');
         return [];
       }
 
@@ -303,10 +286,7 @@ export function useTrainingSessions() {
         throw studentsError;
       }
 
-      console.log('Dados dos alunos encontrados:', studentsData?.length || 0);
-
       if (!studentsData || studentsData.length === 0) {
-        console.warn('Nenhum aluno ativo encontrado');
         return [];
       }
 
@@ -345,7 +325,6 @@ export function useTrainingSessions() {
         };
       });
 
-      console.log('Registros de frequência criados:', records.length);
       return records;
     } catch (error) {
       console.error('Erro ao buscar frequência da sessão:', error);

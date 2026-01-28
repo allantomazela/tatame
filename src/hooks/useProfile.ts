@@ -69,11 +69,12 @@ export function useProfile() {
       window.location.reload();
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar perfil:', error);
+      const msg = error instanceof Error ? error.message : "Não foi possível atualizar o perfil.";
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível atualizar o perfil.",
+        description: msg,
         variant: "destructive",
       });
       throw error;
@@ -113,11 +114,12 @@ export function useProfile() {
       });
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar senha:', error);
+      const msg = error instanceof Error ? error.message : "Não foi possível alterar a senha.";
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível alterar a senha.",
+        description: msg,
         variant: "destructive",
       });
       throw error;
@@ -125,6 +127,10 @@ export function useProfile() {
       setLoading(false);
     }
   };
+
+  /** Tamanho máximo do avatar: 2MB. Evita sobrecarga no Storage e no banco. */
+  const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+  const AVATAR_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
   const uploadAvatar = async (file: File) => {
     if (!user) {
@@ -134,82 +140,57 @@ export function useProfile() {
     try {
       setLoading(true);
 
-      // Verificar se o bucket existe
-      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-      
-      if (listError) {
-        throw new Error('Não foi possível acessar o storage. Verifique as configurações do Supabase.');
-      }
-
-      const avatarsBucket = buckets?.find(b => b.name === 'avatars');
-      
-      if (!avatarsBucket) {
-        // Se o bucket não existe, usar uma URL base64 temporária ou informar o usuário
-        const reader = new FileReader();
-        return new Promise((resolve, reject) => {
-          reader.onloadend = async () => {
-            try {
-              // Usar data URL como fallback
-              const dataUrl = reader.result as string;
-              await updateProfile({ avatar_url: dataUrl });
-              resolve({ url: dataUrl });
-            } catch (error) {
-              reject(new Error('Bucket de avatares não encontrado. Por favor, crie o bucket "avatars" no Supabase Storage ou entre em contato com o administrador.'));
-            }
-          };
-          reader.onerror = () => reject(new Error('Erro ao ler o arquivo'));
-          reader.readAsDataURL(file);
+      if (file.size > AVATAR_MAX_BYTES) {
+        toast({
+          title: "Arquivo grande",
+          description: `O avatar deve ter no máximo 2 MB. O arquivo enviado tem ${(file.size / 1024 / 1024).toFixed(2)} MB.`,
+          variant: "destructive",
         });
+        throw new Error('Arquivo maior que 2 MB');
       }
 
-      // Criar nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = fileName;
+      if (!AVATAR_ALLOWED_TYPES.includes(file.type)) {
+        toast({
+          title: "Tipo não permitido",
+          description: "Use imagem em JPEG, PNG, WebP ou GIF.",
+          variant: "destructive",
+        });
+        throw new Error('Tipo de arquivo não permitido');
+      }
 
-      // Upload para Supabase Storage
+      // Nome único: userId + timestamp. Sempre sobrescreve o anterior do mesmo usuário.
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const safeExt = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(fileExt) ? fileExt : 'jpg';
+      const filePath = `${user.id}/avatar-${Date.now()}.${safeExt}`;
+
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: true // Permitir sobrescrever se já existir
+          upsert: true,
         });
 
       if (uploadError) {
-        // Se erro de bucket não encontrado, usar fallback
         if (uploadError.message?.includes('Bucket not found') || uploadError.message?.includes('not found')) {
-          const reader = new FileReader();
-          return new Promise((resolve, reject) => {
-            reader.onloadend = async () => {
-              try {
-                const dataUrl = reader.result as string;
-                await updateProfile({ avatar_url: dataUrl });
-                resolve({ url: dataUrl });
-              } catch (error) {
-                reject(new Error('Bucket de avatares não encontrado. Por favor, crie o bucket "avatars" no Supabase Storage.'));
-              }
-            };
-            reader.onerror = () => reject(new Error('Erro ao ler o arquivo'));
-            reader.readAsDataURL(file);
+          toast({
+            title: "Bucket não configurado",
+            description: "Crie o bucket 'avatars' no Supabase (Storage) e torne-o público para exibir fotos.",
+            variant: "destructive",
           });
+          throw new Error('Bucket de avatares não encontrado');
         }
         throw uploadError;
       }
 
-      // Obter URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // Atualizar perfil com a URL do avatar
-      await updateProfile({ avatar_url: publicUrl });
-
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      // Não chama updateProfile aqui: o caller decide (ex.: salvar só avatar ou avatar + formulário).
       return { url: publicUrl };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao fazer upload do avatar:', error);
+      const msg = error instanceof Error ? error.message : "Não foi possível fazer upload do avatar.";
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível fazer upload do avatar. O bucket 'avatars' precisa ser criado no Supabase Storage.",
+        description: msg,
         variant: "destructive",
       });
       throw error;

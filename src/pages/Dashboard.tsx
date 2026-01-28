@@ -1,39 +1,34 @@
+import { useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useDashboard } from "@/hooks/useDashboard";
-import { Users, Award, Calendar, MessageSquare, TrendingUp, DollarSign, Clock } from "lucide-react";
+import { useTrainingSessions } from "@/hooks/useTrainingSessions";
+import { Users, Award, Calendar, MessageSquare, TrendingUp, DollarSign, CalendarDays } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format, addDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function Dashboard() {
-  const { profile, userType } = useSupabaseAuth();
+  const { profile, userType, user } = useSupabaseAuth();
   const { stats, recentActivities, loading } = useDashboard();
+  const { sessions: upcomingSessions, fetchSessions, loading: sessionsLoading } = useTrainingSessions();
+
+  useEffect(() => {
+    if (!user) return;
+    const start = format(new Date(), "yyyy-MM-dd");
+    const end = format(addDays(new Date(), 7), "yyyy-MM-dd");
+    fetchSessions(undefined, start, end);
+  }, [user?.id, fetchSessions]);
+
+  const alunosLabel =
+    userType === "responsavel" ? "Seus alunos" : "Total de Alunos";
 
   const dashboardStats = [
-    { 
-      title: "Total de Alunos", 
-      value: loading ? "..." : stats.activeStudents.toString(), 
-      icon: Users, 
-      change: "—" 
-    },
-    { 
-      title: "Graduações este mês", 
-      value: loading ? "..." : stats.graduationsThisMonth.toString(), 
-      icon: Award, 
-      change: "—" 
-    },
-    { 
-      title: "Turmas ativas", 
-      value: loading ? "..." : stats.totalClasses.toString(), 
-      icon: Calendar, 
-      change: "—" 
-    },
-    { 
-      title: "Mensagens", 
-      value: loading ? "..." : stats.pendingMessages.toString(), 
-      icon: MessageSquare, 
-      change: "—" 
-    },
+    { title: alunosLabel, value: loading ? "..." : stats.activeStudents.toString(), icon: Users, change: "—" },
+    { title: "Graduações este mês", value: loading ? "..." : stats.graduationsThisMonth.toString(), icon: Award, change: "—" },
+    { title: "Turmas ativas", value: loading ? "..." : stats.totalClasses.toString(), icon: Calendar, change: "—" },
+    { title: "Mensagens", value: loading ? "..." : stats.pendingMessages.toString(), icon: MessageSquare, change: "—" },
   ];
 
   if (userType === "mestre") {
@@ -156,29 +151,63 @@ export default function Dashboard() {
               <CardDescription>Agenda dos próximos dias</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Turma Iniciante</p>
-                    <p className="text-xs text-muted-foreground">Segunda-feira, 19:00</p>
-                  </div>
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Hoje</span>
+              {sessionsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <Skeleton className="h-10 flex-1 mr-4" />
+                      <Skeleton className="h-6 w-12" />
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Turma Avançada</p>
-                    <p className="text-xs text-muted-foreground">Terça-feira, 20:00</p>
-                  </div>
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Amanhã</span>
+              ) : upcomingSessions.length === 0 ? (
+                <div className="py-6 text-center text-muted-foreground">
+                  <CalendarDays className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-medium">Nenhuma aula agendada</p>
+                  <p className="text-xs mt-1">
+                    {userType === "mestre"
+                      ? "Crie sessões na Agenda ou configure horários nos Polos para ver os treinos aqui."
+                      : "Quando houver treinos cadastrados no seu polo, eles aparecerão aqui."}
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Turma Infantil</p>
-                    <p className="text-xs text-muted-foreground">Quarta-feira, 18:00</p>
-                  </div>
-                  <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">2 dias</span>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingSessions.slice(0, 5).map((session) => {
+                    const sessionDate = new Date(session.session_date + "T12:00:00");
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    const diffDays = Math.floor((sessionDate.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+                    const badge =
+                      diffDays === 0
+                        ? "Hoje"
+                        : diffDays === 1
+                          ? "Amanhã"
+                          : `${diffDays} dias`;
+                    const badgeClass =
+                      diffDays === 0
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                        : diffDays === 1
+                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                          : "bg-muted text-muted-foreground";
+                    return (
+                      <div key={session.id} className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {session.class_name || "Sessão de Treino"}
+                            {session.polo_name && session.polo_name !== "Não encontrado" && (
+                              <span className="text-muted-foreground font-normal"> · {session.polo_name}</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(sessionDate, "EEEE", { locale: ptBR })}, {session.start_time}
+                          </p>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded ${badgeClass}`}>{badge}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>

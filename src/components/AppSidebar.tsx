@@ -81,42 +81,47 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="transition-all duration-300 ease-in-out">
       <SidebarRail />
       <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0">
-        {/* Logo/Brand - clique alterna entre expandido e só ícones */}
-        <div className={cn(
-          "border-b border-sidebar-border/60 transition-all duration-300 overflow-hidden min-w-0 shrink-0",
-          isCollapsed ? "px-1 py-2" : "p-4"
-        )}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
+        {/* Logo/Brand - clique no ícone ou no texto recolhe/expande; só ícones quando recolhido */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            toggleSidebar()
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
               toggleSidebar()
-            }}
+            }
+          }}
+          className={cn(
+            "border-b border-sidebar-border/60 transition-all duration-200 overflow-hidden min-w-0 shrink-0 cursor-pointer select-none flex items-center rounded-lg hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+            isCollapsed ? "px-1 py-2 justify-center w-full max-w-[var(--sidebar-width-icon)]" : "p-4 space-x-3"
+          )}
+          aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
+        >
+          <div
             className={cn(
-              "flex w-full items-center transition-all duration-300 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2 focus:ring-offset-sidebar min-w-0",
-              isCollapsed ? "justify-center p-0 w-full max-w-[var(--sidebar-width-icon)]" : "space-x-3"
+              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 shrink-0 w-10 h-10"
             )}
-            aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
+            aria-hidden
           >
-            <div className={cn(
-              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 transition-all duration-300 shrink-0",
-              "w-10 h-10"
-            )}>
-              <span className="text-white dark:text-amber-50 font-bold text-lg">畳</span>
-            </div>
-            <div
-              className={cn(
-                "flex flex-col text-left min-w-0 flex-shrink-0 overflow-hidden",
-                "group-data-[state=collapsed]:!hidden",
-                isCollapsed && "!hidden w-0 overflow-hidden",
-                !isCollapsed && "animate-in fade-in slide-in-from-left-2 duration-300"
-              )}
-              aria-hidden={isCollapsed}
-            >
-              <span className="font-bold text-lg text-foreground dark:text-gray-100 truncate">Tatame</span>
-              <span className="text-xs text-muted-foreground truncate">Academia</span>
-            </div>
-          </button>
+            <span className="text-white dark:text-amber-50 font-bold text-lg">畳</span>
+          </div>
+          <div
+            className={cn(
+              "flex flex-col text-left min-w-0 overflow-hidden transition-[width,opacity,margin] duration-200",
+              "group-data-[collapsible=icon]:!w-0 group-data-[collapsible=icon]:!max-w-0 group-data-[collapsible=icon]:!min-w-0 group-data-[collapsible=icon]:!opacity-0 group-data-[collapsible=icon]:!overflow-hidden group-data-[collapsible=icon]:!m-0 group-data-[collapsible=icon]:!p-0",
+              isCollapsed && "!w-0 !max-w-0 !min-w-0 !opacity-0 !overflow-hidden !m-0 !p-0 invisible",
+              !isCollapsed && "animate-in fade-in duration-200"
+            )}
+            aria-hidden={isCollapsed}
+          >
+            <span className="font-bold text-lg text-foreground dark:text-gray-100 truncate whitespace-nowrap">Tatame</span>
+            <span className="text-xs text-muted-foreground truncate whitespace-nowrap">Academia</span>
+          </div>
         </div>
 
         {/* Main Navigation */}

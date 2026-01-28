@@ -52,7 +52,6 @@ export default function Graduacoes() {
 
   const { graduations, loading: graduationsLoading, createGraduation, deleteGraduation } = useGraduations();
   const { students, loading: studentsLoading } = useStudents();
-  console.log('Students in Graduacoes:', students, 'Loading:', studentsLoading); // Debug log
   const { profile } = useSupabaseAuth();
 
   const beltColors = [
@@ -173,7 +172,6 @@ export default function Graduacoes() {
                           <SelectItem value="" disabled>Nenhum aluno encontrado</SelectItem>
                         ) : (
                           students.map((student) => {
-                            console.log('Student data:', student); // Debug log
                             const studentName = (student.profile as any)?.full_name || 'Nome não disponível';
                             return (
                               <SelectItem key={student.id} value={student.id}>

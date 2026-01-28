@@ -1,9 +1,11 @@
-// Preferir variáveis de ambiente em produção; fallback para dev local.
+// Projeto Supabase do Tatame – use o .env com as credenciais do SEU projeto (Project Settings → API).
+// Sem .env válido, o app não consegue conectar; defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "https://pdjiimzpswmeqvixcmfj.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkamlpbXpwc3dtZXF2aXhjbWZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxOTgwNzIsImV4cCI6MjA3OTc3NDA3Mn0.pa8r-VavPNaqEPqkGgKtHz50mlLJSRdz_JSaJh6TdWU";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "";
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
