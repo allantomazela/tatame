@@ -93,9 +93,6 @@ export function useStudents() {
 
   const createStudent = async (studentData: CreateStudentData) => {
     try {
-      // Como não temos usuário real no auth, vamos criar o perfil sem especificar o ID
-      // O Supabase irá gerar automaticamente um UUID
-
       // Combine address fields into a single address string
       const fullAddress = [
         studentData.street && studentData.street_number ? `${studentData.street}, ${studentData.street_number}` : studentData.street,
@@ -112,54 +109,101 @@ export function useStudents() {
         studentData.emergency_contact_phone,
         studentData.emergency_contact_relationship
       ].filter(Boolean).join(' | ');
-
-      // Criar o perfil - vamos usar um ID gerado que não existe no auth.users
-      const profileId = crypto.randomUUID();
       
+      // 1) Encontrar perfil existente pelo e-mail informado.
+      //    Como profiles.id referencia auth.users(id), o perfil deve ter sido criado
+      //    via Supabase Auth (signUp) + trigger handle_new_user.
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: profileId,
-          full_name: studentData.full_name,
-          email: studentData.email,
-          phone: studentData.phone || null,
-          birth_date: studentData.birth_date || null,
-          address: fullAddress || null,
-          emergency_contact: emergencyContact || null,
-          user_type: 'aluno'
-        })
-        .select()
-        .single();
+        .select('*')
+        .eq('email', studentData.email)
+        .maybeSingle();
 
       if (profileError) {
-        console.error('Error creating profile:', profileError);
+        console.error('Error fetching profile by email:', profileError);
         toast({
-          title: "Erro ao criar perfil",
-          description: "Não foi possível criar o perfil do aluno.",
+          title: "Erro ao buscar perfil",
+          description: "Não foi possível buscar o perfil do aluno pelo e-mail informado.",
           variant: "destructive"
         });
         return { error: profileError.message };
       }
 
-      // Depois criar o estudante
-      const { data: studentCreated, error: studentError } = await supabase
+      if (!profileData) {
+        toast({
+          title: "Perfil não encontrado",
+          description: "Nenhum usuário foi encontrado com este e-mail. Peça para o aluno ou responsável se cadastrar primeiro pela tela de login.",
+          variant: "destructive"
+        });
+        return { error: 'Perfil não encontrado para o e-mail informado' };
+      }
+
+      if (profileData.user_type !== 'aluno') {
+        toast({
+          title: "Tipo de usuário inválido",
+          description: "O e-mail informado não pertence a um usuário do tipo aluno.",
+          variant: "destructive"
+        });
+        return { error: 'Usuário não é do tipo aluno' };
+      }
+
+      // 2) Verificar se já existe student para esse profile_id.
+      const { data: existingStudent, error: existingStudentError } = await supabase
         .from('students')
-        .insert({
-          profile_id: profileData.id,
-          belt_color: studentData.belt_color,
-          belt_degree: studentData.belt_degree,
-          medical_info: studentData.medical_info || null,
-          monthly_fee: studentData.monthly_fee || null,
-          payment_due_date: studentData.payment_due_date || 5,
-          date_joined: studentData.date_joined
-        })
-        .select()
-        .single();
+        .select('*')
+        .eq('profile_id', profileData.id)
+        .maybeSingle();
+
+      if (existingStudentError) {
+        console.error('Error checking existing student:', existingStudentError);
+        toast({
+          title: "Erro ao verificar aluno existente",
+          description: "Não foi possível verificar se já existe um aluno vinculado a este usuário.",
+          variant: "destructive"
+        });
+        return { error: existingStudentError.message };
+      }
+
+      // Payload comum para criação/atualização de aluno
+      const studentPayload: Database['public']['Tables']['students']['Insert'] = {
+        profile_id: profileData.id,
+        belt_color: studentData.belt_color,
+        belt_degree: studentData.belt_degree,
+        medical_info: studentData.medical_info || null,
+        monthly_fee: studentData.monthly_fee || null,
+        payment_due_date: studentData.payment_due_date || 5,
+        date_joined: studentData.date_joined,
+        // usamos defaults de active, etc. definidos na tabela
+      };
+
+      let studentCreated: StudentRow | null = null;
+      let studentError = null as any;
+
+      if (existingStudent) {
+        // Atualizar registro existente do aluno para complementar os dados
+        const { data, error } = await supabase
+          .from('students')
+          .update(studentPayload)
+          .eq('id', existingStudent.id)
+          .select()
+          .single();
+
+        studentCreated = data as StudentRow | null;
+        studentError = error;
+      } else {
+        // Criar novo registro de aluno vinculado ao profile existente
+        const { data, error } = await supabase
+          .from('students')
+          .insert(studentPayload)
+          .select()
+          .single();
+
+        studentCreated = data as StudentRow | null;
+        studentError = error;
+      }
 
       if (studentError) {
         console.error('Error creating student:', studentError);
-        // Limpar perfil criado se falhou
-        await supabase.from('profiles').delete().eq('id', profileData.id);
         toast({
           title: "Erro ao criar aluno",
           description: "Não foi possível criar o registro do aluno.",
@@ -180,13 +224,13 @@ export function useStudents() {
 
         if (poloError) {
           console.error('Error linking student to polo:', poloError);
-          // Não falhar a criação do aluno, apenas logar o erro
+          // Não falhar a criação/atualização do aluno, apenas logar o erro
         }
       }
 
       toast({
-        title: "Aluno criado com sucesso!",
-        description: `${studentData.full_name} foi adicionado ao sistema.`
+        title: existingStudent ? "Aluno atualizado com sucesso!" : "Aluno criado com sucesso!",
+        description: `${studentData.full_name} foi ${existingStudent ? 'atualizado' : 'adicionado'} ao sistema.`
       });
 
       // Recarregar lista
