@@ -61,8 +61,8 @@ Nenhum desses itens bloqueia o build ou a implantação.
 
 ### 3.4 index.html e metadados
 
-- **lang:** Está `lang="en"`. Se o produto for só pt-BR, pode alterar para `lang="pt-BR"`.
-- **Open Graph / Twitter:** `og:image` e `twitter:image` apontam para `https://lovable.dev/opengraph-image-p98qg.png`. Para produção, convém trocar por uma imagem do Tatame (ex.: logo ou screenshot do sistema).
+- **lang:** Definido como `lang="pt-BR"` em `index.html`.
+- **Open Graph / Twitter:** `og:image` e `twitter:image` apontam para `/tatame/og-image.png`. Coloque a imagem do Tatame (logo ou screenshot) em **`public/og-image.png`** — o build copia o conteúdo de `public/` para a raiz do `dist/`, então em produção ela será servida nesse caminho.
 
 ### 3.5 Evolucao – Poomsae
 
