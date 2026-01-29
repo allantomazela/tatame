@@ -5,8 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Shield, Users, User } from "lucide-react";
+import { Eye, EyeOff, Shield, Users, User, Lock } from "lucide-react";
 import { useSupabaseAuth, UserType } from "@/hooks/useSupabaseAuth";
 import heroImage from "@/assets/taekwondo-hero.jpg";
 
@@ -23,7 +32,10 @@ export default function Login() {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, isAuthenticated, loading } = useSupabaseAuth();
+  const { signIn, signUp, resetPasswordForEmail, isAuthenticated, loading } = useSupabaseAuth();
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
 
   // Redirect if already authenticated using useEffect
   useEffect(() => {
@@ -225,6 +237,59 @@ export default function Login() {
                         <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
                       }
                     </Button>
+                  </div>
+                  <div className="flex justify-end mt-1">
+                    <Dialog open={recoveryOpen} onOpenChange={setRecoveryOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="link" className="text-muted-foreground text-sm h-auto p-0">
+                          <Lock className="w-3 h-3 mr-1" />
+                          Esqueci minha senha
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Recuperar senha</DialogTitle>
+                          <DialogDescription>
+                            Informe o e-mail da sua conta. Enviaremos um link para redefinir sua senha.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="recovery-email">E-mail</Label>
+                            <Input
+                              id="recovery-email"
+                              type="email"
+                              placeholder="seu@email.com"
+                              value={recoveryEmail}
+                              onChange={(e) => setRecoveryEmail(e.target.value)}
+                              className="h-11"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setRecoveryOpen(false)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="button"
+                            disabled={!recoveryEmail.trim() || recoveryLoading}
+                            onClick={async () => {
+                              setRecoveryLoading(true);
+                              await resetPasswordForEmail(recoveryEmail.trim());
+                              setRecoveryLoading(false);
+                              setRecoveryOpen(false);
+                              setRecoveryEmail("");
+                            }}
+                          >
+                            {recoveryLoading ? "Enviando..." : "Enviar link"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
 

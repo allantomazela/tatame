@@ -23,6 +23,8 @@ import Polos from "./pages/Polos";
 import Financeiro from "./pages/Financeiro";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
+import AuthCallback from "./pages/AuthCallback";
+import RedefinirSenha from "./pages/RedefinirSenha";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,8 @@ const App = () => (
           <Route path="/tatame" element={<Navigate to="/" replace />} />
           <Route path="/tatame/*" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/redefinir-senha" element={<RedefinirSenha />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>

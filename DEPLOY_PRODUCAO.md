@@ -48,18 +48,23 @@ Reinicie o Nginx após alterar: `sudo systemctl reload nginx` (ou `reload` do se
 
 ---
 
-## 4. Supabase: URLs de produção
+## 4. Supabase: URLs de produção (obrigatório para cadastro e recuperação de senha)
 
 No **Dashboard do Supabase** do projeto de produção:
 
 1. **Authentication → URL Configuration**
-2. **Site URL:** a URL pública do app, ex.: `https://tatame.sistemascuesta.com.br/tatame/` ou `https://dominio.com/tatame/`
-3. **Redirect URLs:** adicione as URLs de callback após login, ex.:
-   - `https://tatame.sistemascuesta.com.br/tatame/`
-   - `https://tatame.sistemascuesta.com.br/tatame/**`
-   - (e o mesmo para o domínio real que você usar)
+2. **Site URL:** a URL pública do app (raiz), ex.: `https://tatamebrasil.com.br` ou `https://tatame.sistemascuesta.com.br`  
+   Se o app estiver em subpath: `https://dominio.com/tatame/`
+3. **Redirect URLs:** adicione **todas** as URLs abaixo (substitua pelo seu domínio):
+   - `https://SEU-DOMINIO.com.br`
+   - `https://SEU-DOMINIO.com.br/**`
+   - `https://SEU-DOMINIO.com.br/auth/callback`
+   - `https://SEU-DOMINIO.com.br/redefinir-senha`
+   - Se usar subpath `/tatame/`: `https://SEU-DOMINIO.com.br/tatame/auth/callback` e `https://SEU-DOMINIO.com.br/tatame/redefinir-senha`
 
-Assim o Supabase Auth aceita redirects do ambiente de produção.
+**Por quê:** após confirmar o e-mail (cadastro), o Supabase redireciona para `/auth/callback`. Após clicar em "Esqueci minha senha", o link do e-mail redireciona para `/redefinir-senha`. Se essas URLs não estiverem em Redirect URLs, o Supabase bloqueia o redirect e o usuário vê erro.
+
+Assim o Supabase Auth aceita redirects do ambiente de produção e o cadastro/recuperação de senha funcionam.
 
 ---
 
