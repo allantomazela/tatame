@@ -1,33 +1,41 @@
-name: Deploy Tatame to Vultr
+name: Deploy Automatico Tatame
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout do repositório
-        uses: actions/checkout@v4
+    - name: 1. Baixando código do GitHub
+      uses: actions/checkout@v2
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Instalar dependências e fazer build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: npm ci && npm run build
-
-      - name: Enviar arquivos para o servidor Vultr
-        uses: easingthemes/ssh-deploy@v4
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.VULTR_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.VULTR_HOST }}
-          REMOTE_USER: ${{ secrets.VULTR_USER }}
-          SOURCE: "dist/"
-          TARGET: "/var/www/tatame/"
+    - name: 2. Conectando e Atualizando Servidor
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          echo "🚀 Iniciando atualização..."
+          
+          # Entra na pasta do projeto
+          cd /var/www/tatame
+          
+          # Baixa as novidades e garante que está igual ao GitHub
+          git fetch --all
+          git reset --hard origin/main
+          
+          # Instala dependências
+          npm install
+          
+          # Cria o site (Build)
+          npm run build
+          
+          # Garante permissões
+          chown -R www-data:www-data /var/www/tatame
+          
+          echo "✅ Site atualizado com sucesso!"

@@ -20,7 +20,7 @@ Checkup minucioso do sistema antes de enviar para o servidor e disponibilizar em
 
 | # | Item | Status | Observação |
 |---|------|--------|------------|
-| 1.2.1 | **Supabase URL e Anon Key fora do código** | ☐ **CRÍTICO** | Hoje estão hardcoded em `src/integrations/supabase/client.ts`. Para produção: usar `import.meta.env.VITE_SUPABASE_URL` e `import.meta.env.VITE_SUPABASE_ANON_KEY` e garantir que o build receba essas variáveis. |
+| 1.2.1 | **Supabase URL e Anon Key fora do código** | ☑ | `src/integrations/supabase/client.ts` já usa `import.meta.env.VITE_SUPABASE_URL` e `import.meta.env.VITE_SUPABASE_ANON_KEY`. Garantir que o build (CI/servidor) receba essas variáveis. |
 | 1.2.2 | Arquivos de ambiente não versionados | ☐ | `.env`, `.env.local`, `.env-dev`, `.env-homolog`, `.env-prod` devem estar no `.gitignore`. |
 | 1.2.3 | Chaves e senhas só em env ou secrets | ☐ | Nenhuma chave em repositório. Deploy (GitHub Actions) usa `secrets.VULTR_SSH_KEY`, `VULTR_HOST`, `VULTR_USER`. |
 | 1.2.4 | Anon key do Supabase é a chave “pública” | ☐ | É segura no front; segurança real vem das políticas RLS no banco. |

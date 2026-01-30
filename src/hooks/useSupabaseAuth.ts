@@ -96,6 +96,33 @@ export function useSupabaseAuth() {
   useEffect(() => {
     let mounted = true;
 
+    // Tratar refresh token inválido (sessão antiga/revogada): limpar storage e estado
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const msg = event.reason?.message ?? String(event.reason ?? "");
+      if (
+        msg.includes("Refresh Token Not Found") ||
+        msg.includes("Invalid Refresh Token")
+      ) {
+        event.preventDefault?.();
+        profileFetched.current = null;
+        supabase.auth.signOut({ scope: "local" }).then(() => {
+          setAuthState((prev) => ({
+            ...prev,
+            user: null,
+            profile: null,
+            session: null,
+            loading: false,
+          }));
+          toast({
+            title: "Sessão expirada ou inválida",
+            description: "Faça login novamente.",
+            variant: "destructive",
+          });
+        });
+      }
+    };
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -141,13 +168,18 @@ export function useSupabaseAuth() {
 
     return () => {
       mounted = false;
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
 
   const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
     try {
+      // Limpar sessão local antes do login para evitar conflito com refresh token antigo
+      await supabase.auth.signOut({ scope: 'local' });
+      profileFetched.current = null;
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -190,6 +222,11 @@ export function useSupabaseAuth() {
     phone?: string;
   }): Promise<{ error?: string; switchToLogin?: boolean }> => {
     try {
+      // Limpar sessão local antes do cadastro para evitar conflito com refresh token antigo
+      // (evita "Invalid Refresh Token" após criar novo usuário)
+      await supabase.auth.signOut({ scope: 'local' });
+      profileFetched.current = null;
+
       const redirectTo =
         typeof window !== 'undefined'
           ? `${window.location.origin}${(import.meta.env.BASE_URL ?? '/').replace(/\/$/, '')}/auth/callback`

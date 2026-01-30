@@ -409,7 +409,7 @@ export default function AlunosGestao() {
                       <div className="space-y-2">
                         <Label htmlFor="state">Estado *</Label>
                         <Select 
-                          value={formData.state || ""} 
+                          value={formData.state ?? ""} 
                           onValueChange={(value) => setFormData(prev => ({ ...prev, state: value }))}
                         >
                           <SelectTrigger>
@@ -501,7 +501,7 @@ export default function AlunosGestao() {
                     <div className="space-y-2">
                       <Label htmlFor="polo_id">Selecione o Polo</Label>
                       <Select 
-                        value={formData.polo_id || undefined} 
+                        value={formData.polo_id ?? ""} 
                         onValueChange={(value) => setFormData(prev => ({ ...prev, polo_id: value }))}
                       >
                         <SelectTrigger>
@@ -528,8 +528,8 @@ export default function AlunosGestao() {
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2 col-span-2">
                         <Label htmlFor="belt_color">Cor da Faixa</Label>
-                        <Select 
-                          value={formData.belt_color} 
+<Select 
+                        value={formData.belt_color ?? ""}
                           onValueChange={(value) => {
                             setFormData(prev => ({ 
                               ...prev, 
@@ -568,8 +568,8 @@ export default function AlunosGestao() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="is_scholarship">Modalidade</Label>
-                        <Select 
-                          value={formData.monthly_fee === 0 ? "scholarship" : "regular"} 
+<Select 
+                        value={formData.monthly_fee === 0 ? "scholarship" : "regular"}
                           onValueChange={(value) => {
                             if (value === "scholarship") {
                               setFormData(prev => ({ ...prev, monthly_fee: 0, payment_due_date: undefined }));
@@ -698,7 +698,7 @@ export default function AlunosGestao() {
               </div>
               <div className="flex items-center space-x-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={filterBelt} onValueChange={setFilterBelt}>
+                <Select value={filterBelt ?? "all"} onValueChange={setFilterBelt}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>

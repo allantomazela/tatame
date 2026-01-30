@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Eye, EyeOff, Shield, Users, User, Lock } from "lucide-react";
 import { useSupabaseAuth, UserType } from "@/hooks/useSupabaseAuth";
 import heroImage from "@/assets/taekwondo-hero.jpg";
@@ -238,10 +238,10 @@ export default function Login() {
                       }
                     </Button>
                   </div>
-                  <div className="flex justify-end mt-1">
+                  <div className="flex flex-col items-end gap-1 mt-1">
                     <Dialog open={recoveryOpen} onOpenChange={setRecoveryOpen}>
                       <DialogTrigger asChild>
-                        <Button type="button" variant="link" className="text-muted-foreground text-sm h-auto p-0">
+                        <Button type="button" variant="link" className="text-primary font-medium text-sm h-auto p-0 hover:underline">
                           <Lock className="w-3 h-3 mr-1" />
                           Esqueci minha senha
                         </Button>
@@ -290,6 +290,9 @@ export default function Login() {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
+                    <Link to="/redefinir-senha" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+                      Ou acesse a página de redefinir senha
+                    </Link>
                   </div>
                 </div>
 
@@ -355,7 +358,7 @@ export default function Login() {
 
                     <div className="space-y-2 relative">
                       <Label htmlFor="signup-userType">Tipo de Usuário</Label>
-                      <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
+                      <Select value={userType ?? "aluno"} onValueChange={(value: UserType) => setUserType(value)}>
                         <SelectTrigger className="h-12 border-2 hover:border-primary/50 focus:border-primary transition-all duration-300 bg-background/50">
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
@@ -428,6 +431,12 @@ export default function Login() {
                         <span className="relative z-10">Cadastrar</span>
                       )}
                     </Button>
+                    <p className="text-center text-xs text-muted-foreground mt-2">
+                      Esqueceu sua senha?{" "}
+                      <Link to="/redefinir-senha" className="text-primary font-medium hover:underline">
+                        Redefinir senha
+                      </Link>
+                    </p>
                   </form>
                 </TabsContent>
               </Tabs>

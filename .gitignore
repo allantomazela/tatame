@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+tatame-deploy.zip
 *.local
 
 # Environment and secrets (nunca commitar)
