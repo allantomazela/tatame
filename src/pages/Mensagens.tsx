@@ -30,7 +30,7 @@ export default function Mensagens() {
   const [busca, setBusca] = useState("");
   const [searchParams] = useSearchParams();
   
-  const { user } = useSupabaseAuth();
+  const { user, userType } = useSupabaseAuth();
   const { messages, conversations, loading, fetchMessages, sendMessage } = useMessages();
   const { users } = useUsers();
 
@@ -72,6 +72,8 @@ export default function Mensagens() {
         return 'Prof.';
       case 'responsavel':
         return 'Resp.';
+      case 'aluno':
+        return '';
       default:
         return '';
     }
@@ -121,7 +123,9 @@ export default function Mensagens() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mensagens</h1>
           <p className="text-muted-foreground">
-            Converse com alunos e responsáveis
+            {userType === "aluno"
+              ? "Converse com o professor ou mestres"
+              : "Converse com alunos e responsáveis"}
           </p>
         </div>
 

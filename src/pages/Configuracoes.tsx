@@ -20,7 +20,9 @@ import {
   Globe,
   Lock,
   Upload,
-  Loader2
+  Loader2,
+  MapPin,
+  Phone
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useSettings } from "@/hooks/useSettings";
@@ -35,6 +37,7 @@ export default function Configuracoes() {
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<"profile" | "security" | "notifications" | "appearance" | "system">("profile");
+  const showSystemTab = userType !== "aluno";
   const [actionLoading, setActionLoading] = useState(false);
 
   // Form states
@@ -55,6 +58,13 @@ export default function Configuracoes() {
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  // Se for aluno, não deixar aba Sistema ativa
+  useEffect(() => {
+    if (userType === "aluno" && activeTab === "system") {
+      setActiveTab("profile");
+    }
+  }, [userType, activeTab]);
 
   // Carregar dados do perfil
   useEffect(() => {
@@ -214,12 +224,12 @@ export default function Configuracoes() {
         </div>
 
         <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${showSystemTab ? "grid-cols-5" : "grid-cols-4"}`}>
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="security">Segurança</TabsTrigger>
             <TabsTrigger value="notifications">Notificações</TabsTrigger>
             <TabsTrigger value="appearance">Aparência</TabsTrigger>
-            <TabsTrigger value="system">Sistema</TabsTrigger>
+            {showSystemTab && <TabsTrigger value="system">Sistema</TabsTrigger>}
           </TabsList>
 
           {/* Tab Perfil */}
@@ -318,25 +328,43 @@ export default function Configuracoes() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="address">Endereço</Label>
+                <Separator />
+
+                {/* Endereço - bloco visual */}
+                <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    Endereço
+                  </div>
                   <Textarea
                     id="address"
                     value={profileForm.address}
                     onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
-                    placeholder="Endereço completo"
-                    rows={2}
+                    placeholder="Rua, número, bairro, cidade, estado e CEP"
+                    rows={3}
+                    className="resize-none bg-background"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Endereço completo para contato e eventual necessidade em eventos ou competições.
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_contact">Contato de Emergência</Label>
+                {/* Contato de Emergência - bloco visual */}
+                <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    Contato de Emergência
+                  </div>
                   <Input
                     id="emergency_contact"
                     value={profileForm.emergency_contact}
                     onChange={(e) => setProfileForm({ ...profileForm, emergency_contact: e.target.value })}
-                    placeholder="Nome e telefone do contato de emergência"
+                    placeholder="Ex: Maria Silva - (11) 99999-9999"
+                    className="bg-background"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Nome e telefone de alguém a ser avisado em caso de necessidade (ex.: responsável, familiar).
+                  </p>
                 </div>
 
                 <div className="flex justify-end">
@@ -664,7 +692,8 @@ export default function Configuracoes() {
             </Card>
           </TabsContent>
 
-          {/* Tab Sistema */}
+          {/* Tab Sistema - oculta para aluno */}
+          {showSystemTab && (
           <TabsContent value="system" className="space-y-6">
             <Card>
               <CardHeader>
@@ -729,6 +758,7 @@ export default function Configuracoes() {
               </Card>
             )}
           </TabsContent>
+          )}
         </Tabs>
       </div>
     </Layout>

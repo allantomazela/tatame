@@ -192,10 +192,12 @@ export default function Agenda() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Agenda</h1>
             <p className="text-muted-foreground">
-              Gerencie treinos e eventos dos polos
+              {userType === 'aluno'
+                ? 'Visualize os horários do seu polo'
+                : 'Gerencie treinos e eventos dos polos'}
             </p>
           </div>
-          {(userType === 'mestre' || userType === 'aluno') && (
+          {userType === 'mestre' && (
             <Dialog open={isSessionDialogOpen} onOpenChange={(open) => {
               setIsSessionDialogOpen(open);
               if (!open) resetSessionForm();
@@ -416,7 +418,7 @@ export default function Agenda() {
                   Quando houver alunos vinculados ao seu perfil e treinos cadastrados nos polos deles, as sessões aparecerão aqui.
                 </p>
               )}
-              {(userType === 'mestre' || userType === 'aluno') && (
+              {userType === 'mestre' && (
                 <p className="text-sm text-muted-foreground mt-2">
                   Use "Nova Sessão" para criar uma sessão avulsa ou configure horários fixos no gerenciamento de Polos.
                 </p>
@@ -474,7 +476,7 @@ export default function Agenda() {
                     {session.description && (
                       <p className="text-sm text-muted-foreground">{session.description}</p>
                     )}
-                    {(userType === 'mestre' || userType === 'aluno') && (
+                    {userType === 'mestre' && (
                       <Button
                         variant="outline"
                         size="sm"

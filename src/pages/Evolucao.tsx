@@ -60,6 +60,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useStudents } from "@/hooks/useStudents";
+import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { useStudentEvolution } from "@/hooks/useStudentEvolution";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
@@ -115,7 +116,11 @@ export default function Evolucao() {
   });
 
   const { students, loading: studentsLoading } = useStudents();
-  const { profile } = useSupabaseAuth();
+  const { profile, userType } = useSupabaseAuth();
+  const { student: currentStudent, loading: currentStudentLoading } = useCurrentStudent();
+  const isAlunoView = userType === "aluno";
+
+  const effectiveStudentId = isAlunoView ? (currentStudent?.id ?? "") : selectedStudentId;
   const {
     evaluations,
     goals,
@@ -128,9 +133,9 @@ export default function Evolucao() {
     createAchievement,
     createCompetition,
     deleteGoal
-  } = useStudentEvolution(selectedStudentId);
+  } = useStudentEvolution(effectiveStudentId);
 
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const selectedStudent = isAlunoView ? currentStudent ?? undefined : students.find(s => s.id === selectedStudentId);
   const currentPoomsae = selectedStudent ? poomsaeByBelt[selectedStudent.belt_color as keyof typeof poomsaeByBelt] || [] : [];
 
   // Função para calcular idade
@@ -316,7 +321,7 @@ export default function Evolucao() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            {selectedStudentId && !showStudentSelection && (
+            {!isAlunoView && selectedStudentId && !showStudentSelection && (
               <Button 
                 variant="outline" 
                 onClick={() => setShowStudentSelection(true)}
@@ -327,12 +332,17 @@ export default function Evolucao() {
               </Button>
             )}
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Evolução do Aluno</h1>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {isAlunoView ? "Minha Evolução" : "Evolução do Aluno"}
+              </h1>
               <p className="text-muted-foreground">
-                Acompanhe o progresso técnico e desenvolvimento dos alunos
+                {isAlunoView
+                  ? "Seus dados e evolução"
+                  : "Acompanhe o progresso técnico e desenvolvimento dos alunos"}
               </p>
             </div>
           </div>
+          {!isAlunoView && (
           <div className="flex items-center space-x-2">
             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
               <SelectTrigger className="w-64">
@@ -583,9 +593,34 @@ export default function Evolucao() {
               </div>
             )}
           </div>
+          )}
         </div>
 
-        {(!selectedStudentId || showStudentSelection) ? (
+        {isAlunoView && currentStudentLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                    <div className="h-8 bg-muted rounded w-3/4"></div>
+                    <div className="h-3 bg-muted rounded w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : isAlunoView && !currentStudent ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Nenhum registro de aluno vinculado ao seu perfil</h3>
+              <p className="text-muted-foreground">
+                Entre em contato com o mestre ou a academia para vincular seu perfil ao registro de aluno.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (!selectedStudentId || showStudentSelection) && !isAlunoView ? (
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -860,6 +895,7 @@ export default function Evolucao() {
                           Progressão específica em Poomsae e precisão
                         </CardDescription>
                       </div>
+                      {!isAlunoView && (
                       <Button 
                         size="sm" 
                         variant="outline"
@@ -868,6 +904,7 @@ export default function Evolucao() {
                         <Plus className="h-4 w-4 mr-2" />
                         Avaliar Movimentos
                       </Button>
+                      )}
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
@@ -1020,6 +1057,7 @@ export default function Evolucao() {
                       Objetivos em andamento
                     </CardDescription>
                   </div>
+                  {!isAlunoView && (
                   <Button 
                     size="sm" 
                     variant="outline"
@@ -1028,6 +1066,7 @@ export default function Evolucao() {
                     <Plus className="h-4 w-4 mr-2" />
                     Nova Meta
                   </Button>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {goals.filter(g => !g.completed).length === 0 ? (
@@ -1046,6 +1085,8 @@ export default function Evolucao() {
                             </div>
                             <div className="flex items-center space-x-2">
                               <span className="text-sm">{goal.current_progress}%</span>
+                              {!isAlunoView && (
+                              <>
                               <Button 
                                 size="sm" 
                                 variant="ghost"
@@ -1061,6 +1102,8 @@ export default function Evolucao() {
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>
+                              </>
+                              )}
                             </div>
                           </div>
                           <Progress value={goal.current_progress} className="h-2" />
@@ -1083,6 +1126,7 @@ export default function Evolucao() {
                       Últimas conquistas e marcos
                     </CardDescription>
                   </div>
+                  {!isAlunoView && (
                   <Button 
                     size="sm" 
                     variant="outline"
@@ -1091,6 +1135,7 @@ export default function Evolucao() {
                     <Award className="h-4 w-4 mr-2" />
                     Nova Conquista
                   </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

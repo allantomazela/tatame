@@ -290,9 +290,6 @@ export default function Login() {
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                    <Link to="/redefinir-senha" className="text-xs text-muted-foreground hover:text-primary hover:underline">
-                      Ou acesse a página de redefinir senha
-                    </Link>
                   </div>
                 </div>
 

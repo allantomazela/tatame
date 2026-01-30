@@ -7,7 +7,7 @@ export interface User {
   id: string;
   full_name: string;
   email: string;
-  user_type: 'instrutor' | 'aluno' | 'responsavel';
+  user_type: 'instrutor' | 'aluno' | 'responsavel' | 'mestre';
   avatar_url?: string;
   phone?: string;
 }

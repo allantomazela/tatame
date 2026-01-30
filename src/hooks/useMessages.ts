@@ -66,21 +66,22 @@ export function useMessages() {
         const isFromCurrentUser = message.sender_id === user.id;
         const otherUserId = isFromCurrentUser ? message.recipient_id : message.sender_id;
         const otherUserProfile = isFromCurrentUser ? message.recipient_profile : message.sender_profile;
-        
-        if (!conversationsMap.has(otherUserId) && otherUserProfile) {
+        if (!conversationsMap.has(otherUserId)) {
+          const name = otherUserProfile?.full_name ?? 'Usuário';
+          const userType = otherUserProfile?.user_type === 'mestre' ? 'instrutor' : (otherUserProfile?.user_type ?? 'aluno');
           conversationsMap.set(otherUserId, {
             id: otherUserId,
-            name: otherUserProfile.full_name,
-            type: otherUserProfile.user_type as 'instrutor' | 'aluno' | 'responsavel',
+            name,
+            type: userType as 'instrutor' | 'aluno' | 'responsavel',
             lastMessage: message.content,
-            time: new Date(message.created_at).toLocaleTimeString('pt-BR', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            time: new Date(message.created_at).toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
             }),
             unreadCount: 0,
-            online: Math.random() > 0.5, // Placeholder para status online
+            online: Math.random() > 0.5,
             user_id: otherUserId,
-            avatar_url: otherUserProfile.avatar_url
+            avatar_url: otherUserProfile?.avatar_url
           });
         }
       });

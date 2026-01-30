@@ -35,6 +35,7 @@ export function NewConversationDialog({ onSelectUser }: NewConversationDialogPro
   const getTipoLabel = (tipo: User['user_type']) => {
     switch (tipo) {
       case 'instrutor':
+      case 'mestre':
         return 'Prof.';
       case 'responsavel':
         return 'Resp.';
