@@ -17,12 +17,6 @@ export function Layout({ children }: LayoutProps) {
             className="md:hidden shrink-0"
             aria-label="Abrir menu"
           />
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm">畳</span>
-            </div>
-            <span className="font-semibold text-foreground truncate">Tatame</span>
-          </div>
         </header>
         <div className="flex-1 p-6 overflow-y-auto">
           {children}

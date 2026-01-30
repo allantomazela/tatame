@@ -82,10 +82,10 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed"
 
   return (
-    <Sidebar collapsible="icon" className="transition-all duration-300 ease-in-out">
+    <Sidebar collapsible="icon" className="transition-[width] duration-300 ease-in-out">
       <SidebarRail />
-      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0">
-        {/* Logo/Brand - clique no ícone ou no texto recolhe/expande; só ícones quando recolhido */}
+      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 transition-[max-width] duration-300 ease-in-out">
+        {/* Logo/Brand - clique recolhe/expande; recolhido: só ícone (texto oculto por CSS) */}
         <div
           role="button"
           tabIndex={0}
@@ -101,8 +101,9 @@ export function AppSidebar() {
             }
           }}
           className={cn(
-            "border-b border-sidebar-border/60 transition-all duration-200 overflow-hidden min-w-0 shrink-0 cursor-pointer select-none flex items-center rounded-lg hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
-            isCollapsed ? "px-1 py-2 justify-center w-full max-w-[var(--sidebar-width-icon)]" : "p-4 space-x-3"
+            "border-b border-sidebar-border/60 overflow-hidden min-w-0 shrink-0 cursor-pointer select-none flex items-center rounded-lg hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar transition-[padding] duration-300 ease-in-out",
+            "p-4 space-x-3",
+            "group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:max-w-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:space-x-0"
           )}
           aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
         >
@@ -117,25 +118,22 @@ export function AppSidebar() {
           </div>
           <div
             className={cn(
-              "flex flex-col text-left min-w-0 overflow-hidden transition-[width,opacity,margin] duration-200",
-              "group-data-[collapsible=icon]:!w-0 group-data-[collapsible=icon]:!max-w-0 group-data-[collapsible=icon]:!min-w-0 group-data-[collapsible=icon]:!opacity-0 group-data-[collapsible=icon]:!overflow-hidden group-data-[collapsible=icon]:!m-0 group-data-[collapsible=icon]:!p-0",
-              isCollapsed && "!w-0 !max-w-0 !min-w-0 !opacity-0 !overflow-hidden !m-0 !p-0 invisible",
-              !isCollapsed && "animate-in fade-in duration-200"
+              "flex flex-col text-left min-w-0 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-300 ease-in-out",
+              "max-w-[10rem] opacity-100",
+              "group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:min-w-0 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:overflow-hidden group-data-[collapsible=icon]:invisible"
             )}
             aria-hidden={isCollapsed}
           >
-            <span className="font-bold text-lg text-foreground dark:text-gray-100 truncate whitespace-nowrap">Tatame</span>
-            <span className="text-xs text-muted-foreground truncate whitespace-nowrap">Academia</span>
+            <span className="font-bold text-lg text-foreground dark:text-gray-100 truncate">Tatame</span>
+            <span className="text-xs text-muted-foreground truncate">Academia</span>
           </div>
         </div>
 
-        {/* Main Navigation */}
+        {/* Main Navigation - texto oculto via CSS quando collapsed (group-data-[collapsible=icon]) */}
         <SidebarGroup>
-          {!isCollapsed && (
-            <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
-              Principal
-            </SidebarGroupLabel>
-          )}
+          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
+            Principal
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filterItemsByRole(mainItems).map((item) => (
@@ -164,16 +162,14 @@ export function AppSidebar() {
                           ? "text-white"
                           : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
                       )} />
-                      {!isCollapsed && (
-                        <span className={cn(
-                          "font-medium transition-colors whitespace-nowrap truncate min-w-0",
-                          isActive(item.url)
-                            ? "text-white"
-                            : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
-                        )}>
-                          {item.title}
-                        </span>
-                      )}
+                      <span className={cn(
+                        "font-medium transition-colors whitespace-nowrap truncate min-w-0",
+                        isActive(item.url)
+                          ? "text-white"
+                          : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
+                      )}>
+                        {item.title}
+                      </span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -184,11 +180,9 @@ export function AppSidebar() {
 
         {/* Management */}
         <SidebarGroup>
-          {!isCollapsed && (
-            <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
-              Gestão
-            </SidebarGroupLabel>
-          )}
+          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
+            Gestão
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filterItemsByRole(managementItems).map((item) => (
@@ -217,16 +211,14 @@ export function AppSidebar() {
                           ? "text-white"
                           : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
                       )} />
-                      {!isCollapsed && (
-                        <span className={cn(
-                          "font-medium transition-colors whitespace-nowrap truncate min-w-0",
-                          isActive(item.url)
-                            ? "text-white"
-                            : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
-                        )}>
-                          {item.title}
-                        </span>
-                      )}
+                      <span className={cn(
+                        "font-medium transition-colors whitespace-nowrap truncate min-w-0",
+                        isActive(item.url)
+                          ? "text-white"
+                          : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
+                      )}>
+                        {item.title}
+                      </span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -249,11 +241,7 @@ export function AppSidebar() {
                   className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group text-foreground/80 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 >
                   <LogOut className="h-5 w-5 flex-shrink-0 text-destructive group-hover:rotate-12 transition-all duration-200 dark:text-red-400" />
-                  <span className={cn(
-                    "font-medium text-foreground/80 group-hover:text-destructive transition-colors whitespace-nowrap dark:text-gray-200 dark:group-hover:text-red-400",
-                    "group-data-[state=collapsed]:hidden",
-                    isCollapsed && "hidden"
-                  )}>
+                  <span className="font-medium text-foreground/80 group-hover:text-destructive transition-colors whitespace-nowrap dark:text-gray-200 dark:group-hover:text-red-400">
                     Sair
                   </span>
                 </SidebarMenuButton>
