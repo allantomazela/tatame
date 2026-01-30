@@ -54,7 +54,7 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/alunos" element={
-            <ProtectedRoute allowedUserTypes={["mestre"]}>
+            <ProtectedRoute allowedUserTypes={["mestre", "administrador"]}>
               <Layout>
                 <AlunosGestao />
               </Layout>
@@ -89,7 +89,7 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/graduacoes" element={
-            <ProtectedRoute allowedUserTypes={["mestre"]}>
+            <ProtectedRoute allowedUserTypes={["mestre", "administrador"]}>
               <Layout>
                 <Graduacoes />
               </Layout>
@@ -103,7 +103,7 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/relatorios" element={
-            <ProtectedRoute allowedUserTypes={["mestre"]}>
+            <ProtectedRoute allowedUserTypes={["mestre", "administrador"]}>
               <Layout>
                 <Relatorios />
               </Layout>
@@ -124,14 +124,14 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/polos" element={
-            <ProtectedRoute allowedUserTypes={["mestre"]}>
+            <ProtectedRoute allowedUserTypes={["mestre", "administrador"]}>
               <Layout>
                 <Polos />
               </Layout>
             </ProtectedRoute>
           } />
           <Route path="/financeiro" element={
-            <ProtectedRoute allowedUserTypes={["mestre"]}>
+            <ProtectedRoute allowedUserTypes={["mestre", "administrador"]}>
               <Layout>
                 <Financeiro />
               </Layout>

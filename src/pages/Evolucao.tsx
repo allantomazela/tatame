@@ -60,6 +60,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useStudents } from "@/hooks/useStudents";
+import { usePolos } from "@/hooks/usePolos";
 import { useCurrentStudent } from "@/hooks/useCurrentStudent";
 import { useStudentEvolution } from "@/hooks/useStudentEvolution";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -99,6 +100,7 @@ const movementsByCategory = {
 
 export default function Evolucao() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("");
+  const [filterPoloId, setFilterPoloId] = useState<string>("all");
   const [showStudentSelection, setShowStudentSelection] = useState(true);
   const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
@@ -116,9 +118,15 @@ export default function Evolucao() {
   });
 
   const { students, loading: studentsLoading } = useStudents();
+  const { polos } = usePolos();
   const { profile, userType } = useSupabaseAuth();
   const { student: currentStudent, loading: currentStudentLoading } = useCurrentStudent();
   const isAlunoView = userType === "aluno";
+
+  const studentsFilteredByPolo =
+    filterPoloId === "all"
+      ? students
+      : students.filter((s) => s.student_polos?.some((sp) => sp.polo_id === filterPoloId));
 
   const effectiveStudentId = isAlunoView ? (currentStudent?.id ?? "") : selectedStudentId;
   const {
@@ -135,7 +143,7 @@ export default function Evolucao() {
     deleteGoal
   } = useStudentEvolution(effectiveStudentId);
 
-  const selectedStudent = isAlunoView ? currentStudent ?? undefined : students.find(s => s.id === selectedStudentId);
+  const selectedStudent = isAlunoView ? currentStudent ?? undefined : students.find((s) => s.id === selectedStudentId);
   const currentPoomsae = selectedStudent ? poomsaeByBelt[selectedStudent.belt_color as keyof typeof poomsaeByBelt] || [] : [];
 
   // Função para calcular idade
@@ -343,7 +351,20 @@ export default function Evolucao() {
             </div>
           </div>
           {!isAlunoView && (
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={filterPoloId} onValueChange={setFilterPoloId}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Polo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os polos</SelectItem>
+                {polos.map((polo) => (
+                  <SelectItem key={polo.id} value={polo.id}>
+                    {polo.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
               <SelectTrigger className="w-64">
                 <SelectValue placeholder="Selecione um aluno" />
@@ -352,7 +373,7 @@ export default function Evolucao() {
                 {studentsLoading ? (
                   <SelectItem value="loading" disabled>Carregando...</SelectItem>
                 ) : (
-                  students.map((student) => (
+                  studentsFilteredByPolo.map((student) => (
                     <SelectItem key={student.id} value={student.id}>
                       {(student.profile as any)?.full_name} - {student.belt_color}
                     </SelectItem>
@@ -649,17 +670,17 @@ export default function Evolucao() {
                       </Card>
                     ))}
                   </div>
-                ) : students.length === 0 ? (
+                ) : studentsFilteredByPolo.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium mb-2">Nenhum aluno encontrado</h3>
                     <p className="text-muted-foreground">
-                      Cadastre alunos para acompanhar sua evolução
+                      {filterPoloId !== "all" ? "Nenhum aluno neste polo. Tente outro polo." : "Cadastre alunos para acompanhar sua evolução"}
                     </p>
                   </div>
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {students.map((student) => {
+                    {studentsFilteredByPolo.map((student) => {
                       const profile = student.profile as any;
                       const age = calculateAge(profile?.birth_date);
                       

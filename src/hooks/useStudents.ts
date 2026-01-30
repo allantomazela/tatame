@@ -6,8 +6,14 @@ import { Database } from '@/integrations/supabase/types';
 type StudentRow = Database['public']['Tables']['students']['Row'];
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
+export interface StudentPoloWithPolo {
+  polo_id: string;
+  polos: { id: string; name: string } | null;
+}
+
 export interface Student extends StudentRow {
   profile?: ProfileRow;
+  student_polos?: StudentPoloWithPolo[];
 }
 
 export interface CreateStudentData {
@@ -63,6 +69,10 @@ export function useStudents() {
             birth_date,
             address,
             emergency_contact
+          ),
+          student_polos (
+            polo_id,
+            polos ( id, name )
           )
         `)
         .eq('active', true)

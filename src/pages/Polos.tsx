@@ -60,7 +60,8 @@ const diasSemana = [
 ];
 
 export default function Polos() {
-  const { polos, loading, createPolo, updatePolo, deletePolo, getPoloStudents, enrollStudentInPolo, removeStudentFromPolo } = usePolos();
+  const [viewAllPolos, setViewAllPolos] = useState(false);
+  const { polos, loading, createPolo, updatePolo, deletePolo, getPoloStudents, enrollStudentInPolo, removeStudentFromPolo, refetch: refetchPolos } = usePolos({ viewAllPolos });
   const { students } = useStudents();
   const { classes } = useClasses();
   const { schedules, loading: schedulesLoading, createSchedule, updateSchedule, deleteSchedule, generateSessionsFromSchedules, fetchSchedules } = usePoloSchedules();
@@ -99,11 +100,12 @@ export default function Polos() {
     max_participants: 30
   });
 
-  // Generate sessions form state
+  const currentYear = new Date().getFullYear();
+  // Generate sessions form state (padrão: ano atual)
   const [generateForm, setGenerateForm] = useState({
     polo_id: "",
-    start_date: "",
-    end_date: ""
+    start_date: `${currentYear}-01-01`,
+    end_date: `${currentYear}-12-31`
   });
 
   // Buscar alunos do polo quando selecionado
@@ -274,7 +276,7 @@ export default function Polos() {
         generateForm.end_date
       );
       setIsGenerateSessionsDialogOpen(false);
-      setGenerateForm({ polo_id: "", start_date: "", end_date: "" });
+      setGenerateForm({ polo_id: "", start_date: `${currentYear}-01-01`, end_date: `${currentYear}-12-31` });
     } catch (error) {
       console.error('Error generating sessions:', error);
     } finally {
@@ -290,10 +292,8 @@ export default function Polos() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPolo]);
 
-  // Filtrar polos visíveis - mestres veem todos, outros veem apenas os seus
-  const visiblePolos = userType === 'mestre' 
-    ? polos 
-    : polos.filter(polo => polo.responsible_id === user?.id);
+  // usePolos já retorna "Meus Polos" para mestre (ou todos se viewAllPolos); para outros, apenas polos com acesso
+  const visiblePolos = polos;
 
   // Pode gerenciar se for mestre ou se for responsável por algum polo
   const canManagePolos = userType === 'mestre' || visiblePolos.length > 0;
@@ -326,10 +326,23 @@ export default function Polos() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Gerenciamento de Polos</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {userType === "mestre" && !viewAllPolos ? "Meus Polos" : "Gerenciamento de Polos"}
+            </h1>
             <p className="text-muted-foreground">
-              Gerencie os polos/dojangs da academia
+              {userType === "mestre" && !viewAllPolos
+                ? "Gerencie seus polos, horários e alunos"
+                : "Gerencie os polos/dojangs da academia"}
             </p>
+            {userType === "mestre" && (
+              <label className="mt-2 flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                <Checkbox
+                  checked={viewAllPolos}
+                  onCheckedChange={(checked) => setViewAllPolos(checked === true)}
+                />
+                Ver todos os polos
+              </label>
+            )}
           </div>
           {canCreatePolos && (
             <Dialog open={isDialogOpen} onOpenChange={(open) => {

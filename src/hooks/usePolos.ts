@@ -37,13 +37,15 @@ export interface CreatePoloData {
   color?: string;
 }
 
-export function usePolos() {
+export function usePolos(options?: { viewAllPolos?: boolean }) {
   const [polos, setPolos] = useState<Polo[]>([]);
   const [loading, setLoading] = useState(false);
   const { user, userType } = useSupabaseAuth();
   const { toast } = useToast();
+  // Administrador vê todos os polos por padrão; mestre vê "Meus Polos" e pode alternar
+  const viewAllPolos = options?.viewAllPolos ?? (userType === 'administrador');
 
-  const fetchPolos = async () => {
+  const fetchPolos = async (overrideViewAll?: boolean) => {
     if (!user) return;
 
     setLoading(true);
@@ -57,10 +59,22 @@ export function usePolos() {
         .eq('active', true)
         .order('name');
 
-      // Se não for mestre, filtrar apenas polos onde o usuário tem acesso
-      if (userType !== 'mestre') {
+      // Mestre: por padrão vê "Meus Polos"; viewAllPolos ou toggle mostra todos. Administrador: sempre vê todos.
+      const isMestreOrAdmin = userType === 'mestre' || userType === 'administrador';
+      if (isMestreOrAdmin && !(overrideViewAll ?? viewAllPolos)) {
+        const { data: subData } = await supabase
+          .from('polo_substitutes')
+          .select('polo_id')
+          .eq('profile_id', user.id);
+        const substitutePoloIds = subData?.map(s => s.polo_id) || [];
+        if (substitutePoloIds.length === 0) {
+          query = query.eq('responsible_id', user.id);
+        } else {
+          query = query.or(`responsible_id.eq.${user.id},id.in.(${substitutePoloIds.join(',')})`);
+        }
+      } else if (!isMestreOrAdmin) {
+        // Aluno ou responsável: filtrar apenas polos onde o usuário tem acesso
         if (userType === 'aluno') {
-          // Alunos veem apenas polos onde estão vinculados
           const { data: studentData } = await supabase
             .from('students')
             .select('id')
@@ -84,8 +98,6 @@ export function usePolos() {
             }
           }
         } else {
-          // Instrutores e responsáveis veem apenas polos onde são responsáveis
-          // As políticas RLS já fazem isso, mas vamos garantir no frontend também
           query = query.eq('responsible_id', user.id);
         }
       }
@@ -321,7 +333,8 @@ export function usePolos() {
     if (user) {
       fetchPolos();
     }
-  }, [user, userType]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, userType, viewAllPolos]);
 
   return {
     polos,
@@ -334,7 +347,8 @@ export function usePolos() {
     removeStudentFromPolo,
     getStudentPolos,
     getPoloStudents,
-    refetch: fetchPolos
+    refetch: () => fetchPolos(),
+    viewAllPolos,
   };
 }
 

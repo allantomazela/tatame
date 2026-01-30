@@ -67,7 +67,7 @@ export function AppSidebar() {
   const filterItemsByRole = (items: typeof mainItems) => {
     return items.filter(item => {
       if (!item.requiredRole) return true
-      return userType === item.requiredRole
+      return userType === item.requiredRole || (item.requiredRole === "mestre" && userType === "administrador")
     })
   }
 

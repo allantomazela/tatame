@@ -51,6 +51,22 @@ Este diretório contém scripts para criar um usuário mestre com acesso máximo
 - ✅ Pode ser executado localmente
 - ⚠️ Pode exigir confirmação de email
 
+## Promover perfil a Administrador
+
+**Arquivo**: `promover-administrador.sql`
+
+Use para definir um perfil existente (por exemplo um mestre) como **administrador**. O administrador tem o mesmo acesso do mestre e, por padrão, vê todos os polos.
+
+**Como usar:**
+1. Garanta que a migration `20260131000001_add_administrador_user_type.sql` foi aplicada (ver `SUPABASE_SETUP.md`).
+2. Abra `scripts/promover-administrador.sql` e altere a variável `email_do_perfil` para o email do usuário.
+3. No Supabase Dashboard → SQL Editor, cole o script e execute.
+4. O usuário com esse email passará a ter tipo `administrador`. Faça logout e login para aplicar.
+
+Ver também: `COMO_CRIAR_USUARIO_ADMINISTRADOR.md`.
+
+---
+
 ## Credenciais Padrão (Altere antes de usar!)
 
 - **Email**: `admin@tatame.com`

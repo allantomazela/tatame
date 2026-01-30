@@ -36,11 +36,13 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGraduations } from "@/hooks/useGraduations";
 import { useStudents } from "@/hooks/useStudents";
+import { usePolos } from "@/hooks/usePolos";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export default function Graduacoes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFaixa, setFilterFaixa] = useState("todas");
+  const [filterPoloId, setFilterPoloId] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Form state
@@ -52,7 +54,13 @@ export default function Graduacoes() {
 
   const { graduations, loading: graduationsLoading, createGraduation, deleteGraduation } = useGraduations();
   const { students, loading: studentsLoading } = useStudents();
+  const { polos } = usePolos();
   const { profile } = useSupabaseAuth();
+
+  const studentsFilteredByPolo =
+    filterPoloId === "all"
+      ? students
+      : students.filter((s) => s.student_polos?.some((sp) => sp.polo_id === filterPoloId));
 
   const beltColors = [
     { value: "branca", label: "Branca", color: "bg-gray-100", visualColor: "linear-gradient(90deg, #ffffff 100%)" },
@@ -94,12 +102,15 @@ export default function Graduacoes() {
     return color?.label || belt;
   };
 
-  const filteredGraduations = graduations.filter(graduation => {
+  const studentIdsByPolo = new Set(studentsFilteredByPolo.map((s) => s.id));
+
+  const filteredGraduations = graduations.filter((graduation) => {
     const student = graduation.student as any;
-    const studentName = student?.profile?.full_name || '';
+    const studentName = student?.profile?.full_name || "";
     const matchesSearch = studentName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFaixa = filterFaixa === "todas" || graduation.belt_color.toLowerCase() === filterFaixa;
-    return matchesSearch && matchesFaixa;
+    const matchesPolo = filterPoloId === "all" || studentIdsByPolo.has(graduation.student_id);
+    return matchesSearch && matchesFaixa && matchesPolo;
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,10 +179,10 @@ export default function Graduacoes() {
                       <SelectContent className="max-h-48 overflow-auto">
                         {studentsLoading ? (
                           <SelectItem value="" disabled>Carregando alunos...</SelectItem>
-                        ) : students.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum aluno encontrado</SelectItem>
+                        ) : studentsFilteredByPolo.length === 0 ? (
+                          <SelectItem value="" disabled>Nenhum aluno encontrado{filterPoloId !== "all" ? " neste polo" : ""}</SelectItem>
                         ) : (
-                          students.map((student) => {
+                          studentsFilteredByPolo.map((student) => {
                             const studentName = (student.profile as any)?.full_name || 'Nome não disponível';
                             return (
                               <SelectItem key={student.id} value={student.id}>
@@ -271,8 +282,8 @@ export default function Graduacoes() {
         {/* Filtros */}
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
@@ -283,8 +294,21 @@ export default function Graduacoes() {
                   />
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2 flex-wrap">
+                <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Select value={filterPoloId} onValueChange={setFilterPoloId}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="Polo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os polos</SelectItem>
+                    {polos.map((polo) => (
+                      <SelectItem key={polo.id} value={polo.id}>
+                        {polo.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Select value={filterFaixa} onValueChange={setFilterFaixa}>
                   <SelectTrigger className="w-40">
                     <SelectValue />

@@ -30,6 +30,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useStudents, CreateStudentData } from "@/hooks/useStudents";
 import { usePolos } from "@/hooks/usePolos";
 import {
@@ -48,6 +56,8 @@ export default function AlunosGestao() {
   const { polos } = usePolos();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBelt, setFilterBelt] = useState("all");
+  const [filterPoloId, setFilterPoloId] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"name" | "date_joined" | "belt">("name");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<string | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
@@ -207,18 +217,37 @@ export default function AlunosGestao() {
     return beltColors.find(belt => belt.value === beltName)?.label || beltName;
   };
 
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = student.profile?.full_name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
-      student.profile?.email
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    
-    const matchesBelt = filterBelt === "all" || student.belt_color === filterBelt;
-    
-    return matchesSearch && matchesBelt;
-  });
+  const getStudentPoloNames = (student: { student_polos?: { polos: { name: string } | null }[] }) => {
+    if (!student.student_polos?.length) return "—";
+    return student.student_polos
+      .map((sp) => sp.polos?.name)
+      .filter(Boolean)
+      .join(", ") || "—";
+  };
+
+  const filteredStudents = students
+    .filter((student) => {
+      const matchesSearch =
+        student.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.profile?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesBelt = filterBelt === "all" || student.belt_color === filterBelt;
+      const matchesPolo =
+        filterPoloId === "all" ||
+        student.student_polos?.some((sp) => sp.polo_id === filterPoloId);
+      return matchesSearch && matchesBelt && matchesPolo;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name") {
+        return (a.profile?.full_name ?? "").localeCompare(b.profile?.full_name ?? "");
+      }
+      if (sortBy === "date_joined") {
+        return new Date(b.date_joined).getTime() - new Date(a.date_joined).getTime();
+      }
+      const beltOrder = beltColors.map((b) => b.value);
+      const aIdx = beltOrder.indexOf(a.belt_color);
+      const bIdx = beltOrder.indexOf(b.belt_color);
+      return aIdx - bIdx;
+    });
 
   const calculateAge = (birthDate?: string) => {
     if (!birthDate) return "N/A";
@@ -684,8 +713,8 @@ export default function AlunosGestao() {
         {/* Filters */}
         <Card>
           <CardHeader>
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex-1 min-w-[200px]">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
@@ -696,8 +725,21 @@ export default function AlunosGestao() {
                   />
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2 flex-wrap">
+                <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Select value={filterPoloId} onValueChange={setFilterPoloId}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="Polo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os polos</SelectItem>
+                    {polos.map((polo) => (
+                      <SelectItem key={polo.id} value={polo.id}>
+                        {polo.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Select value={filterBelt ?? "all"} onValueChange={setFilterBelt}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
@@ -709,6 +751,16 @@ export default function AlunosGestao() {
                         {belt.label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as "name" | "date_joined" | "belt")}>
+                  <SelectTrigger className="w-44">
+                    <SelectValue placeholder="Ordenar por" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Nome</SelectItem>
+                    <SelectItem value="date_joined">Data de entrada</SelectItem>
+                    <SelectItem value="belt">Faixa</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -737,92 +789,88 @@ export default function AlunosGestao() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredStudents.map((student) => (
-              <Card key={student.id} className="hover:shadow-accent transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src="" />
-                        <AvatarFallback className="bg-gradient-accent text-white">
-                          {student.profile?.full_name?.split(' ').map((n: string) => n[0]).join('') || 'A'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">{student.profile?.full_name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(student.date_joined).toLocaleDateString('pt-BR')}
-                        </p>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Polo(s)</TableHead>
+                  <TableHead>Faixa</TableHead>
+                  <TableHead>Idade</TableHead>
+                  <TableHead>Mensalidade</TableHead>
+                  <TableHead className="w-[80px]">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src="" />
+                          <AvatarFallback className="bg-gradient-accent text-white text-xs">
+                            {student.profile?.full_name?.split(" ").map((n: string) => n[0]).join("") || "A"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{student.profile?.full_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(student.date_joined).toLocaleDateString("pt-BR")}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => openEditDialog(student)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-destructive"
-                          onClick={() => setStudentToDelete(student.id)}
-                        >
-                          <Trash className="h-4 w-4 mr-2" />
-                          Remover
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Faixa:</span>
-                    <div className="flex items-center space-x-2">
-                      <BeltColorDisplay 
-                        belt={beltColors.find(b => b.value === student.belt_color) || beltColors[0]} 
-                        size="small" 
-                      />
-                      <span className="text-sm">
-                        {getBeltLabel(student.belt_color)} - {student.belt_degree}º Grau
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {student.profile?.email && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Email:</span>
-                      <span className="font-medium truncate">{student.profile.email}</span>
-                    </div>
-                  )}
-                  
-                  {student.profile?.phone && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Telefone:</span>
-                      <span className="font-medium">{student.profile.phone}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Idade:</span>
-                    <span className="font-medium">{calculateAge(student.profile?.birth_date)} anos</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Mensalidade:</span>
-                    <Badge variant={!student.monthly_fee || student.monthly_fee === 0 ? "outline" : "secondary"}>
-                      {!student.monthly_fee || student.monthly_fee === 0 ? "Projeto Social" : `R$ ${Number(student.monthly_fee).toFixed(2)}/mês`}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    </TableCell>
+                    <TableCell className="text-sm truncate max-w-[180px]" title={student.profile?.email ?? ""}>
+                      {student.profile?.email ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-sm">{getStudentPoloNames(student)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <BeltColorDisplay
+                          belt={beltColors.find((b) => b.value === student.belt_color) || beltColors[0]}
+                          size="small"
+                        />
+                        <span className="text-sm">
+                          {getBeltLabel(student.belt_color)} - {student.belt_degree}º
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">{calculateAge(student.profile?.birth_date)}</TableCell>
+                    <TableCell>
+                      <Badge variant={!student.monthly_fee || student.monthly_fee === 0 ? "outline" : "secondary"}>
+                        {!student.monthly_fee || student.monthly_fee === 0
+                          ? "Projeto Social"
+                          : `R$ ${Number(student.monthly_fee).toFixed(2)}/mês`}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEditDialog(student)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => setStudentToDelete(student.id)}
+                          >
+                            <Trash className="h-4 w-4 mr-2" />
+                            Remover
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         )}
 
         {/* Delete Confirmation Dialog */}

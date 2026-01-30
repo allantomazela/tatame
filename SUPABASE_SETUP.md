@@ -10,6 +10,28 @@ Todas as migrations foram aplicadas com sucesso, incluindo:
 - Índices para performance
 - Funções corrigidas com search_path seguro
 
+### Aplicar novas migrations (local e remoto)
+
+Sempre que houver novas migrations em `supabase/migrations/`:
+
+**Ambiente local (Supabase CLI):**
+
+```bash
+cd l:\APPS\tatame
+npx supabase db push
+```
+
+Execute o Cursor/terminal **sem privilégios de administrador**; o Supabase CLI não roda em processo elevado.
+
+**Produção (remoto):**
+
+- Se o deploy (ex.: GitHub Actions) estiver configurado para rodar migrations no Supabase remoto, elas serão aplicadas no deploy.
+- Caso contrário: no **Supabase Dashboard** do projeto de produção → **SQL Editor**, execute manualmente o conteúdo de cada migration nova (na ordem do prefixo da data no nome do arquivo).
+
+**Migrations recentes importantes:**
+
+- `20260131000001_add_administrador_user_type.sql` — adiciona o tipo de usuário `administrador`. Necessária para usar administradores. Ver `COMO_CRIAR_USUARIO_ADMINISTRADOR.md`.
+
 ## 📦 Storage Buckets
 
 ### Bucket de Avatares
