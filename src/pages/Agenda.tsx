@@ -42,7 +42,10 @@ export default function Agenda() {
   const [selectedPolo, setSelectedPolo] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const isYearView = userType === "aluno" || userType === "responsavel";
+  const isMestreOrAdmin = userType === "mestre" || userType === "administrador";
+  const isYearViewAluno = userType === "aluno" || userType === "responsavel";
+  const [agendaViewMode, setAgendaViewMode] = useState<"date" | "year">("date");
+  const isYearView = isYearViewAluno || (isMestreOrAdmin && agendaViewMode === "year");
   const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
   const [isAttendanceDialogOpen, setIsAttendanceDialogOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
@@ -295,8 +298,8 @@ export default function Agenda() {
     return true;
   });
 
-  // Agrupar por polo: visão anual (aluno/responsável) ou mestre (melhor organização)
-  const showGroupedByPolo = (isYearView || userType === "mestre") && filteredSessions.length > 0;
+  // Agrupar por polo: visão anual (aluno/responsável) ou mestre/admin (melhor organização)
+  const showGroupedByPolo = (isYearView || isMestreOrAdmin) && filteredSessions.length > 0;
   const sessionsByPolo = showGroupedByPolo
     ? filteredSessions.reduce<Record<string, typeof filteredSessions>>((acc, session) => {
         const key = session.polo_id;
@@ -323,7 +326,7 @@ export default function Agenda() {
                 : 'Gerencie treinos e eventos dos polos'}
             </p>
           </div>
-          {userType === 'mestre' && (
+          {isMestreOrAdmin && (
             <div className="flex items-center gap-2">
               <Dialog open={isGenerateYearDialogOpen} onOpenChange={setIsGenerateYearDialogOpen}>
                 <DialogTrigger asChild>
@@ -526,6 +529,52 @@ export default function Agenda() {
           )}
         </div>
 
+        {/* Lista de polos clicável (Mestre/Admin) */}
+        {isMestreOrAdmin && polos.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Selecione o polo</CardTitle>
+              <CardDescription>
+                Clique em um polo para ver e gerenciar a agenda de aulas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPolo("all")}
+                  className={`flex items-center gap-2 rounded-lg border-2 px-4 py-3 text-left transition-all hover:shadow-md ${
+                    selectedPolo === "all"
+                      ? "border-primary bg-primary/10"
+                      : "border-muted hover:border-primary/50"
+                  }`}
+                >
+                  <MapPin className="h-5 w-5 text-muted-foreground" />
+                  <span className="font-medium">Todos os polos</span>
+                </button>
+                {polos.map((polo) => (
+                  <button
+                    key={polo.id}
+                    type="button"
+                    onClick={() => setSelectedPolo(polo.id)}
+                    className={`flex items-center gap-2 rounded-lg border-2 px-4 py-3 text-left transition-all hover:shadow-md ${
+                      selectedPolo === polo.id
+                        ? "border-primary bg-primary/10"
+                        : "border-muted hover:border-primary/50"
+                    }`}
+                  >
+                    <div
+                      className="h-4 w-4 rounded-full flex-shrink-0 border border-gray-300"
+                      style={{ backgroundColor: polo.color || "#3b82f6" }}
+                    />
+                    <span className="font-medium">{polo.name}</span>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Filtros */}
         <Card>
           <CardHeader>
@@ -556,23 +605,39 @@ export default function Agenda() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="grid gap-2">
-                <Label>Polo</Label>
-                <Select value={selectedPolo} onValueChange={(value) => setSelectedPolo(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos os polos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os polos</SelectItem>
-                    {polos.map((polo) => (
-                      <SelectItem key={polo.id} value={polo.id}>
-                        {polo.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            {isMestreOrAdmin && (
+              <div className="grid gap-2 mb-4">
+                <Label>Modo de visualização</Label>
+                <Tabs value={agendaViewMode} onValueChange={(v) => setAgendaViewMode(v as "date" | "year")}>
+                  <TabsList className="grid w-full max-w-md grid-cols-2">
+                    <TabsTrigger value="date">Por data</TabsTrigger>
+                    <TabsTrigger value="year">Visão geral do ano</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <p className="text-xs text-muted-foreground">
+                  {agendaViewMode === "date" ? "Ver sessões de um dia específico." : "Ver todas as aulas do ano organizadas por polo."}
+                </p>
               </div>
+            )}
+            <div className="grid gap-4 md:grid-cols-2">
+              {!isMestreOrAdmin && (
+                <div className="grid gap-2">
+                  <Label>Polo</Label>
+                  <Select value={selectedPolo} onValueChange={(value) => setSelectedPolo(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos os polos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os polos</SelectItem>
+                      {polos.map((polo) => (
+                        <SelectItem key={polo.id} value={polo.id}>
+                          {polo.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               {isYearView ? (
                 <div className="grid gap-2">
                   <Label>Ano</Label>
@@ -632,7 +697,7 @@ export default function Agenda() {
                   Quando houver alunos vinculados ao seu perfil e treinos cadastrados nos polos deles, as sessões aparecerão aqui.
                 </p>
               )}
-              {userType === 'mestre' && (
+              {isMestreOrAdmin && (
                 <p className="text-sm text-muted-foreground mt-2">
                   Use "Nova Sessão" para criar uma sessão avulsa ou configure horários fixos no gerenciamento de Polos.
                 </p>
@@ -691,7 +756,7 @@ export default function Agenda() {
                               {session.description && (
                                 <p className="text-sm text-muted-foreground line-clamp-2">{session.description}</p>
                               )}
-                              {userType === "mestre" && (
+                              {isMestreOrAdmin && (
                                 <div className="flex flex-wrap gap-2 mt-3">
                                   <Button variant="outline" size="sm" className="flex-1" onClick={() => handleOpenAttendance(session.id)}>
                                     <ClipboardList className="mr-1 h-3 w-3" />
@@ -766,7 +831,7 @@ export default function Agenda() {
                     {session.description && (
                       <p className="text-sm text-muted-foreground">{session.description}</p>
                     )}
-                    {userType === 'mestre' && (
+                    {isMestreOrAdmin && (
                       <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" className="flex-1" onClick={() => handleOpenAttendance(session.id)}>
                           <ClipboardList className="mr-1 h-3 w-3" />

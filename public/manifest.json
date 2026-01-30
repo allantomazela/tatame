@@ -1,0 +1,24 @@
+{
+  "name": "Tatame - Sistema de Gestão",
+  "short_name": "Tatame",
+  "description": "Sistema completo de gestão para artes marciais, controle de atletas, graduações e evolução técnica",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    },
+    {
+      "src": "/og-image.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

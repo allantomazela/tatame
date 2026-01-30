@@ -57,10 +57,14 @@ const managementItems: MenuItem[] = [
 ]
 
 export function AppSidebar() {
-  const { state, toggleSidebar } = useSidebar()
+  const { state, toggleSidebar, isMobile, setOpenMobile } = useSidebar()
   const location = useLocation()
   const { userType, signOut } = useSupabaseAuth()
   const currentPath = location.pathname
+
+  const closeMobileMenu = () => {
+    if (isMobile) setOpenMobile(false)
+  }
 
   const isActive = (path: string) => currentPath === path
 
@@ -103,8 +107,9 @@ export function AppSidebar() {
           aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
         >
           <div
+            role="presentation"
             className={cn(
-              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 shrink-0 w-10 h-10"
+              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 shrink-0 w-10 h-10 pointer-events-none"
             )}
             aria-hidden
           >
@@ -143,6 +148,7 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
+                      onClick={closeMobileMenu}
                       className={cn(
                         "flex items-center gap-2 w-full justify-start min-w-0",
                         isActive(item.url)
@@ -195,6 +201,7 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
+                      onClick={closeMobileMenu}
                       className={cn(
                         "flex items-center gap-2 w-full justify-start min-w-0",
                         isActive(item.url)
@@ -234,7 +241,10 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={handleSignOut}
+                  onClick={() => {
+                    closeMobileMenu()
+                    handleSignOut()
+                  }}
                   tooltip={isCollapsed ? { children: "Sair", sideOffset: 10 } : undefined}
                   className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group text-foreground/80 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 >

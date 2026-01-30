@@ -25,6 +25,12 @@ Sistema completo de gestão para academias de artes marciais, desenvolvido com R
 - ✅ **Configurações**: Configurações do sistema
 - ✅ **Minhas Turmas**: Gerenciamento de turmas (apenas para mestres)
 
+#### PWA (Instalar como app)
+- ✅ **Vite PWA** (`vite-plugin-pwa`): service worker com atualização automática, cache de assets e da API Supabase
+- ✅ **Manifest** (`public/manifest.json`): nome, ícones, tema e modo standalone
+- ✅ **Instalar app**: banner "Instalar Tatame" em dispositivos móveis (quando o navegador dispara `beforeinstallprompt`)
+- ✅ **Offline**: fallback para `index.html` em rotas SPA; requisições à API Supabase em cache (NetworkFirst)
+
 #### Infraestrutura
 - ✅ Banco de dados Supabase configurado
 - ✅ 15 migrations aplicadas
@@ -90,6 +96,10 @@ npm run build:dev    # Build em modo desenvolvimento
 npm run preview      # Preview do build de produção
 npm run lint         # Executa o linter
 ```
+
+### Instalar como app (PWA)
+
+No **celular**, abra o Tatame no navegador (Chrome/Edge Android ou Safari iOS). Se o navegador suportar, aparecerá um banner **"Instalar Tatame"**; toque em **Instalar** para adicionar à tela inicial. Em iOS: Safari → Compartilhar → "Adicionar à Tela de Início". O service worker é registrado automaticamente no build de produção e mantém o app atualizado.
 
 ## 📁 Estrutura do Projeto
 
@@ -214,6 +224,7 @@ Veja `src/index.css` para todas as variáveis CSS customizadas.
 
 ### Desenvolvimento
 - `vite` - Build tool
+- `vite-plugin-pwa` - PWA (service worker, manifest, cache)
 - `typescript` - TypeScript
 - `tailwindcss` - CSS framework
 - `eslint` - Linter
