@@ -7,12 +7,12 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-/** Header: botão para abrir/recolher menu + nome do app. */
+/** Header: no mobile mostra botão para abrir o menu; no desktop mostra nome do app (recolher fica dentro do sidebar). */
 function LayoutHeader() {
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 flex-nowrap items-center gap-2 border-b bg-background px-3 sm:px-4 dark:bg-gray-900 dark:border-gray-800">
-      <SidebarTrigger className="shrink-0" aria-label="Abrir ou recolher menu" />
-      <span className="font-semibold text-foreground dark:text-gray-100 truncate">Tatame</span>
+      <SidebarTrigger className="md:hidden shrink-0" aria-label="Abrir menu" />
+      <span className="hidden md:inline-block font-semibold text-foreground dark:text-gray-100 truncate">Tatame</span>
     </header>
   );
 }
