@@ -1,4 +1,4 @@
-// Sidebar com ícones atualizados
+// Sidebar refatorado: logo fixo no topo, collapse 250px/80px, transições suaves
 import React from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
@@ -57,11 +57,124 @@ const managementItems: MenuItem[] = [
   { title: "Configurações", url: "/configuracoes", icon: Settings, iconColor: "text-gray-600", activeColor: "red" },
 ]
 
+/** Logo: símbolo coreano preto (道 - Do, "o caminho"). Fixo no topo; recolhido mostra só o ícone. */
+function SidebarLogo() {
+  const { state, isMobile, toggleSidebar } = useSidebar()
+  const collapsed = state === "collapsed"
+
+  return (
+    <SidebarHeader className={cn("flex flex-col gap-2 shrink-0 border-b border-sidebar-border/80 pb-3 mb-2 transition-all duration-300 ease-in-out", collapsed ? "px-2" : "px-3")}>
+      <div
+        className={cn(
+          "flex items-center w-full transition-all duration-300 ease-in-out",
+          collapsed ? "justify-center gap-1" : "gap-3"
+        )}
+      >
+        {/* Ícone coreano preto: 道 (Do) - sempre visível, nunca some */}
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-lg bg-black text-white font-bold shrink-0 transition-all duration-300 ease-in-out",
+            collapsed ? "w-9 h-9 text-base" : "w-11 h-11 text-xl"
+          )}
+          title="Tatame"
+        >
+          道
+        </div>
+        {/* Nome quando expandido; recolhido: w-0 overflow-hidden para não quebrar layout */}
+        <div
+          className={cn(
+            "overflow-hidden transition-all duration-300 ease-in-out flex-1 min-w-0",
+            collapsed ? "w-0 min-w-0 opacity-0" : "opacity-100"
+          )}
+        >
+          <span className="font-bold text-sidebar-foreground whitespace-nowrap pl-1 dark:text-gray-100">
+            Tatame
+          </span>
+        </div>
+        {/* Toggle dentro do menu (apenas desktop) */}
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+            className="shrink-0 flex items-center justify-center rounded-lg p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 ease-in-out"
+          >
+            {collapsed ? (
+              <PanelLeft className="h-5 w-5" />
+            ) : (
+              <PanelLeftClose className="h-5 w-5" />
+            )}
+          </button>
+        )}
+      </div>
+    </SidebarHeader>
+  )
+}
+
+function NavItem({
+  item,
+  isActive,
+  collapsed,
+  onNavigate,
+}: {
+  item: MenuItem
+  isActive: boolean
+  collapsed: boolean
+  onNavigate: () => void
+}) {
+  const Icon = item.icon
+  const activeBlue = item.activeColor === "blue"
+  const activeClasses = isActive
+    ? activeBlue
+      ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md shadow-blue-500/25 dark:from-blue-500 dark:to-blue-600"
+      : "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md shadow-red-500/25 dark:from-red-500 dark:to-red-600"
+    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+  const iconClasses = isActive
+    ? "text-white"
+    : item.iconColor
+      ? `${item.iconColor} dark:text-gray-300`
+      : "text-foreground/70 dark:text-gray-300"
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={isActive}
+        tooltip={collapsed ? { children: item.title, sideOffset: 10 } : undefined}
+      >
+        <NavLink
+          to={item.url}
+          end
+          onClick={onNavigate}
+          className={cn(
+            "flex items-center gap-3 w-full min-w-0 rounded-lg px-3 py-2.5 transition-all duration-200 ease-in-out",
+            collapsed && "justify-center px-2",
+            activeClasses
+          )}
+        >
+          <Icon className={cn("h-5 w-5 flex-shrink-0 shrink-0", iconClasses)} />
+          {/* Texto: recolhido = w-0 overflow-hidden para sumir sem quebrar layout */}
+          <span
+            className={cn(
+              "font-medium whitespace-nowrap truncate transition-all duration-200 ease-in-out",
+              collapsed ? "w-0 min-w-0 overflow-hidden opacity-0" : "min-w-0 opacity-100",
+              isActive && "text-white"
+            )}
+          >
+            {item.title}
+          </span>
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
+
 export function AppSidebar() {
   const { state, isMobile, setOpenMobile, toggleSidebar } = useSidebar()
   const location = useLocation()
   const { userType, signOut } = useSupabaseAuth()
   const currentPath = location.pathname
+  const collapsed = state === "collapsed"
 
   const closeMobileMenu = () => {
     if (isMobile) setOpenMobile(false)
@@ -80,137 +193,61 @@ export function AppSidebar() {
     await signOut()
   }
 
-  const isCollapsed = state === "collapsed"
-
   return (
     <Sidebar collapsible="icon" className="transition-[width] duration-300 ease-in-out">
-      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 pt-3 transition-[max-width] duration-300 ease-in-out">
-        {/* Logo Tatame + botão recolher dentro do menu (desktop) */}
-        <SidebarHeader className="flex flex-row items-center gap-2 border-b border-sidebar-border pb-3 mb-1 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-          <div className="flex items-center gap-2 min-w-0 group-data-[collapsible=icon]:hidden">
-            <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">畳</span>
-            </div>
-            <span className="font-bold text-sidebar-foreground truncate dark:text-gray-100">Tatame</span>
-          </div>
-          {!isMobile && (
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label={state === "collapsed" ? "Expandir menu" : "Recolher menu"}
-              className={cn(
-                "shrink-0 flex items-center justify-center rounded-md p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                "group-data-[collapsible=icon]:mx-auto"
-              )}
-            >
-              {state === "collapsed" ? (
-                <PanelLeft className="h-5 w-5" />
-              ) : (
-                <PanelLeftClose className="h-5 w-5" />
-              )}
-            </button>
-          )}
-        </SidebarHeader>
+      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 flex flex-col pt-3 transition-[max-width] duration-300 ease-in-out">
+        {/* Logo fixo no topo (símbolo coreano 道) + toggle */}
+        <SidebarLogo />
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
+        <SidebarGroup className="flex-1 min-h-0">
+          <SidebarGroupLabel
+            className={cn(
+              "text-sidebar-foreground/90 font-semibold dark:text-gray-300 px-3 transition-all duration-200 ease-in-out",
+              collapsed && "w-0 min-w-0 overflow-hidden opacity-0 p-0 m-0 border-0 max-h-0"
+            )}
+          >
             Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-0.5">
               {filterItemsByRole(mainItems).map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={isCollapsed ? { children: item.title, sideOffset: 10 } : undefined}
-                  >
-                    <NavLink
-                      to={item.url}
-                      end
-                      onClick={closeMobileMenu}
-                      className={cn(
-                        "flex items-center gap-2 w-full justify-start min-w-0 group-data-[collapsible=icon]:justify-center",
-                        isActive(item.url)
-                          ? item.activeColor === "blue"
-                            ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/50"
-                            : "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30 dark:from-red-500 dark:to-red-600 dark:shadow-red-500/50"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
-                      )}
-                    >
-                      <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0 transition-colors duration-200 shrink-0",
-                        isActive(item.url)
-                          ? "text-white"
-                          : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
-                      )} />
-                      <span className={cn(
-                        "font-medium transition-colors whitespace-nowrap truncate min-w-0 group-data-[collapsible=icon]:hidden",
-                        isActive(item.url)
-                          ? "text-white"
-                          : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
-                      )}>
-                        {item.title}
-                      </span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <NavItem
+                  key={item.title}
+                  item={item}
+                  isActive={isActive(item.url)}
+                  collapsed={collapsed}
+                  onNavigate={closeMobileMenu}
+                />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Management */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
+          <SidebarGroupLabel
+            className={cn(
+              "text-sidebar-foreground/90 font-semibold dark:text-gray-300 px-3 transition-all duration-200 ease-in-out",
+              collapsed && "w-0 min-w-0 overflow-hidden opacity-0 p-0 m-0 border-0 max-h-0"
+            )}
+          >
             Gestão
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-0.5">
               {filterItemsByRole(managementItems).map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={isCollapsed ? { children: item.title, sideOffset: 10 } : undefined}
-                  >
-                    <NavLink
-                      to={item.url}
-                      end
-                      onClick={closeMobileMenu}
-                      className={cn(
-                        "flex items-center gap-2 w-full justify-start min-w-0 group-data-[collapsible=icon]:justify-center",
-                        isActive(item.url)
-                          ? item.activeColor === "blue"
-                            ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/50"
-                            : "bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30 dark:from-red-500 dark:to-red-600 dark:shadow-red-500/50"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
-                      )}
-                    >
-                      <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0 transition-colors duration-200 shrink-0",
-                        isActive(item.url)
-                          ? "text-white"
-                          : item.iconColor ? `${item.iconColor} dark:text-gray-300` : "text-foreground/70 group-hover:text-foreground dark:text-gray-300 dark:group-hover:text-white"
-                      )} />
-                      <span className={cn(
-                        "font-medium transition-colors whitespace-nowrap truncate min-w-0 group-data-[collapsible=icon]:hidden",
-                        isActive(item.url)
-                          ? "text-white"
-                          : "text-foreground/80 group-hover:text-foreground dark:text-gray-200 dark:group-hover:text-white"
-                      )}>
-                        {item.title}
-                      </span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <NavItem
+                  key={item.title}
+                  item={item}
+                  isActive={isActive(item.url)}
+                  collapsed={collapsed}
+                  onNavigate={closeMobileMenu}
+                />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Sign Out */}
-        <SidebarGroup className="mt-auto">
+        <SidebarGroup className="mt-auto shrink-0">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -219,11 +256,20 @@ export function AppSidebar() {
                     closeMobileMenu()
                     handleSignOut()
                   }}
-                  tooltip={isCollapsed ? { children: "Sair", sideOffset: 10 } : undefined}
-                  className="hover:bg-destructive/10 hover:text-destructive transition-all duration-200 group text-foreground/80 dark:text-gray-200 dark:hover:bg-red-900/20 dark:hover:text-red-400 flex items-center gap-2 w-full justify-start min-w-0 group-data-[collapsible=icon]:justify-center"
+                  tooltip={collapsed ? { children: "Sair", sideOffset: 10 } : undefined}
+                  className={cn(
+                    "flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-all duration-200 ease-in-out",
+                    "hover:bg-destructive/10 hover:text-destructive dark:hover:bg-red-900/20 dark:hover:text-red-400",
+                    collapsed && "justify-center px-2"
+                  )}
                 >
-                  <LogOut className="h-5 w-5 flex-shrink-0 text-destructive group-hover:rotate-12 transition-all duration-200 dark:text-red-400" />
-                  <span className="font-medium text-foreground/80 group-hover:text-destructive transition-colors whitespace-nowrap dark:text-gray-200 dark:group-hover:text-red-400 group-data-[collapsible=icon]:hidden">
+                  <LogOut className="h-5 w-5 flex-shrink-0 text-destructive dark:text-red-400" />
+                  <span
+                    className={cn(
+                      "font-medium whitespace-nowrap transition-all duration-200 ease-in-out",
+                      collapsed ? "w-0 min-w-0 overflow-hidden opacity-0" : "min-w-0 opacity-100"
+                    )}
+                  >
                     Sair
                   </span>
                 </SidebarMenuButton>
