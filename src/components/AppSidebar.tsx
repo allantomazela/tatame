@@ -82,10 +82,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="transition-[width] duration-300 ease-in-out">
-      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 flex flex-col transition-[max-width] duration-300 ease-in-out">
-        {/* Espaço fixo no topo para alinhar primeira linha do menu com o header (h-14) */}
-        <div className="h-14 shrink-0" aria-hidden />
-        <SidebarGroup className="pt-0">
+      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 pt-3 transition-[max-width] duration-300 ease-in-out">
+        <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
             Principal
           </SidebarGroupLabel>
