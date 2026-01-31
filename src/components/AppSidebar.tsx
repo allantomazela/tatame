@@ -25,7 +25,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
@@ -57,7 +56,7 @@ const managementItems: MenuItem[] = [
 ]
 
 export function AppSidebar() {
-  const { state, toggleSidebar, isMobile, setOpenMobile } = useSidebar()
+  const { state, isMobile, setOpenMobile } = useSidebar()
   const location = useLocation()
   const { userType, signOut } = useSupabaseAuth()
   const currentPath = location.pathname
@@ -83,29 +82,14 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="transition-[width] duration-300 ease-in-out">
-      <SidebarRail />
       <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 transition-[max-width] duration-300 ease-in-out">
-        {/* Logo/Brand - clique recolhe/expande; recolhido: só ícone (texto oculto por CSS) */}
+        {/* Logo/Brand - apenas visual, toggle fica no header */}
         <div
-          role="button"
-          tabIndex={0}
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            toggleSidebar()
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault()
-              toggleSidebar()
-            }
-          }}
           className={cn(
-            "border-b border-sidebar-border/60 overflow-hidden min-w-0 shrink-0 cursor-pointer select-none flex items-center rounded-lg hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar transition-[padding,width] duration-300 ease-in-out",
+            "border-b border-sidebar-border/60 overflow-hidden min-w-0 shrink-0 select-none flex items-center rounded-lg transition-[padding,width] duration-300 ease-in-out",
             "p-4 space-x-3",
             "group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:max-w-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:space-x-0"
           )}
-          aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
         >
           <div
             role="presentation"
