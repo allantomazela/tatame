@@ -315,7 +315,7 @@ export default function AlunosGestao() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Gestão de Alunos</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Gestão de Alunos</h1>
             <p className="text-muted-foreground">Gerencie todos os alunos do seu tatame</p>
           </div>
           
@@ -326,7 +326,7 @@ export default function AlunosGestao() {
                 Novo Aluno
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto w-[95vw] sm:w-full px-4 sm:px-6">
               <DialogHeader>
                 <DialogTitle>
                   {editingStudent ? "Editar Aluno" : "Cadastrar Novo Aluno"}
@@ -337,7 +337,7 @@ export default function AlunosGestao() {
               </DialogHeader>
               
               <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="full_name">Nome Completo *</Label>
                     <Input
@@ -361,7 +361,7 @@ export default function AlunosGestao() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Telefone</Label>
                     <Input
@@ -385,8 +385,8 @@ export default function AlunosGestao() {
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Endereço Completo</Label>
                   <div className="grid gap-3 p-4 border rounded-lg bg-muted/10">
-                    <div className="grid grid-cols-4 gap-3">
-                      <div className="space-y-2 col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div className="space-y-2 sm:col-span-2">
                         <Label htmlFor="street">Nome da Rua *</Label>
                         <Input
                           id="street"
@@ -416,7 +416,7 @@ export default function AlunosGestao() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="postal_code">CEP *</Label>
                         <Input
@@ -491,7 +491,7 @@ export default function AlunosGestao() {
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Contato de Emergência</Label>
                   <div className="grid gap-3 p-4 border rounded-lg bg-muted/10">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="emergency_contact_name">Nome Completo *</Label>
                         <Input
@@ -554,8 +554,8 @@ export default function AlunosGestao() {
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Graduação</Label>
                   <div className="grid gap-3 p-4 border rounded-lg bg-muted/10">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2 col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="space-y-2 sm:col-span-2">
                         <Label htmlFor="belt_color">Cor da Faixa</Label>
 <Select 
                         value={formData.belt_color ?? ""}
@@ -594,7 +594,7 @@ export default function AlunosGestao() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="is_scholarship">Modalidade</Label>
 <Select 
@@ -713,8 +713,8 @@ export default function AlunosGestao() {
         {/* Filters */}
         <Card>
           <CardHeader>
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex-1 min-w-[200px]">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+              <div className="flex-1 w-full sm:min-w-[200px] min-w-0">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
@@ -725,10 +725,10 @@ export default function AlunosGestao() {
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <Filter className="h-4 w-4 text-muted-foreground shrink-0 hidden sm:block" />
                 <Select value={filterPoloId} onValueChange={setFilterPoloId}>
-                  <SelectTrigger className="w-44">
+                  <SelectTrigger className="w-full sm:w-44">
                     <SelectValue placeholder="Polo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -741,7 +741,7 @@ export default function AlunosGestao() {
                   </SelectContent>
                 </Select>
                 <Select value={filterBelt ?? "all"} onValueChange={setFilterBelt}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-full sm:w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -754,7 +754,7 @@ export default function AlunosGestao() {
                   </SelectContent>
                 </Select>
                 <Select value={sortBy} onValueChange={(v) => setSortBy(v as "name" | "date_joined" | "belt")}>
-                  <SelectTrigger className="w-44">
+                  <SelectTrigger className="w-full sm:w-44">
                     <SelectValue placeholder="Ordenar por" />
                   </SelectTrigger>
                   <SelectContent>
@@ -789,7 +789,8 @@ export default function AlunosGestao() {
             </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -868,9 +869,10 @@ export default function AlunosGestao() {
                     </TableCell>
                   </TableRow>
                 ))}
-              </TableBody>
-            </Table>
-          </Card>
+</TableBody>
+              </Table>
+            </div>
+            </Card>
         )}
 
         {/* Delete Confirmation Dialog */}

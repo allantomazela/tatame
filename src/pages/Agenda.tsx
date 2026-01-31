@@ -319,7 +319,7 @@ export default function Agenda() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Agenda</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Agenda</h1>
             <p className="text-muted-foreground">
               {userType === 'aluno'
                 ? 'Visualize os horários do seu polo'

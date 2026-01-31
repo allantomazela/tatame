@@ -201,9 +201,9 @@ export default function Configuracoes() {
   if (profileLoading || settingsLoading) {
     return (
       <Layout>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <Card>
-            <CardContent className="p-6 text-center">
+            <CardContent className="p-4 sm:p-6 text-center">
               <Loader2 className="h-6 w-6 animate-spin mx-auto" />
               <p className="text-muted-foreground mt-2">Carregando configurações...</p>
             </CardContent>
@@ -215,16 +215,16 @@ export default function Configuracoes() {
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Configurações</h1>
           <p className="text-muted-foreground">
             Gerencie suas preferências e informações pessoais
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
-          <TabsList className={`grid w-full ${showSystemTab ? "grid-cols-5" : "grid-cols-4"}`}>
+          <TabsList className={`grid w-full grid-cols-2 gap-1 ${showSystemTab ? "sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-4"}`}>
             <TabsTrigger value="profile">Perfil</TabsTrigger>
             <TabsTrigger value="security">Segurança</TabsTrigger>
             <TabsTrigger value="notifications">Notificações</TabsTrigger>

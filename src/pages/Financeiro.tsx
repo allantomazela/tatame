@@ -408,9 +408,9 @@ export default function Financeiro() {
   if (userType !== 'mestre') {
     return (
       <Layout>
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <Card>
-            <CardContent className="p-6 text-center">
+            <CardContent className="p-4 sm:p-6 text-center">
               <p className="text-muted-foreground">Acesso restrito. Apenas mestres podem acessar o módulo financeiro.</p>
             </CardContent>
           </Card>
@@ -421,19 +421,19 @@ export default function Financeiro() {
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Gerenciamento Financeiro</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Gerenciamento Financeiro</h1>
             <p className="text-muted-foreground mt-1">Controle completo de receitas, despesas e mensalidades</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleShareReport}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={handleShareReport} className="flex-1 sm:flex-none">
               <Share2 className="mr-2 h-4 w-4" />
               Compartilhar
             </Button>
-            <Button variant="outline" onClick={handleExportReport}>
+            <Button variant="outline" onClick={handleExportReport} className="flex-1 sm:flex-none">
               <Download className="mr-2 h-4 w-4" />
               Exportar
             </Button>
@@ -547,7 +547,7 @@ export default function Financeiro() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="revenue">Receitas</TabsTrigger>
             <TabsTrigger value="expense">Despesas</TabsTrigger>
@@ -768,13 +768,13 @@ export default function Financeiro() {
             <div className="space-y-2">
               {transactionsLoading ? (
                 <Card>
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 sm:p-6 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </CardContent>
                 </Card>
               ) : filteredTransactions.length === 0 ? (
                 <Card>
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 sm:p-6 text-center">
                     <p className="text-muted-foreground">Nenhuma receita encontrada</p>
                   </CardContent>
                 </Card>
@@ -983,13 +983,13 @@ export default function Financeiro() {
             <div className="space-y-2">
               {transactionsLoading ? (
                 <Card>
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 sm:p-6 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </CardContent>
                 </Card>
               ) : filteredTransactions.length === 0 ? (
                 <Card>
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 sm:p-6 text-center">
                     <p className="text-muted-foreground">Nenhuma despesa encontrada</p>
                   </CardContent>
                 </Card>
@@ -1255,13 +1255,13 @@ export default function Financeiro() {
             <div className="space-y-2">
               {paymentsLoading ? (
                 <Card>
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 sm:p-6 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </CardContent>
                 </Card>
               ) : filteredPayments.length === 0 ? (
                 <Card>
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 sm:p-6 text-center">
                     <p className="text-muted-foreground">Nenhuma mensalidade encontrada</p>
                   </CardContent>
                 </Card>

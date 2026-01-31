@@ -158,7 +158,7 @@ export default function Login() {
         {/* Login Form */}
         <div className="w-full max-w-lg animate-slide-in-right">
           <Card className="shadow-primary border-0 bg-card/95 backdrop-blur-sm min-h-fit flex flex-col hover:shadow-2xl transition-all duration-500 group">
-            <CardHeader className="text-center pb-6">
+            <CardHeader className="text-center pb-4 sm:pb-6 px-4 sm:px-6">
               <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mb-4 shadow-primary animate-pulse-glow group-hover:scale-110 transition-transform duration-300">
                 <span className="text-white text-2xl font-bold">畳</span>
               </div>
@@ -167,7 +167,7 @@ export default function Login() {
                 Acesse sua conta para gerenciar seu tatame
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col justify-center pb-8">
+            <CardContent className="flex-1 flex flex-col justify-center pb-6 sm:pb-8 px-4 sm:px-6">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Entrar</TabsTrigger>

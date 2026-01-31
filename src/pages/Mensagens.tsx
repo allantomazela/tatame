@@ -121,7 +121,7 @@ export default function Mensagens() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mensagens</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Mensagens</h1>
           <p className="text-muted-foreground">
             {userType === "aluno"
               ? "Converse com o professor ou mestres"

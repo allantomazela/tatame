@@ -149,7 +149,7 @@ export default function Graduacoes() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Graduações</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Graduações</h1>
             <p className="text-muted-foreground">
               Gerencie as graduações e progressões dos alunos
             </p>
