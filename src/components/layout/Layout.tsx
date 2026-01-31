@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
@@ -7,14 +7,12 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-/** Header com único botão de menu (desktop e mobile). */
+/** Header: no mobile mostra botão para abrir o menu; no desktop mostra nome do app (recolher fica dentro do sidebar). */
 function LayoutHeader() {
-  const { state } = useSidebar();
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 flex-nowrap items-center gap-2 border-b bg-background px-3 sm:px-4 dark:bg-gray-900 dark:border-gray-800">
-      <SidebarTrigger
-        aria-label={state === "collapsed" ? "Expandir menu" : "Recolher menu"}
-      />
+      <SidebarTrigger className="md:hidden shrink-0" aria-label="Abrir menu" />
+      <span className="hidden md:inline-block font-semibold text-foreground dark:text-gray-100 truncate">Tatame</span>
     </header>
   );
 }

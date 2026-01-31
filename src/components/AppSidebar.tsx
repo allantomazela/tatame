@@ -13,7 +13,8 @@ import {
   LogOut,
   TrendingUp,
   MapPin,
-  Users2
+  PanelLeft,
+  PanelLeftClose,
 } from "lucide-react"
 
 import {
@@ -22,6 +23,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -56,7 +58,7 @@ const managementItems: MenuItem[] = [
 ]
 
 export function AppSidebar() {
-  const { state, isMobile, setOpenMobile } = useSidebar()
+  const { state, isMobile, setOpenMobile, toggleSidebar } = useSidebar()
   const location = useLocation()
   const { userType, signOut } = useSupabaseAuth()
   const currentPath = location.pathname
@@ -83,6 +85,33 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="transition-[width] duration-300 ease-in-out">
       <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 pt-3 transition-[max-width] duration-300 ease-in-out">
+        {/* Logo Tatame + botão recolher dentro do menu (desktop) */}
+        <SidebarHeader className="flex flex-row items-center gap-2 border-b border-sidebar-border pb-3 mb-1 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <div className="flex items-center gap-2 min-w-0 group-data-[collapsible=icon]:hidden">
+            <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-sm font-bold">畳</span>
+            </div>
+            <span className="font-bold text-sidebar-foreground truncate dark:text-gray-100">Tatame</span>
+          </div>
+          {!isMobile && (
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={state === "collapsed" ? "Expandir menu" : "Recolher menu"}
+              className={cn(
+                "shrink-0 flex items-center justify-center rounded-md p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                "group-data-[collapsible=icon]:mx-auto"
+              )}
+            >
+              {state === "collapsed" ? (
+                <PanelLeft className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5" />
+              )}
+            </button>
+          )}
+        </SidebarHeader>
+
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
             Principal
