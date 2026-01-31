@@ -82,38 +82,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="transition-[width] duration-300 ease-in-out">
-      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 transition-[max-width] duration-300 ease-in-out">
-        {/* Logo/Brand - apenas visual, toggle fica no header */}
-        <div
-          className={cn(
-            "border-b border-sidebar-border/60 overflow-hidden min-w-0 shrink-0 select-none flex items-center rounded-lg transition-[padding,width] duration-300 ease-in-out",
-            "p-4 space-x-3",
-            "group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:max-w-[var(--sidebar-width-icon)] group-data-[collapsible=icon]:space-x-0"
-          )}
-        >
-          <div
-            role="presentation"
-            className={cn(
-              "bg-gradient-primary rounded-xl flex items-center justify-center shadow-primary/20 shadow-lg dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-500/30 shrink-0 w-10 h-10 pointer-events-none"
-            )}
-            aria-hidden
-          >
-            <span className="text-white dark:text-amber-50 font-bold text-lg">畳</span>
-          </div>
-          <div
-            className={cn(
-              "flex flex-col text-left min-w-0 overflow-hidden whitespace-nowrap",
-              "group-data-[collapsible=icon]:hidden"
-            )}
-            aria-hidden={isCollapsed}
-          >
-            <span className="font-bold text-lg text-foreground dark:text-gray-100 truncate">Tatame</span>
-            <span className="text-xs text-muted-foreground truncate">Academia</span>
-          </div>
-        </div>
-
-        {/* Main Navigation - texto oculto via CSS quando collapsed (group-data-[collapsible=icon]) */}
-        <SidebarGroup>
+      <SidebarContent className="overflow-y-auto overflow-x-hidden min-w-0 flex flex-col transition-[max-width] duration-300 ease-in-out">
+        {/* Espaço fixo no topo para alinhar primeira linha do menu com o header (h-14) */}
+        <div className="h-14 shrink-0" aria-hidden />
+        <SidebarGroup className="pt-0">
           <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300">
             Principal
           </SidebarGroupLabel>
