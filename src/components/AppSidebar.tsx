@@ -13,8 +13,6 @@ import {
   LogOut,
   TrendingUp,
   MapPin,
-  PanelLeft,
-  PanelLeftClose,
 } from "lucide-react"
 
 import {
@@ -57,9 +55,9 @@ const managementItems: MenuItem[] = [
   { title: "Configurações", url: "/configuracoes", icon: Settings, iconColor: "text-gray-600", activeColor: "red" },
 ]
 
-/** Logo: símbolo coreano preto (道 - Do, "o caminho"). Fixo no topo; recolhido mostra só o ícone. */
+/** Logo: ícone coreano preto (道 - Do). Fixo no topo; recolhido mostra só o ícone. */
 function SidebarLogo() {
-  const { state, isMobile, toggleSidebar } = useSidebar()
+  const { state } = useSidebar()
   const collapsed = state === "collapsed"
 
   return (
@@ -67,10 +65,10 @@ function SidebarLogo() {
       <div
         className={cn(
           "flex items-center w-full transition-all duration-300 ease-in-out",
-          collapsed ? "justify-center gap-1" : "gap-3"
+          collapsed ? "justify-center" : "gap-3"
         )}
       >
-        {/* Ícone coreano preto: 道 (Do) - sempre visível, nunca some */}
+        {/* Ícone coreano preto: 道 (Do) - sempre visível como ícone do menu */}
         <div
           className={cn(
             "flex items-center justify-center rounded-lg bg-black text-white font-bold shrink-0 transition-all duration-300 ease-in-out",
@@ -91,21 +89,6 @@ function SidebarLogo() {
             Tatame
           </span>
         </div>
-        {/* Toggle dentro do menu (apenas desktop) */}
-        {!isMobile && (
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-            className="shrink-0 flex items-center justify-center rounded-lg p-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-200 ease-in-out"
-          >
-            {collapsed ? (
-              <PanelLeft className="h-5 w-5" />
-            ) : (
-              <PanelLeftClose className="h-5 w-5" />
-            )}
-          </button>
-        )}
       </div>
     </SidebarHeader>
   )
@@ -170,7 +153,7 @@ function NavItem({
 }
 
 export function AppSidebar() {
-  const { state, isMobile, setOpenMobile, toggleSidebar } = useSidebar()
+  const { state, isMobile, setOpenMobile } = useSidebar()
   const location = useLocation()
   const { userType, signOut } = useSupabaseAuth()
   const currentPath = location.pathname
