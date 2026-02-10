@@ -153,14 +153,8 @@ function NavItem({
           )}
         >
           <Icon className={cn("h-5 w-5 flex-shrink-0 shrink-0", iconClasses)} />
-          {/* Texto: recolhido = w-0 overflow-hidden para sumir sem quebrar layout */}
-          <span
-            className={cn(
-              "font-medium whitespace-nowrap truncate transition-all duration-200 ease-in-out",
-              collapsed ? "w-0 min-w-0 overflow-hidden opacity-0" : "min-w-0 opacity-100",
-              isActive && "text-white"
-            )}
-          >
+          {/* Texto oculto via CSS no sidebar.tsx (group-data-[collapsible=icon]:[&>span:last-child]:!hidden) */}
+          <span className={cn("font-medium whitespace-nowrap truncate", isActive && "text-white")}>
             {item.title}
           </span>
         </NavLink>
@@ -200,12 +194,7 @@ export function AppSidebar() {
         <SidebarLogo />
 
         <SidebarGroup className="flex-1 min-h-0">
-          <SidebarGroupLabel
-            className={cn(
-              "text-sidebar-foreground/90 font-semibold dark:text-gray-300 px-3 transition-all duration-200 ease-in-out",
-              collapsed && "w-0 min-w-0 overflow-hidden opacity-0 p-0 m-0 border-0 max-h-0"
-            )}
-          >
+          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300 px-3">
             Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -224,12 +213,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel
-            className={cn(
-              "text-sidebar-foreground/90 font-semibold dark:text-gray-300 px-3 transition-all duration-200 ease-in-out",
-              collapsed && "w-0 min-w-0 overflow-hidden opacity-0 p-0 m-0 border-0 max-h-0"
-            )}
-          >
+          <SidebarGroupLabel className="text-sidebar-foreground/90 font-semibold dark:text-gray-300 px-3">
             Gestão
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -264,12 +248,7 @@ export function AppSidebar() {
                   )}
                 >
                   <LogOut className="h-5 w-5 flex-shrink-0 text-destructive dark:text-red-400" />
-                  <span
-                    className={cn(
-                      "font-medium whitespace-nowrap transition-all duration-200 ease-in-out",
-                      collapsed ? "w-0 min-w-0 overflow-hidden opacity-0" : "min-w-0 opacity-100"
-                    )}
-                  >
+                  <span className="font-medium whitespace-nowrap truncate">
                     Sair
                   </span>
                 </SidebarMenuButton>
